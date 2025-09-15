@@ -1,0 +1,95 @@
+.hero-section {
+    position: relative;
+    height: 90vh; /* full screen */
+    min-height: 600px;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    background: url("../../../assets/home_Page_first_hero(9).jpg") no-repeat center center/cover;
+}
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65); /* black transparent overlay */
+    z-index: 1;
+}
+
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.hero-headline {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    text-shadow: 0 6px 20px rgba(0,0,0,0.6);
+}
+
+.hero-sub {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+
+.hero-ctas {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-white,
+.btn-purple {
+    padding: 0.7rem 1.4rem;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-white {
+    background: #fff;
+    color: #394da1;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.btn-white:hover {
+    background: #f3f3f3;
+    transform: scale(1.05);
+}
+
+.btn-purple {
+    background: var(--brand-purple);
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(38, 81, 220, 0.3);
+}
+
+.btn-purple:hover {
+    background: black;
+    transform: scale(1.05);
+}
+
+/* Mobile tweaks */
+@media (max-width: 767px) {
+    .hero-headline {
+        font-size: 1.8rem;
+    }
+    .hero-sub {
+        font-size: 1rem;
+    }
+    .hero-ctas {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
