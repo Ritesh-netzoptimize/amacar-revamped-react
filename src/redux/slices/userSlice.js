@@ -111,7 +111,7 @@ export const resetPassword = createAsyncThunk(
   'user/resetPassword',
   async ({ token, otp, newPassword, confirmPassword }, { rejectWithValue }) => {
     try {
-      const response = await api.post('/auth/reset-password', { token, otp, newPassword, confirmPassword });
+      const response = await api.post('/auth/reset-password', { token, otp, new_password: newPassword, confirm_password: confirmPassword });
       if (response.data.success) {
         return response.data;
       }
@@ -253,7 +253,6 @@ const userSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload;
       })
-      // Reset Password
       .addCase(resetPassword.pending, (state) => {
         state.status = 'loading';
         state.error = null;
@@ -264,7 +263,8 @@ const userSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
-      })      .addCase(registerWithVin.pending, (state) => {
+      })
+      .addCase(registerWithVin.pending, (state) => {
         state.status = 'loading';
         state.error = null;
       })
