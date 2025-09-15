@@ -11,6 +11,7 @@ import {
   selectTotalCount,
   selectHasOffers
 } from '../redux/slices/offersSlice';
+import PreviousOffersSkeleton from '../components/Skeletons/PreviousOffersSkeleton';
 
 const PreviousOffersPage = () => {
   const dispatch = useDispatch();
@@ -293,18 +294,7 @@ const PreviousOffersPage = () => {
         
 
         {/* Loading State */}
-        {loading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center justify-center py-12"
-          >
-            <div className="flex items-center space-x-3">
-              <RefreshCw className="w-6 h-6 animate-spin text-orange-500" />
-              <span className="text-lg text-neutral-600">Loading offers...</span>
-            </div>
-          </motion.div>
-        )}
+        {loading && <PreviousOffersSkeleton />}
 
         {/* Error State */}
         {error && (
