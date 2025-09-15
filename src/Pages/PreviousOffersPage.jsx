@@ -211,8 +211,62 @@ const PreviousOffersPage = () => {
               </motion.p>
             </div>
             
-            {/* Modern Sort Dropdown */}
-            {!loading && !error && offers.length > 0 && (
+            
+          </div>
+        </motion.div>
+
+      <motion.div>
+
+        <div className="mb-8 flex items-center items-center sm:flex-row sm:items-center sm:justify-between ">
+          {/* Filter Tabs */}
+        {!loading && !error && offers.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className=""
+          >
+            <div className="flex items-center gap-1 bg-neutral-100 p-1 rounded-2xl w-fit">
+              {filterOptions.map((filter) => {
+                const isActive = activeFilter === filter.value;
+                return (
+                  <button
+                    key={filter.value}
+                    onClick={() => setActiveFilter(filter.value)}
+                    className={`relative px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                      isActive
+                        ? 'text-orange-600 shadow-sm'
+                        : 'text-neutral-600 hover:text-neutral-800 hover:bg-white/50'
+                    }`}
+                  >
+                    <span className={`relative z-10 flex items-center gap-2 ${
+                      isActive ? 'text-orange-600' : 'text-neutral-600'
+                    }`}>
+                      {filter.label}
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        isActive
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-neutral-200 text-neutral-600'
+                      }`}>
+                        {filter.count}
+                      </span>
+                    </span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeFilter"
+                        className="absolute inset-0 bg-white rounded-xl shadow-sm"
+                        initial={false}
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+        {/* Modern Sort Dropdown */}
+        {!loading && !error && offers.length > 0 && (
               <motion.div
                 variants={itemVariants}
                 className="relative w-[200px]"
@@ -295,56 +349,9 @@ const PreviousOffersPage = () => {
                 </AnimatePresence>
               </motion.div>
             )}
-          </div>
-        </motion.div>
-
-        {/* Filter Tabs */}
-        {!loading && !error && offers.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mb-8"
-          >
-            <div className="flex items-center gap-1 bg-neutral-100 p-1 rounded-2xl w-fit">
-              {filterOptions.map((filter) => {
-                const isActive = activeFilter === filter.value;
-                return (
-                  <button
-                    key={filter.value}
-                    onClick={() => setActiveFilter(filter.value)}
-                    className={`relative px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
-                      isActive
-                        ? 'text-orange-600 shadow-sm'
-                        : 'text-neutral-600 hover:text-neutral-800 hover:bg-white/50'
-                    }`}
-                  >
-                    <span className={`relative z-10 flex items-center gap-2 ${
-                      isActive ? 'text-orange-600' : 'text-neutral-600'
-                    }`}>
-                      {filter.label}
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        isActive
-                          ? 'bg-orange-100 text-orange-700'
-                          : 'bg-neutral-200 text-neutral-600'
-                      }`}>
-                        {filter.count}
-                      </span>
-                    </span>
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeFilter"
-                        className="absolute inset-0 bg-white rounded-xl shadow-sm"
-                        initial={false}
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
+        </div>
+      </motion.div>
+        
 
         {/* Loading State */}
         {loading && (
