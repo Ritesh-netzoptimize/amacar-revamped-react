@@ -27,6 +27,9 @@ const PreviousOffersPage = () => {
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
 
+  // Filter state
+  const [activeFilter, setActiveFilter] = useState('all');
+
   // Fetch offers on component mount
   useEffect(() => {
     dispatch(fetchPreviousOffers());
@@ -75,6 +78,19 @@ const PreviousOffersPage = () => {
     { value: 'amount-asc', label: 'Lowest Amount', icon: ArrowUp, description: 'Lowest to highest' },
   ];
 
+  // Filter options
+  const filterOptions = [
+    { value: 'all', label: 'All Offers', count: offers?.length || 0 },
+    { value: 'expired', label: 'Expired', count: offers?.filter(offer => {
+      const expiredDate = new Date(offer.expired_at);
+      return expiredDate < new Date();
+    }).length || 0 },
+    { value: 'rejected', label: 'Rejected', count: offers?.filter(offer => {
+      const expiredDate = new Date(offer.expired_at);
+      return expiredDate >= new Date();
+    }).length || 0 },
+  ];
+
   // Get current selected option
   const selectedOption = sortOptions.find(option => option.value === sortBy) || sortOptions[0];
 
@@ -116,11 +132,28 @@ const PreviousOffersPage = () => {
     }, randomDelay);
   };
 
-  // Sort offers based on selected option
+  // Sort and filter offers based on selected options
   const sortedOffers = useMemo(() => {
     if (!offers || offers.length === 0) return [];
 
-    return [...offers].sort((a, b) => {
+    // First filter the offers
+    let filteredOffers = offers;
+    if (activeFilter !== 'all') {
+      filteredOffers = offers.filter(offer => {
+        const expiredDate = new Date(offer.expired_at);
+        const isExpired = expiredDate < new Date();
+        
+        if (activeFilter === 'expired') {
+          return isExpired;
+        } else if (activeFilter === 'rejected') {
+          return !isExpired;
+        }
+        return true;
+      });
+    }
+
+    // Then sort the filtered offers
+    return [...filteredOffers].sort((a, b) => {
       const offerA = formatOfferData(a);
       const offerB = formatOfferData(b);
 
@@ -137,7 +170,7 @@ const PreviousOffersPage = () => {
           return 0;
       }
     });
-  }, [offers, sortBy]);
+  }, [offers, sortBy, activeFilter]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -265,6 +298,54 @@ const PreviousOffersPage = () => {
           </div>
         </motion.div>
 
+        {/* Filter Tabs */}
+        {!loading && !error && offers.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-8"
+          >
+            <div className="flex items-center gap-1 bg-neutral-100 p-1 rounded-2xl w-fit">
+              {filterOptions.map((filter) => {
+                const isActive = activeFilter === filter.value;
+                return (
+                  <button
+                    key={filter.value}
+                    onClick={() => setActiveFilter(filter.value)}
+                    className={`relative px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                      isActive
+                        ? 'text-orange-600 shadow-sm'
+                        : 'text-neutral-600 hover:text-neutral-800 hover:bg-white/50'
+                    }`}
+                  >
+                    <span className={`relative z-10 flex items-center gap-2 ${
+                      isActive ? 'text-orange-600' : 'text-neutral-600'
+                    }`}>
+                      {filter.label}
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        isActive
+                          ? 'bg-orange-100 text-orange-700'
+                          : 'bg-neutral-200 text-neutral-600'
+                      }`}>
+                        {filter.count}
+                      </span>
+                    </span>
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeFilter"
+                        className="absolute inset-0 bg-white rounded-xl shadow-sm"
+                        initial={false}
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
         {/* Loading State */}
         {loading && (
           <motion.div
@@ -306,6 +387,29 @@ const PreviousOffersPage = () => {
             <Car className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Previous Offers</h3>
             <p className="text-neutral-500">You don't have any previous offers yet.</p>
+          </motion.div>
+        )}
+
+        {/* No Filtered Results State */}
+        {!loading && !error && offers.length > 0 && sortedOffers.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-12"
+          >
+            <AlertCircle className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-neutral-600 mb-2">
+              No {activeFilter === 'expired' ? 'Expired' : 'Rejected'} Offers
+            </h3>
+            <p className="text-neutral-500 mb-4">
+              No offers found for the selected filter.
+            </p>
+            <button
+              onClick={() => setActiveFilter('all')}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Show All Offers
+            </button>
           </motion.div>
         )}
 
