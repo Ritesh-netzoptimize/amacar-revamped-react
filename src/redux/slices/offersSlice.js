@@ -22,6 +22,27 @@ export const fetchPreviousOffers = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch pending offers
+export const fetchPendingOffers = createAsyncThunk(
+  'offers/fetchPendingOffers',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Use the axios instance which already handles auth headers
+      const response = await api.get('/dashboard/pending-offers');
+      console.log('Pending offers response:', response);
+      console.log('Pending offers response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch pending offers');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch pending offers');
+    }
+  }
+);
+
 const initialState = {
   loading: false,
   error: null,
@@ -101,6 +122,22 @@ const offersSlice = createSlice({
       .addCase(fetchPreviousOffers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch previous offers';
+      })
+      // Fetch pending offers
+      .addCase(fetchPendingOffers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPendingOffers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.pendingOffers = action.payload.offers || [];
+        state.totalCount = action.payload.total_count || 0;
+        state.hasOffers = action.payload.has_offers || false;
+      })
+      .addCase(fetchPendingOffers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch pending offers';
       });
   },
 });
