@@ -460,9 +460,10 @@ const PreviousOffersPage = () => {
                       
                       {/* Bids Button - Bottom Right */}
                       <div className="ml-4">
-                        <button 
+                        {
+                          offer.bid && offer.bid.length == 0 ? <p className="text-sm text-neutral-600">No bids</p> :<button 
                           onClick={() => handleShowBids(offer)}
-                          className="cursor-pointer group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+                          className="cursor-pointer group relative  hover:from-orange-600 hover:to-orange-700 text-[#f6851f] border-2 border-[#f6851f] px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
                         >
                           <DollarSign className="w-4 h-4 group-hover:animate-pulse" />
                           <span>
@@ -477,6 +478,7 @@ const PreviousOffersPage = () => {
                             </div>
                           )}
                         </button>
+                        }
                       </div>
                     </div>
                   </div>
