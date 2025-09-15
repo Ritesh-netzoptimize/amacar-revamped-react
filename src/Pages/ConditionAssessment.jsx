@@ -315,14 +315,14 @@ export default function ConditionAssessment() {
                   {currentSection < totalSections - 1 ? (
                     <button
                       onClick={nextSection}
-                      className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
+                      className="cursor-pointer inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#f6851f] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
                     >
                       Next <ChevronRight className="h-4 w-4" />
                     </button>
                   ) : (
                     <button
                       onClick={handleContinue}
-                      className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
+                      className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-[#f6851f] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
                     >
                       Continue
                     </button>
@@ -567,7 +567,7 @@ export default function ConditionAssessment() {
                         }
                       }}
                       disabled={!vehicleDetails || Object.keys(vehicleDetails).length === 0}
-                      className={`cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] ${
+                      className={`cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r bg-[#f6851f]  px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01] ${
                         !vehicleDetails || Object.keys(vehicleDetails).length === 0
                           ? 'opacity-50 cursor-not-allowed' 
                           : ''
@@ -621,107 +621,108 @@ export default function ConditionAssessment() {
             )}
           </div>
 
-          <div className="lg:col-span-4 ">
-            <div className="sticky top-6 space-y-6">
-              {/* Vehicle Information Card */}
-              <div className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl">
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-slate-900">Vehicle Information</h3>
-                    <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
-                  </div>
-                  
-                  {/* VIN Badge */}
-                  <div className="mb-4">
-                    <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#f6851f] to-[#e63946] text-white text-sm font-semibold">
-                      VIN- {vehicleDetails?.vin || "JTHBL46FX75021954"}
-                    </div>
-                  </div>
-
-                  {/* Vehicle Details */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-700">Vehicle</span>
-                      <span className="text-sm font-semibold text-slate-900">
-                        {vehicleDetails?.modelyear || "2007"} {vehicleDetails?.make || "LEXUS"} {vehicleDetails?.model || "LS"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-700">Type</span>
-                      <span className="text-sm font-semibold text-[#f6851f]">
-                        {vehicleDetails?.bodytype || "SEDAN"} {vehicleDetails?.doors || "4D"} {vehicleDetails?.model || "LS460"} {vehicleDetails?.engineconfiguration || "4.6L"} {vehicleDetails?.fueltype || "V8"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Vehicle Image Placeholder */}
-                <div className="relative mb-3">
-                  <div className="w-full h-24 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center border-2 border-dashed border-slate-300">
-                    <div className="text-center">
-                      <div className="flex items-center justify-center mb-1">
-                        <span className="text-xl font-bold text-[#f6851f]">amacar</span>
-                        <div className="ml-1 w-5 h-5 border-2 border-blue-500 rounded-full flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+          <div className="lg:col-span-4">
+            <div className="sticky top-6">
+              {/* Merged Vehicle Information and Your Answers Card */}
+              <div className="rounded-2xl w-[400px] border border-white/60 bg-white/70 shadow-xl backdrop-blur-xl overflow-hidden">
+                <div className="h-[560px]  overflow-y-auto">
+                  <div className="p-6">
+                    {/* Vehicle Information Section */}
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-semibold text-slate-900">Vehicle Information</h3>
+                        <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
+                      </div>
+                      
+                      {/* VIN Badge */}
+                      <div className="mb-4">
+                        <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r bg-[#f6851f] text-white text-sm font-semibold">
+                          VIN- {vehicleDetails?.vin || "JTHBL46FX75021954"}
                         </div>
                       </div>
-                      <p className="text-xs font-medium text-slate-600">No Image Available</p>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Additional Info */}
-                <div className="space-y-1.5 text-xs text-slate-500">
-                  <div className="flex justify-between">
-                    <span>Mileage:</span>
-                    <span className="font-medium">{vehicleDetails?.mileage ? Number(vehicleDetails.mileage).toLocaleString() + ' km' : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Location:</span>
-                    <span className="font-medium">{location?.city || 'N/A'}, {location?.state || 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Your Answers Card */}
-              <div className="rounded-2xl border border-white/60 bg-white/70 p-6 shadow-xl backdrop-blur-xl">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-sm font-medium text-slate-900">Your Answers</p>
-                  <span className="text-xs text-slate-600">
-                    {answeredQuestions}/{totalQuestions}
-                  </span>
-                </div>
-                <div className="max-h-96 overflow-y-auto space-y-2">
-                  {questions.map((q) => (
-                    <div
-                      key={q.key}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 flex flex-col"
-                    >
-                      <div className=" flex items-center justify-between text-sm gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span>{q.emoji || '❓'}</span>
-                          <span className="truncate min-w-0">{q.label}</span>
+                      {/* Vehicle Details */}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-slate-700">Vehicle</span>
+                          <span className="text-sm font-semibold text-slate-900">
+                            {vehicleDetails?.modelyear || "2007"} {vehicleDetails?.make || "LEXUS"} {vehicleDetails?.model || "LS"}
+                          </span>
                         </div>
-                        <span
-                          className={`text-xs font-medium whitespace-nowrap ${
-                            q.answer ? "text-orange-700" : "text-slate-500"
-                          }`}
-                        >
-                          {q.isMultiSelect
-                            ? Array.isArray(q.answer) && q.answer.length > 0
-                              ? q.answer.join(", ")
-                              : "—"
-                            : q.answer || "—"}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-slate-700">Type</span>
+                          <span className="text-sm font-semibold text-[#f6851f]">
+                            {vehicleDetails?.bodytype || "SEDAN"} {vehicleDetails?.doors || "4D"} {vehicleDetails?.model || "LS460"} {vehicleDetails?.engineconfiguration || "4.6L"} {vehicleDetails?.fueltype || "V8"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Vehicle Image */}
+                      <div className="relative mb-4">
+                        <div className="w-full h-32 rounded-xl overflow-hidden border-2 border-slate-200">
+                          <img 
+                            src="https://amacar.ai/wp-content/uploads/2024/10/amacar-placeholder2.png" 
+                            alt="Vehicle placeholder" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Additional Info */}
+                      <div className="space-y-1.5 text-xs text-slate-500 mb-6">
+                        <div className="flex justify-between">
+                          <span>Mileage:</span>
+                          <span className="font-medium">{vehicleDetails?.mileage ? Number(vehicleDetails.mileage).toLocaleString() + ' km' : 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Location:</span>
+                          <span className="font-medium">{location?.city || 'N/A'}, {location?.state || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Your Answers Section */}
+                    <div>
+                      <div className="mb-3 flex items-center justify-between">
+                        <p className="text-sm font-medium text-slate-900">Your Answers</p>
+                        <span className="text-xs text-slate-600">
+                          {answeredQuestions}/{totalQuestions}
                         </span>
                       </div>
+                      <div className="space-y-2">
+                        {questions.map((q) => (
+                          <div
+                            key={q.key}
+                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 flex flex-col"
+                          >
+                            <div className=" flex items-center justify-between text-sm gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span>{q.emoji || '❓'}</span>
+                                <span className="truncate min-w-0">{q.label}</span>
+                              </div>
+                              <span
+                                className={`text-xs font-medium whitespace-nowrap ${
+                                  q.answer ? "text-orange-700" : "text-slate-500"
+                                }`}
+                              >
+                                {q.isMultiSelect
+                                  ? Array.isArray(q.answer) && q.answer.length > 0
+                                    ? q.answer.join(", ")
+                                    : "—"
+                                  : q.answer || "—"}
+                              </span>
+                            </div>
 
-                      {q.details && (
-                        <div className="mt-2 text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded break-words">
-                          {q.details.substring(0, 60)}...
-                        </div>
-                      )}
+                            {q.details && (
+                              <div className="mt-2 text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded break-words">
+                                {q.details.substring(0, 60)}...
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
             </div>

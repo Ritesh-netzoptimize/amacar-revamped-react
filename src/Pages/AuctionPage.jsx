@@ -471,7 +471,7 @@ useEffect(() => {
                                             handleChange(key, opt);
                                             handleBlur(key);
                                           }}
-                                          className={`cursor-pointer inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                                          className={`cursor-pointer inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
                                             selected
                                               ? "border-[#f6851f] bg-orange-50 text-slate-900"
                                               : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
@@ -542,7 +542,7 @@ useEffect(() => {
                       onClick={handleNextStep}
                       className={`cursor-pointer inline-flex h-11 items-center justify-center rounded-xl px-6 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.01] ${
                         isCurrentStepValid()
-                          ? "bg-gradient-to-r from-[#f6851f] to-[#e63946] shadow-orange-500/25"
+                          ? "bg-[#f6851f] shadow-orange-500/25"
                           : "bg-slate-400 shadow-slate-400/25 cursor-not-allowed"
                       }`}
                       disabled={!isCurrentStepValid()}
@@ -553,7 +553,7 @@ useEffect(() => {
                     <button
                       type="button"
                       onClick={handleSubmit}
-                      className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
+                      className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-[#f6851f] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
                     >
                       {allValid ? "Confirm & Continue" : "Complete Required Fields"}
                     </button>
@@ -579,7 +579,7 @@ useEffect(() => {
                       
                       {/* VIN Badge */}
                       <div className="mb-4">
-                        <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#f6851f] to-[#e63946] text-white text-sm font-semibold">
+                        <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r bg-[#f6851f] text-white text-sm font-semibold">
                           VIN- {vehicleDetails?.vin || "JTHBL46FX75021954"}
                         </div>
                       </div>
@@ -628,7 +628,7 @@ useEffect(() => {
                       </div>
                       <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 mb-5">
                         <motion.div
-                          className="h-2 rounded-full bg-gradient-to-r from-[#f6851f] to-[#e63946]"
+                          className="h-2 rounded-full bg-[#f6851f]"
                           initial={{ width: 0 }}
                           animate={{ width: `${Math.min(100, (completedCount / 8) * 100)}%` }}
                           transition={{ duration: 0.5 }}
