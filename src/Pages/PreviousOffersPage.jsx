@@ -1,37 +1,143 @@
-import { motion } from 'framer-motion';
-import { Car, DollarSign, Clock, RefreshCw, Eye } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Car, DollarSign, Clock, RefreshCw, Eye, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { 
+  fetchPreviousOffers, 
+  selectPreviousOffers, 
+  selectOffersLoading, 
+  selectOffersError,
+  selectTotalCount,
+  selectHasOffers
+} from '../redux/slices/offersSlice';
 
 const PreviousOffersPage = () => {
-  const offers = [
-    {
-      id: 'OFF-001',
-      vehicle: '2020 Honda Civic',
-      offerAmount: 18500,
-      status: 'expired',
-      reason: 'Auction ended without acceptance',
-      date: new Date('2024-01-15'),
-      auctionId: 'AUC-001',
-    },
-    {
-      id: 'OFF-002',
-      vehicle: '2019 Toyota Camry',
-      offerAmount: 22100,
-      status: 'rejected',
-      reason: 'Offer below reserve price',
-      date: new Date('2024-01-10'),
-      auctionId: 'AUC-002',
-    },
-    {
-      id: 'OFF-003',
-      vehicle: '2021 BMW 3 Series',
-      offerAmount: 32500,
-      status: 'expired',
-      reason: 'Time limit exceeded',
-      date: new Date('2024-01-05'),
-      auctionId: 'AUC-003',
-    },
+  const dispatch = useDispatch();
+  const offers = useSelector(selectPreviousOffers);
+  const loading = useSelector(selectOffersLoading);
+  const error = useSelector(selectOffersError);
+  const totalCount = useSelector(selectTotalCount);
+  const hasOffers = useSelector(selectHasOffers);
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState('date-desc');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSorting, setIsSorting] = useState(false);
+  const [sortProgress, setSortProgress] = useState(0);
+  const dropdownRef = useRef(null);
+
+  // Fetch offers on component mount
+  useEffect(() => {
+    dispatch(fetchPreviousOffers());
+  }, [dispatch]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Helper function to format offer data
+  const formatOfferData = (offer) => {
+    const vehicleName = `${offer.year} ${offer.make} ${offer.model}${offer.trim && offer.trim !== 'N/A' ? ` ${offer.trim}` : ''}`;
+    const offerAmount = parseFloat(offer.cash_offer) || 0;
+    const expiredDate = new Date(offer.expired_at);
+    const isExpired = expiredDate < new Date();
+    
+    return {
+      id: offer.product_id,
+      vehicle: vehicleName,
+      offerAmount,
+      status: isExpired ? 'expired' : 'active',
+      reason: isExpired ? 'Offer expired' : 'Offer active',
+      date: expiredDate,
+      auctionId: offer.product_id,
+      vin: offer.vin,
+      imageUrl: offer.image_url,
+      title: offer.title
+    };
+  };
+
+  // Sort options
+  const sortOptions = [
+    { value: 'date-desc', label: 'Newest First', icon: ArrowDown, description: 'Most recent offers' },
+    { value: 'date-asc', label: 'Oldest First', icon: ArrowUp, description: 'Earliest offers' },
+    { value: 'amount-desc', label: 'Highest Amount', icon: ArrowDown, description: 'Highest to lowest' },
+    { value: 'amount-asc', label: 'Lowest Amount', icon: ArrowUp, description: 'Lowest to highest' },
   ];
+
+  // Get current selected option
+  const selectedOption = sortOptions.find(option => option.value === sortBy) || sortOptions[0];
+
+  // Handle sort selection with loading animation
+  const handleSortSelect = (value) => {
+    if (value === sortBy) {
+      setIsDropdownOpen(false);
+      return;
+    }
+    
+    setIsSorting(true);
+    setSortProgress(0);
+    setIsDropdownOpen(false);
+    
+    // Simulate sorting process with random delay and progress
+    const randomDelay = Math.random() * 1000 + 500; // 500-1500ms
+    const progressInterval = 50; // Update progress every 50ms
+    
+    const progressTimer = setInterval(() => {
+      setSortProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressTimer);
+          return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, progressInterval);
+    
+    setTimeout(() => {
+      clearInterval(progressTimer);
+      setSortProgress(100);
+      setSortBy(value);
+      
+      // Reset after a short delay
+      setTimeout(() => {
+        setIsSorting(false);
+        setSortProgress(0);
+      }, 200);
+    }, randomDelay);
+  };
+
+  // Sort offers based on selected option
+  const sortedOffers = useMemo(() => {
+    if (!offers || offers.length === 0) return [];
+
+    return [...offers].sort((a, b) => {
+      const offerA = formatOfferData(a);
+      const offerB = formatOfferData(b);
+
+      switch (sortBy) {
+        case 'date-desc':
+          return offerB.date - offerA.date;
+        case 'date-asc':
+          return offerA.date - offerB.date;
+        case 'amount-desc':
+          return offerB.offerAmount - offerA.offerAmount;
+        case 'amount-asc':
+          return offerA.offerAmount - offerB.offerAmount;
+        default:
+          return 0;
+      }
+    });
+  }, [offers, sortBy]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -54,7 +160,7 @@ const PreviousOffersPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero p-8 ">
+    <div className="min-h-screen bg-gradient-hero p-8">
       <div className="max-w-8xl mx-auto">
         <motion.div
           variants={containerVariants}
@@ -62,71 +168,272 @@ const PreviousOffersPage = () => {
           animate="visible"
           className="mb-8"
         >
-          <motion.h1 variants={itemVariants} className="text-3xl font-bold text-neutral-800 mb-2">
-            Previous Offers
-          </motion.h1>
-          <motion.p variants={itemVariants} className="text-neutral-600">
-            Review your past offers and auction results.
-          </motion.p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <motion.h1 variants={itemVariants} className="text-3xl font-bold text-neutral-800 mb-2">
+                Previous Offers
+              </motion.h1>
+              <motion.p variants={itemVariants} className="text-neutral-600">
+                Review your past offers and auction results. {totalCount > 0 && `(${totalCount} total offers)`}
+              </motion.p>
+            </div>
+            
+            {/* Modern Sort Dropdown */}
+            {!loading && !error && offers.length > 0 && (
+              <motion.div
+                variants={itemVariants}
+                className="relative w-[200px]"
+                ref={dropdownRef}
+              >
+                {/* Dropdown Trigger */}
+                <button
+                  onClick={() => !isSorting && setIsDropdownOpen(!isDropdownOpen)}
+                  disabled={isSorting}
+                  className={`flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${
+                    isSorting ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {isSorting ? (
+                      <RefreshCw className="w-4 h-4 text-orange-500 animate-spin" />
+                    ) : (
+                      <ArrowUpDown className="w-4 h-4 text-neutral-500 group-hover:text-orange-500 transition-colors" />
+                    )}
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-neutral-700">
+                        {isSorting ? 'Sorting...' : selectedOption.label}
+                      </div>
+                    </div>
+                  </div>
+                  {!isSorting && (
+                    <ChevronDown 
+                      className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
+                        isDropdownOpen ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  )}
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 overflow-hidden"
+                    >
+                      {sortOptions.map((option, index) => {
+                        const IconComponent = option.icon;
+                        const isSelected = option.value === sortBy;
+                        
+                        return (
+                          <button
+                            key={option.value}
+                            onClick={() => handleSortSelect(option.value)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 transition-colors duration-150 ${
+                              isSelected ? 'bg-orange-50 text-orange-700' : 'text-neutral-700'
+                            } ${index !== sortOptions.length - 1 ? 'border-b border-neutral-100' : ''}`}
+                          >
+                            <div className={`p-1.5 rounded-lg ${
+                              isSelected ? 'bg-orange-100' : 'bg-neutral-100'
+                            }`}>
+                              <IconComponent className={`w-3.5 h-3.5 ${
+                                isSelected ? 'text-orange-600' : 'text-neutral-500'
+                              }`} />
+                            </div>
+                            <div className="flex-1">
+                              <div className={`text-sm font-medium ${
+                                isSelected ? 'text-orange-700' : 'text-neutral-700'
+                              }`}>
+                                {option.label}
+                              </div>
+                            
+                            </div>
+                            {isSelected && (
+                              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </div>
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-6"
-        >
-          {offers.map((offer) => (
-            <motion.div
-              key={offer.id}
-              variants={itemVariants}
-              className="card p-6 hover:shadow-medium transition-all duration-300"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center">
-                    <Car className="w-8 h-8 text-neutral-400" />
+        {/* Loading State */}
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center py-12"
+          >
+            <div className="flex items-center space-x-3">
+              <RefreshCw className="w-6 h-6 animate-spin text-orange-500" />
+              <span className="text-lg text-neutral-600">Loading offers...</span>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6"
+          >
+            <div className="flex items-center space-x-3">
+              <AlertCircle className="w-6 h-6 text-red-500" />
+              <div>
+                <h3 className="text-lg font-semibold text-red-800">Error Loading Offers</h3>
+                <p className="text-red-600">{error}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* No Offers State */}
+        {!loading && !error && (!hasOffers || offers.length === 0) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-12"
+          >
+            <Car className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Previous Offers</h3>
+            <p className="text-neutral-500">You don't have any previous offers yet.</p>
+          </motion.div>
+        )}
+
+        {/* Offers List or Sorting Loading */}
+        {!loading && !error && sortedOffers.length > 0 && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6"
+          >
+            {/* Sorting Loading State - Center of offers area */}
+            {isSorting && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="flex flex-col items-center justify-center py-16"
+              >
+                <div className="flex flex-col items-center gap-4 p-6 bg-white rounded-2xl shadow-lg border border-neutral-200">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <RefreshCw className="w-8 h-8 text-orange-500 animate-spin" />
+                      <div className="absolute inset-0 rounded-full border-2 border-orange-200 animate-ping"></div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-semibold text-neutral-800 mb-1">
+                        Sorting offers...
+                      </div>
+                      <div className="text-sm text-neutral-600">
+                        Organizing by {selectedOption.label.toLowerCase()}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-neutral-800">{offer.vehicle}</h3>
-                    <p className="text-sm text-neutral-600">
-                      {formatDate(offer.date)} • Auction {offer.auctionId}
+                  
+                  {/* Progress Bar */}
+                  <div className="w-64">
+                    <div className="w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${sortProgress}%` }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="text-sm font-medium text-orange-600">
+                        {Math.round(sortProgress)}% complete
+                      </div>
+                      <div className="text-xs text-neutral-500">
+                        Please wait...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Offers List - Hidden during sorting */}
+            {!isSorting && (
+              <>
+                {sortedOffers.map((offer, index) => {
+              const formattedOffer = formatOfferData(offer);
+              return (
+                <motion.div
+                  key={formattedOffer.id}
+                  variants={itemVariants}
+                  className="card p-6 hover:shadow-medium transition-all duration-300"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center overflow-hidden">
+                        {formattedOffer.imageUrl ? (
+                          <img 
+                            src={formattedOffer.imageUrl} 
+                            alt={formattedOffer.vehicle}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <Car className="w-8 h-8 text-neutral-400" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-neutral-800">{formattedOffer.vehicle}</h3>
+                        <p className="text-sm text-neutral-600">
+                          {formatDate(formattedOffer.date)} • VIN: {formattedOffer.vin}
+                        </p>
+                        <p className="text-xs text-neutral-500 mt-1">{formattedOffer.title}</p>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-neutral-800 mb-1">
+                        {formatCurrency(formattedOffer.offerAmount)}
+                      </div>
+                      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        formattedOffer.status === 'expired' 
+                          ? 'bg-warning/10 text-warning' 
+                          : 'bg-green-100 text-green-700'
+                      }`}>
+                        {formattedOffer.status === 'expired' ? 'Expired' : 'Active'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-neutral-200">
+                    <p className="text-sm text-neutral-600 mb-4">
+                      <strong>Status:</strong> {formattedOffer.reason}
                     </p>
+                    <div className="flex space-x-2">
+                      <button className="btn-ghost flex items-center space-x-2">
+                        <Eye className="w-4 h-4" />
+                        <span>View Details</span>
+                      </button>
+                      <button className="btn-secondary flex items-center space-x-2">
+                        <RefreshCw className="w-4 h-4" />
+                        <span>Relist Vehicle</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-neutral-800 mb-1">
-                    {formatCurrency(offer.offerAmount)}
-                  </div>
-                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    offer.status === 'expired' 
-                      ? 'bg-warning/10 text-warning' 
-                      : 'bg-error/10 text-error'
-                  }`}>
-                    {offer.status === 'expired' ? 'Expired' : 'Rejected'}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-neutral-200">
-                <p className="text-sm text-neutral-600 mb-4">
-                  <strong>Reason:</strong> {offer.reason}
-                </p>
-                <div className="flex space-x-2">
-                  <button className="btn-ghost flex items-center space-x-2">
-                    <Eye className="w-4 h-4" />
-                    <span>View Details</span>
-                  </button>
-                  <button className="btn-secondary flex items-center space-x-2">
-                    <RefreshCw className="w-4 h-4" />
-                    <span>Relist Vehicle</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+                </motion.div>
+              );
+            })}
+              </>
+            )}
+          </motion.div>
+        )}
       </div>
     </div>
   );
