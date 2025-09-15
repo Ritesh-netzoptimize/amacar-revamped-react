@@ -722,7 +722,7 @@ export default function LoginModal({
                     </div>
                   </motion.div>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-slate-900">Operation Failed</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">Invalid credentials</h3>
                     <p className="text-sm text-slate-600">Please try again.</p>
                   </div>
                   <button
