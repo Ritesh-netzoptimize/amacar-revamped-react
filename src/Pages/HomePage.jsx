@@ -20,9 +20,9 @@ export default function HomePage() {
         <>
             <Hero />
             <SectionHeader title="How Amacar works" highlight="Sell smarter, faster" />
-            <HeroCarousel />
-            <HowItWorks />
             <VideoSection />
+            <HowItWorks />
+            <HeroCarousel />
             <WhyChooseAmacar />
             <WinWinAmacar />
             <TwoColumnSection />

@@ -128,7 +128,7 @@ export default function CarFooterSection() {
                         variants={buttonVariants}
                         whileHover="hover"
                         whileTap="tap"
-                        className="group cursor-pointer relative bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white px-12 py-6 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 overflow-hidden"
+                        className="group cursor-pointer relative bg-[#f6851f] hover:to-orange-600 text-white px-12 py-6 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 overflow-hidden"
                     >
                         <span className="relative z-10 flex items-center gap-3">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -73,26 +73,35 @@ export default function LoginModal({
       newErrors.password = "Password must be at least 6 characters";
     }
   
+    if (phase === "reset-password" && !values.newPassword) {
+      newErrors.newPassword = "New password is required";
+    } else if (phase === "reset-password" && values.newPassword !== values.confirmPassword) {
+      newErrors.newPassword = "New password does not match";
+    }
+    else if (phase === "reset-password" && values.newPassword?.length < 6) {
+      newErrors.newPassword = "New password must be at least 6 characters";
+    }
+    
     if ((isRegisterMode || phase === "reset-password") && !values.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
-    } else if ((isRegisterMode || phase === "reset-password") && values.confirmPassword !== values.password) {
+    } else if ((isRegisterMode) && values.confirmPassword !== values.password) {
       newErrors.confirmPassword = "Passwords do not match";
     }
   
-    if (phase === "reset-password" && !values.newPassword) {
-      newErrors.newPassword = "New password is required";
-    } else if (phase === "reset-password" && values.newPassword?.length < 6) {
-      newErrors.newPassword = "New password must be at least 6 characters";
-    }
-  
+
+    
     Object.keys(newErrors).forEach((key) => {
       if (newErrors[key]) setError(key, newErrors[key]);
       else setError(key, "");
     });
-  
+    
     return Object.values(newErrors).every((error) => !error);
   }
-
+  
+  useEffect(() => {
+    console.log('password', values.newPassword);
+    console.log('confirmPassword', values.confirmPassword);
+});
   function validateOtp() {
     const newErrors = { ...errors, otp: "" };
     if (!values.otp) {
@@ -127,7 +136,7 @@ export default function LoginModal({
         setPhase("verify-otp");
       }
     } else if (phase === "reset-password") {
-      await handleAction(resetPassword, { token: resetToken, newPassword: values.newPassword });
+      await handleAction(resetPassword, { token: resetToken,otp: values.otp, newPassword: values.newPassword, confirmPassword: values.confirmPassword });
     } else {
       await handleAction(loginUser, { username: values.email, password: values.password });
     }
@@ -786,12 +795,7 @@ export default function LoginModal({
                     {errors.otp}
                   </motion.p>
                 )}
-                {/* Debug info - remove in production */}
-                {process.env.NODE_ENV === 'development' && (
-                  <div className="text-xs text-gray-500">
-                    Debug - OTP Error: {errors.otp || 'none'} | Phase: {phase}
-                  </div>
-                )}
+                
               </div>
               <button
                 type="submit"

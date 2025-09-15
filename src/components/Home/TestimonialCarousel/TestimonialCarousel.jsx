@@ -159,9 +159,9 @@ export default function TestimonialCarousel() {
                 {/* Section Header */}
                 <div className="text-center mb-12">
                     <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
-                        What Our <span className="text-blue-600">Customers</span> Say
+                        What Our <span className="text-[#f6851f]">Customers</span> Say
                     </h2>
-                    <div className="w-20 h-1 bg-gradient-to-r from-blue-600 to-purple-500 mx-auto rounded-full"></div>
+                    <div className="w-20 h-1 bg-[#f6851f] mx-auto rounded-full"></div>
                 </div>
 
                 {/* Carousel Container */}

@@ -109,9 +109,9 @@ export const verifyOTP = createAsyncThunk(
 
 export const resetPassword = createAsyncThunk(
   'user/resetPassword',
-  async ({ token, newPassword }, { rejectWithValue }) => {
+  async ({ token, otp, newPassword, confirmPassword }, { rejectWithValue }) => {
     try {
-      const response = await api.post('/auth/reset-password', { token, newPassword });
+      const response = await api.post('/auth/reset-password', { token, otp, newPassword, confirmPassword });
       if (response.data.success) {
         return response.data;
       }

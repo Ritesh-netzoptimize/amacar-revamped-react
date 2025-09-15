@@ -101,8 +101,7 @@ export default function ReviewPage() {
               
               <div className="flex items-center justify-center gap-6 text-lg text-slate-600 mb-8">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5" />
-                  <span>Mileage: {vehicleDetails.mileage || vehicleDetails.mileage_km || 'N/A'}</span>
+                  <span>Mileage: {vehicleDetails.mileage || vehicleDetails.mileage_km || 'N/A'} km</span>
                 </div>
               </div>
             </div>

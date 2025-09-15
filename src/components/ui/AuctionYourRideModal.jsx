@@ -256,7 +256,7 @@ export default function AuctionModal({
         className="lg:mt-[1rem] mt-[2rem] sm:max-w-3xl rounded-xl shadow-xl p-0 overflow-hidden bg-white max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         showCloseButton={!isCloseDisabled}
       >
-        <div className="bg-gradient-to-r from-orange-500 to-orange-400 p-6 text-white">
+        <div className="bg-[#f6851f] p-6 text-white">
           <DialogHeader>
             <DialogTitle className="text-2xl font-semibold tracking-tight">
               {title}
