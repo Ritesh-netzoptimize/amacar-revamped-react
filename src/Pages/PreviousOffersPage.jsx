@@ -27,8 +27,6 @@ const PreviousOffersPage = () => {
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
 
-  // Filter state
-  const [activeFilter, setActiveFilter] = useState('all');
   
   // Modal state
   const [selectedOffer, setSelectedOffer] = useState(null);
@@ -82,16 +80,6 @@ const PreviousOffersPage = () => {
     { value: 'amount-asc', label: 'Lowest Amount', icon: ArrowUp, description: 'Lowest to highest' },
   ];
 
-  // Filter options based on bid status
-  const filterOptions = [
-    { value: 'all', label: 'All Offers', count: offers?.length || 0 },
-    { value: 'expired', label: 'Expired', count: offers?.filter(offer => {
-      return offer.bid && offer.bid.some(bid => bid.status === 'expired');
-    }).length || 0 },
-    { value: 'rejected', label: 'Rejected', count: offers?.filter(offer => {
-      return offer.bid && offer.bid.some(bid => bid.status === 'rejected');
-    }).length || 0 },
-  ];
 
   // Get current selected option
   const selectedOption = sortOptions.find(option => option.value === sortBy) || sortOptions[0];
@@ -146,27 +134,12 @@ const PreviousOffersPage = () => {
     setSelectedOffer(null);
   };
 
-  // Sort and filter offers based on selected options
+  // Sort offers based on selected options
   const sortedOffers = useMemo(() => {
     if (!offers || offers.length === 0) return [];
 
-    // First filter the offers based on bid status
-    let filteredOffers = offers;
-    if (activeFilter !== 'all') {
-      filteredOffers = offers.filter(offer => {
-        if (!offer.bid || offer.bid.length === 0) return false;
-        
-        if (activeFilter === 'expired') {
-          return offer.bid.some(bid => bid.status === 'expired');
-        } else if (activeFilter === 'rejected') {
-          return offer.bid.some(bid => bid.status === 'rejected');
-        }
-        return true;
-      });
-    }
-
-    // Then sort the filtered offers
-    return [...filteredOffers].sort((a, b) => {
+    // Sort the offers
+    return [...offers].sort((a, b) => {
       const offerA = formatOfferData(a);
       const offerB = formatOfferData(b);
 
@@ -183,7 +156,7 @@ const PreviousOffersPage = () => {
           return 0;
       }
     });
-  }, [offers, sortBy, activeFilter]);
+  }, [offers, sortBy]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -214,7 +187,7 @@ const PreviousOffersPage = () => {
           animate="visible"
           className="mb-8"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col items-center sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <motion.h1 variants={itemVariants} className="text-3xl font-bold text-neutral-800 mb-2">
                 Previous Offers
@@ -223,63 +196,9 @@ const PreviousOffersPage = () => {
                 Review your past offers and auction results. {totalCount > 0 && `(${totalCount} total offers)`}
               </motion.p>
             </div>
-            
-            
-          </div>
-        </motion.div>
-
-      <motion.div>
-
-        <div className="mb-8 flex items-center items-center sm:flex-row sm:items-center sm:justify-between ">
-          {/* Filter Tabs */}
-        {!loading && !error && offers.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className=""
-          >
-            <div className="flex items-center gap-1 bg-neutral-100 p-1 rounded-2xl w-fit">
-              {filterOptions.map((filter) => {
-                const isActive = activeFilter === filter.value;
-                return (
-                  <button
-                    key={filter.value}
-                    onClick={() => setActiveFilter(filter.value)}
-                    className={`relative px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
-                      isActive
-                        ? 'text-orange-600 shadow-sm'
-                        : 'text-neutral-600 hover:text-neutral-800 hover:bg-white/50'
-                    }`}
-                  >
-                    <span className={`relative z-10 flex items-center gap-2 ${
-                      isActive ? 'text-orange-600' : 'text-neutral-600'
-                    }`}>
-                      {filter.label}
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        isActive
-                          ? 'bg-orange-100 text-orange-700'
-                          : 'bg-neutral-200 text-neutral-600'
-                      }`}>
-                        {filter.count}
-                      </span>
-                    </span>
-                    {isActive && (
-                      <motion.div
-                        layoutId="activeFilter"
-                        className="absolute inset-0 bg-white rounded-xl shadow-sm"
-                        initial={false}
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-        {/* Modern Sort Dropdown */}
-        {!loading && !error && offers.length > 0 && (
+            <div className="mb-8 flex items-center justify-end">
+          {/* Modern Sort Dropdown */}
+          {!loading && !error && offers.length > 0 && (
               <motion.div
                 variants={itemVariants}
                 className="relative w-[200px]"
@@ -363,6 +282,13 @@ const PreviousOffersPage = () => {
               </motion.div>
             )}
         </div>
+            
+          </div>
+        </motion.div>
+
+      <motion.div>
+
+        
       </motion.div>
         
 
@@ -410,28 +336,6 @@ const PreviousOffersPage = () => {
           </motion.div>
         )}
 
-        {/* No Filtered Results State */}
-        {!loading && !error && offers.length > 0 && sortedOffers.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
-          >
-            <AlertCircle className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-neutral-600 mb-2">
-              No {activeFilter === 'expired' ? 'Expired' : 'Rejected'} Offers
-            </h3>
-            <p className="text-neutral-500 mb-4">
-              No offers found for the selected filter.
-            </p>
-            <button
-              onClick={() => setActiveFilter('all')}
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-            >
-              Show All Offers
-            </button>
-          </motion.div>
-        )}
 
         {/* Offers List or Sorting Loading */}
         {!loading && !error && sortedOffers.length > 0 && (
@@ -537,28 +441,44 @@ const PreviousOffersPage = () => {
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-neutral-200">
-                    <p className="text-sm text-neutral-600 mb-4">
-                      <strong>Status:</strong> {formattedOffer.reason}
-                    </p>
-                     <div className="flex space-x-2">
-                       <button className="btn-ghost flex items-center space-x-2">
-                         <Eye className="w-4 h-4" />
-                         <span>View Details</span>
-                       </button>
-                       {offer.bid && offer.bid.length > 0 && (
-                         <button 
-                           onClick={() => handleShowBids(offer)}
-                           className="btn-secondary flex items-center space-x-2"
-                         >
-                           <DollarSign className="w-4 h-4" />
-                           <span>Show Bids ({offer.bid.length})</span>
-                         </button>
-                       )}
-                       <button className="btn-secondary flex items-center space-x-2">
-                         <RefreshCw className="w-4 h-4" />
-                         <span>Relist Vehicle</span>
-                       </button>
-                     </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-sm text-neutral-600 mb-2">
+                          <strong>Status:</strong> {formattedOffer.reason}
+                        </p>
+                        <div className="flex space-x-2">
+                          <button className="btn-ghost flex items-center space-x-2">
+                            <Eye className="w-4 h-4" />
+                            <span>View Details</span>
+                          </button>
+                          <button className="btn-secondary flex items-center space-x-2">
+                            <RefreshCw className="w-4 h-4" />
+                            <span>Relist Vehicle</span>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {/* Bids Button - Bottom Right */}
+                      <div className="ml-4">
+                        <button 
+                          onClick={() => handleShowBids(offer)}
+                          className="cursor-pointer group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+                        >
+                          <DollarSign className="w-4 h-4 group-hover:animate-pulse" />
+                          <span>
+                            {offer.bid && offer.bid.length > 0 
+                              ? `View Bids` 
+                              : 'View Bids'
+                            }
+                          </span>
+                          {offer.bid && offer.bid.length > 0 && (
+                            <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
+                              {offer.bid.length}
+                            </div>
+                          )}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -676,8 +596,8 @@ const PreviousOffersPage = () => {
                  ) : (
                    <div className="text-center py-12">
                      <DollarSign className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
-                     <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Bids</h3>
-                     <p className="text-neutral-500">This offer doesn't have any bids yet.</p>
+                     <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Bids Available</h3>
+                     <p className="text-neutral-500">You don't have any bids to this auction.</p>
                    </div>
                  )}
                </div>
