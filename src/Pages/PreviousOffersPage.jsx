@@ -201,7 +201,7 @@ const PreviousOffersPage = () => {
           {!loading && !error && offers.length > 0 && (
               <motion.div
                 variants={itemVariants}
-                className="relative w-[200px]"
+                className="relative w-[200px] left-6"
                 ref={dropdownRef}
               >
                 {/* Dropdown Trigger */}
@@ -241,7 +241,7 @@ const PreviousOffersPage = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.15, ease: "easeOut" }}
-                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 overflow-hidden"
+                      className="absolute top-full left-0 right-6 mt-2 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 overflow-hidden"
                     >
                       {sortOptions.map((option, index) => {
                         const IconComponent = option.icon;
