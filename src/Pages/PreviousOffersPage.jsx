@@ -29,6 +29,10 @@ const PreviousOffersPage = () => {
 
   // Filter state
   const [activeFilter, setActiveFilter] = useState('all');
+  
+  // Modal state
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [isBidsModalOpen, setIsBidsModalOpen] = useState(false);
 
   // Fetch offers on component mount
   useEffect(() => {
@@ -78,16 +82,14 @@ const PreviousOffersPage = () => {
     { value: 'amount-asc', label: 'Lowest Amount', icon: ArrowUp, description: 'Lowest to highest' },
   ];
 
-  // Filter options
+  // Filter options based on bid status
   const filterOptions = [
     { value: 'all', label: 'All Offers', count: offers?.length || 0 },
     { value: 'expired', label: 'Expired', count: offers?.filter(offer => {
-      const expiredDate = new Date(offer.expired_at);
-      return expiredDate < new Date();
+      return offer.bid && offer.bid.some(bid => bid.status === 'expired');
     }).length || 0 },
     { value: 'rejected', label: 'Rejected', count: offers?.filter(offer => {
-      const expiredDate = new Date(offer.expired_at);
-      return expiredDate >= new Date();
+      return offer.bid && offer.bid.some(bid => bid.status === 'rejected');
     }).length || 0 },
   ];
 
@@ -132,21 +134,32 @@ const PreviousOffersPage = () => {
     }, randomDelay);
   };
 
+  // Handle show bids modal
+  const handleShowBids = (offer) => {
+    setSelectedOffer(offer);
+    setIsBidsModalOpen(true);
+  };
+
+  // Close bids modal
+  const handleCloseBidsModal = () => {
+    setIsBidsModalOpen(false);
+    setSelectedOffer(null);
+  };
+
   // Sort and filter offers based on selected options
   const sortedOffers = useMemo(() => {
     if (!offers || offers.length === 0) return [];
 
-    // First filter the offers
+    // First filter the offers based on bid status
     let filteredOffers = offers;
     if (activeFilter !== 'all') {
       filteredOffers = offers.filter(offer => {
-        const expiredDate = new Date(offer.expired_at);
-        const isExpired = expiredDate < new Date();
+        if (!offer.bid || offer.bid.length === 0) return false;
         
         if (activeFilter === 'expired') {
-          return isExpired;
+          return offer.bid.some(bid => bid.status === 'expired');
         } else if (activeFilter === 'rejected') {
-          return !isExpired;
+          return offer.bid.some(bid => bid.status === 'rejected');
         }
         return true;
       });
@@ -527,16 +540,25 @@ const PreviousOffersPage = () => {
                     <p className="text-sm text-neutral-600 mb-4">
                       <strong>Status:</strong> {formattedOffer.reason}
                     </p>
-                    <div className="flex space-x-2">
-                      <button className="btn-ghost flex items-center space-x-2">
-                        <Eye className="w-4 h-4" />
-                        <span>View Details</span>
-                      </button>
-                      <button className="btn-secondary flex items-center space-x-2">
-                        <RefreshCw className="w-4 h-4" />
-                        <span>Relist Vehicle</span>
-                      </button>
-                    </div>
+                     <div className="flex space-x-2">
+                       <button className="btn-ghost flex items-center space-x-2">
+                         <Eye className="w-4 h-4" />
+                         <span>View Details</span>
+                       </button>
+                       {offer.bid && offer.bid.length > 0 && (
+                         <button 
+                           onClick={() => handleShowBids(offer)}
+                           className="btn-secondary flex items-center space-x-2"
+                         >
+                           <DollarSign className="w-4 h-4" />
+                           <span>Show Bids ({offer.bid.length})</span>
+                         </button>
+                       )}
+                       <button className="btn-secondary flex items-center space-x-2">
+                         <RefreshCw className="w-4 h-4" />
+                         <span>Relist Vehicle</span>
+                       </button>
+                     </div>
                   </div>
                 </motion.div>
               );
@@ -544,10 +566,137 @@ const PreviousOffersPage = () => {
               </>
             )}
           </motion.div>
-        )}
-      </div>
-    </div>
-  );
-};
+         )}
+       </div>
 
-export default PreviousOffersPage;
+       {/* Bids Modal */}
+       <AnimatePresence>
+         {isBidsModalOpen && selectedOffer && (
+           <motion.div
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0 }}
+             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+             onClick={handleCloseBidsModal}
+           >
+             <motion.div
+               initial={{ opacity: 0, scale: 0.95, y: 20 }}
+               animate={{ opacity: 1, scale: 1, y: 0 }}
+               exit={{ opacity: 0, scale: 0.95, y: 20 }}
+               transition={{ duration: 0.3, ease: "easeOut" }}
+               className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
+               onClick={(e) => e.stopPropagation()}
+             >
+               {/* Modal Header */}
+               <div className="flex items-center justify-between p-6 border-b border-neutral-200">
+                 <div>
+                   <h2 className="text-2xl font-bold text-neutral-800">
+                     Bids for {selectedOffer.year} {selectedOffer.make} {selectedOffer.model}
+                   </h2>
+                   <p className="text-sm text-neutral-600 mt-1">
+                     VIN: {selectedOffer.vin} • {selectedOffer.bid?.length || 0} bids
+                   </p>
+                 </div>
+                 <button
+                   onClick={handleCloseBidsModal}
+                   className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                 >
+                   <svg className="w-6 h-6 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                   </svg>
+                 </button>
+               </div>
+
+               {/* Modal Content */}
+               <div className="p-6 overflow-y-auto max-h-[60vh]">
+                 {selectedOffer.bid && selectedOffer.bid.length > 0 ? (
+                   <div className="space-y-4">
+                     {selectedOffer.bid.map((bid, index) => (
+                       <motion.div
+                         key={bid.id}
+                         initial={{ opacity: 0, y: 20 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: index * 0.1 }}
+                         className="bg-neutral-50 rounded-xl p-4 border border-neutral-200"
+                       >
+                         <div className="flex items-center justify-between mb-3">
+                           <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                               <span className="text-orange-600 font-semibold text-sm">
+                                 {index + 1}
+                               </span>
+                             </div>
+                             <div>
+                               <h3 className="font-semibold text-neutral-800">
+                                 {bid.bidder_display_name}
+                               </h3>
+                               <p className="text-sm text-neutral-600">
+                                 {bid.bidder_email}
+                               </p>
+                             </div>
+                           </div>
+                           <div className="text-right">
+                             <div className="text-2xl font-bold text-orange-600">
+                               ${parseFloat(bid.amount).toLocaleString()}
+                             </div>
+                             <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                               bid.status === 'rejected' 
+                                 ? 'bg-red-100 text-red-700'
+                                 : bid.status === 'expired'
+                                 ? 'bg-yellow-100 text-yellow-700'
+                                 : 'bg-green-100 text-green-700'
+                             }`}>
+                               {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
+                             </div>
+                           </div>
+                         </div>
+                         
+                         <div className="grid grid-cols-2 gap-4 text-sm">
+                           <div>
+                             <span className="text-neutral-500">Bid Date:</span>
+                             <p className="font-medium text-neutral-800">
+                               {bid.bid_at.date} at {bid.bid_at.time}
+                             </p>
+                           </div>
+                           <div>
+                             <span className="text-neutral-500">Bidder ID:</span>
+                             <p className="font-medium text-neutral-800">#{bid.bidder_id}</p>
+                           </div>
+                         </div>
+                         
+                         {bid.notes && (
+                           <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-200">
+                             <span className="text-neutral-500 text-sm">Notes:</span>
+                             <p className="text-neutral-800 text-sm mt-1">{bid.notes}</p>
+                           </div>
+                         )}
+                       </motion.div>
+                     ))}
+                   </div>
+                 ) : (
+                   <div className="text-center py-12">
+                     <DollarSign className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+                     <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Bids</h3>
+                     <p className="text-neutral-500">This offer doesn't have any bids yet.</p>
+                   </div>
+                 )}
+               </div>
+
+               {/* Modal Footer */}
+               <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-200 bg-neutral-50">
+                 <button
+                   onClick={handleCloseBidsModal}
+                   className="cursor-pointer px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                 >
+                   Close
+                 </button>
+               </div>
+             </motion.div>
+           </motion.div>
+         )}
+       </AnimatePresence>
+     </div>
+   );
+ };
+ 
+ export default PreviousOffersPage;
