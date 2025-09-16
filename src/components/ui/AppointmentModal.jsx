@@ -276,38 +276,40 @@ export default function AppointmentModal({
                             transition={{ duration: 0.15 }}
                             className="absolute z-50 mt-2 bg-white rounded-lg border border-slate-200 shadow-lg p-4 w-full"
                           >
-                            <CalendarComponent
-                              mode="single"
-                              selected={selectedDate}
-                              onSelect={(date) => {
-                                setSelectedDate(date);
-                                setShowCalendar(false);
-                              }}
-                              disabled={(date) => date < today}
-                              className="rounded-lg w-full"
-                              classNames={{
-                                months: "flex flex-col space-y-4",
-                                month: "space-y-4",
-                                caption: "flex justify-center pt-1 relative items-center",
-                                caption_label: "text-sm font-medium",
-                                nav: "space-x-1 flex items-center",
-                                nav_button: "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100",
-                                nav_button_previous: "absolute left-1",
-                                nav_button_next: "absolute right-1",
-                                table: "w-full border-collapse space-y-1",
-                                head_row: "flex",
-                                head_cell: "text-slate-500 rounded-md w-9 font-normal text-[0.8rem]",
-                                row: "flex w-full mt-1",
-                                cell: "rdp-outside text-center text-sm p-0 relative [&:has([aria-selected])]:bg-orange-500 [&:has([aria-selected])]:text-white first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                                day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-slate-100 rounded-md",
-                                day_selected: "bg-orange-500 text-white hover:bg-orange-600 hover:text-white focus:bg-orange-500 focus:text-white",
-                                day_today: "bg-orange-100 text-orange-700 font-semibold",
-                                day_outside: "text-slate-300 opacity-50",
-                                day_disabled: "text-slate-300 opacity-50",
-                                day_range_middle: "aria-selected:bg-orange-100 aria-selected:text-orange-700",
-                                day_hidden: "invisible",
-                              }}
-                            />
+                            <div className="w-full text-center">
+                                <CalendarComponent
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={(date) => {
+                                    setSelectedDate(date);
+                                    setShowCalendar(false);
+                                }}
+                                disabled={(date) => date < today}
+                                className="rounded-lg w-full"
+                                classNames={{
+                                    months: "flex flex-col space-y-4",
+                                    month: "space-y-4",
+                                    caption: "flex justify-center pt-1 relative items-center",
+                                    caption_label: "text-sm font-medium",
+                                    nav: "space-x-1 flex items-center",
+                                    nav_button: "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100",
+                                    nav_button_previous: "absolute left-1",
+                                    nav_button_next: "absolute right-1",
+                                    table: "w-full border-collapse space-y-1",
+                                    head_row: "flex",
+                                    head_cell: "text-slate-500 rounded-md w-9 font-normal text-[0.8rem] flex items-center justify-center",
+                                    row: "flex w-full mt-1",
+                                    cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-orange-500 [&:has([aria-selected])]:text-white first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                                    day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-slate-100 rounded-md ",
+                                    day_selected: "bg-orange-500 text-white hover:bg-orange-600 hover:text-white focus:bg-orange-500 focus:text-white",
+                                    day_today: "bg-orange-100 text-orange-700 font-semibold",
+                                    day_outside: "text-slate-300 opacity-50",
+                                    day_disabled: "text-slate-300 opacity-50",
+                                    day_range_middle: "aria-selected:bg-orange-100 aria-selected:text-orange-700",
+                                    day_hidden: "invisible",
+                                }}
+                                />
+                            </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
