@@ -267,9 +267,9 @@ const Dashboard = () => {
                   ))}
                 </div>
 
-                <button className="w-full mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium">
+                {/* <button className="w-full mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium">
                   View All Activity
-                </button>
+                </button> */}
               </div>
             </motion.div>
           </div>
