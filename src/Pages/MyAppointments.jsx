@@ -1,15 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, Phone, Video, ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, Clock, MapPin, Phone, Video, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, RefreshCw } from 'lucide-react';
 import { formatDate, formatTimeRemaining } from '../lib/utils';
 import { fetchAppointments, selectAppointments, selectOffersLoading, selectOffersError } from '../redux/slices/offersSlice';
 import MyAppointmentsSkeleton from '../components/skeletons/MyAppointmentsSkeleton';
+import MyAppointmentsSortingSkeleton from '../components/skeletons/MyAppointmentsSortingSkeleton';
 
 const MyAppointments = () => {
   const dispatch = useDispatch();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState('week'); // 'week' or 'month'
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState('date-asc');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSorting, setIsSorting] = useState(false);
+  const [sortProgress, setSortProgress] = useState(0);
+  const dropdownRef = useRef(null);
 
   // Redux state
   const appointments = useSelector(selectAppointments);
@@ -20,6 +28,20 @@ const MyAppointments = () => {
   useEffect(() => {
     dispatch(fetchAppointments());
   }, [dispatch]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -51,6 +73,96 @@ const MyAppointments = () => {
       const appointmentDate = new Date(apt.start_time);
       return appointmentDate.toDateString() === today.toDateString();
     });
+  };
+
+  // Sort options
+  const sortOptions = [
+    { value: 'date-asc', label: 'Earliest First', icon: ArrowUp, description: 'Earliest appointments' },
+    { value: 'date-desc', label: 'Latest First', icon: ArrowDown, description: 'Latest appointments' },
+    { value: 'dealer-asc', label: 'Dealer A-Z', icon: ArrowUp, description: 'Alphabetical by dealer' },
+    { value: 'dealer-desc', label: 'Dealer Z-A', icon: ArrowDown, description: 'Reverse alphabetical' },
+    { value: 'status-asc', label: 'Status A-Z', icon: ArrowUp, description: 'Alphabetical by status' },
+    { value: 'status-desc', label: 'Status Z-A', icon: ArrowDown, description: 'Reverse by status' },
+  ];
+
+  // Get current selected option
+  const selectedOption = sortOptions.find(option => option.value === sortBy) || sortOptions[0];
+
+  // Handle sort selection with loading animation
+  const handleSortSelect = (value) => {
+    if (value === sortBy) {
+      setIsDropdownOpen(false);
+      return;
+    }
+    
+    setIsSorting(true);
+    setSortProgress(0);
+    setIsDropdownOpen(false);
+    
+    // Simulate sorting process with random delay and progress
+    const randomDelay = Math.random() * 1000 + 500; // 500-1500ms
+    const progressInterval = 50; // Update progress every 50ms
+    
+    const progressTimer = setInterval(() => {
+      setSortProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressTimer);
+          return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, progressInterval);
+    
+    setTimeout(() => {
+      clearInterval(progressTimer);
+      setSortProgress(100);
+      setSortBy(value);
+      
+      // Reset after a short delay
+      setTimeout(() => {
+        setIsSorting(false);
+        setSortProgress(0);
+      }, 200);
+    }, randomDelay);
+  };
+
+  // Sort appointments based on selected options
+  const sortedAppointments = useMemo(() => {
+    if (!appointments || appointments.length === 0) return [];
+
+    // Sort the appointments
+    return [...appointments].sort((a, b) => {
+      switch (sortBy) {
+        case 'date-asc':
+          return new Date(a.start_time) - new Date(b.start_time);
+        case 'date-desc':
+          return new Date(b.start_time) - new Date(a.start_time);
+        case 'dealer-asc':
+          return a.dealer_name.localeCompare(b.dealer_name);
+        case 'dealer-desc':
+          return b.dealer_name.localeCompare(a.dealer_name);
+        case 'status-asc':
+          return a.formatted_status.localeCompare(b.formatted_status);
+        case 'status-desc':
+          return b.formatted_status.localeCompare(a.formatted_status);
+        default:
+          return 0;
+      }
+    });
+  }, [appointments, sortBy]);
+
+  // Get sorted today's appointments
+  const getSortedTodaysAppointments = () => {
+    const today = new Date();
+    return sortedAppointments.filter(apt => {
+      const appointmentDate = new Date(apt.start_time);
+      return appointmentDate.toDateString() === today.toDateString();
+    });
+  };
+
+  // Get sorted upcoming appointments
+  const getSortedUpcomingAppointments = () => {
+    return sortedAppointments.filter(apt => new Date(apt.start_time) > new Date());
   };
 
   // Show loading state
@@ -139,12 +251,134 @@ const MyAppointments = () => {
           </div>
         </motion.div>
 
-        {/* Today's Appointments */}
-        {getTodaysAppointments().length > 0 && (
-          <motion.div variants={itemVariants} className="mb-8">
-            <h2 className="text-xl font-bold text-neutral-800 mb-4">Today's Appointments</h2>
-            <div className="space-y-4">
-              {getTodaysAppointments().map((appointment) => (
+        {/* Sorting Section */}
+        {!loading && !error && appointments.length > 0 && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mb-6"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-800 mb-1">Appointments</h2>
+                <p className="text-sm text-neutral-600">{appointments.length} scheduled appointments</p>
+              </div>
+              
+              {/* Modern Sort Dropdown */}
+              <motion.div
+                variants={containerVariants}
+                className="relative w-[200px]"
+                ref={dropdownRef}
+              >
+                {/* Dropdown Trigger */}
+                <button
+                  onClick={() => !isSorting && setIsDropdownOpen(!isDropdownOpen)}
+                  disabled={isSorting}
+                  className={`cursor-pointer flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${
+                    isSorting ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {isSorting ? (
+                      <RefreshCw className="w-4 h-4 text-orange-500 animate-spin" />
+                    ) : (
+                      <ArrowUpDown className="w-4 h-4 text-neutral-500 group-hover:text-orange-500 transition-colors" />
+                    )}
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-neutral-700">
+                        {isSorting ? 'Sorting...' : selectedOption.label}
+                      </div>
+                    </div>
+                  </div>
+                  {!isSorting && (
+                    <ChevronDown 
+                      className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
+                        isDropdownOpen ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  )}
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 overflow-hidden"
+                    >
+                      {sortOptions.map((option, index) => {
+                        const IconComponent = option.icon;
+                        const isSelected = option.value === sortBy;
+                        
+                        return (
+                          <button
+                            key={option.value}
+                            onClick={() => handleSortSelect(option.value)}
+                            className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 transition-colors duration-150 ${
+                              isSelected ? 'bg-orange-50 text-orange-700' : 'text-neutral-700'
+                            } ${index !== sortOptions.length - 1 ? 'border-b border-neutral-100' : ''}`}
+                          >
+                            <div className={`p-1.5 rounded-lg ${
+                              isSelected ? 'bg-orange-100' : 'bg-neutral-100'
+                            }`}>
+                              <IconComponent className={`w-3.5 h-3.5 ${
+                                isSelected ? 'text-orange-600' : 'text-neutral-500'
+                              }`} />
+                            </div>
+                            <div className="flex-1">
+                              <div className={`text-sm font-medium ${
+                                isSelected ? 'text-orange-700' : 'text-neutral-700'
+                              }`}>
+                                {option.label}
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Today's Appointments or Sorting Loading */}
+        {!loading && !error && appointments.length > 0 && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6"
+          >
+            {/* Sorting Loading State - Show skeleton for appointments */}
+            {isSorting && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <MyAppointmentsSortingSkeleton />
+              </motion.div>
+            )}
+
+            {/* Appointments - Hidden during sorting */}
+            {!isSorting && (
+              <>
+                {/* Today's Appointments */}
+                {getSortedTodaysAppointments().length > 0 && (
+                  <motion.div variants={itemVariants} className="mb-8">
+                    <h2 className="text-xl font-bold text-neutral-800 mb-4">Today's Appointments</h2>
+                    <div className="space-y-4">
+                      {getSortedTodaysAppointments().map((appointment) => (
                 <motion.div
                   key={appointment.id}
                   className="card p-6 border-l-4 border-primary-500"
@@ -190,11 +424,11 @@ const MyAppointments = () => {
           </motion.div>
         )}
 
-        {/* Upcoming Appointments */}
-        <motion.div variants={itemVariants}>
-          <h2 className="text-xl font-bold text-neutral-800 mb-4">Upcoming Appointments</h2>
-          <div className="space-y-4">
-            {getUpcomingAppointments().map((appointment) => (
+                {/* Upcoming Appointments */}
+                <motion.div variants={itemVariants}>
+                  <h2 className="text-xl font-bold text-neutral-800 mb-4">Upcoming Appointments</h2>
+                  <div className="space-y-4">
+                    {getSortedUpcomingAppointments().map((appointment) => (
               <motion.div
                 key={appointment.id}
                 className="card p-6 hover:shadow-medium transition-all duration-300"
@@ -240,12 +474,16 @@ const MyAppointments = () => {
                   </div>
                 </div>
               </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </motion.div>
+        )}
 
         {/* Empty State */}
-        {appointments.length === 0 && (
+        {!loading && !error && appointments.length === 0 && (
           <motion.div
             variants={itemVariants}
             className="text-center py-16"
