@@ -1,15 +1,20 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, DollarSign, Clock, RefreshCw, Eye, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search } from 'lucide-react';
+import { Car, DollarSign, Clock, RefreshCw, Eye, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search, CheckCircle, X } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { 
   fetchPreviousOffers, 
+  reAuctionVehicle,
+  clearReAuctionStates,
   selectPreviousOffers, 
   selectOffersLoading, 
   selectOffersError,
   selectTotalCount,
-  selectHasOffers
+  selectHasOffers,
+  selectReAuctionLoading,
+  selectReAuctionError,
+  selectReAuctionSuccess
 } from '../redux/slices/offersSlice';
 import { useSearch } from '../context/SearchContext';
 import PreviousOffersSkeleton from '../components/Skeletons/PreviousOffersSkeleton';
@@ -24,6 +29,9 @@ const PreviousOffersPage = () => {
   const error = useSelector(selectOffersError);
   const totalCount = useSelector(selectTotalCount);
   const hasOffers = useSelector(selectHasOffers);
+  const reAuctionLoading = useSelector(selectReAuctionLoading);
+  const reAuctionError = useSelector(selectReAuctionError);
+  const reAuctionSuccess = useSelector(selectReAuctionSuccess);
 
   // Search context
   const { getSearchResults, searchQuery, clearSearch } = useSearch();
@@ -42,11 +50,67 @@ const PreviousOffersPage = () => {
   // Modal state
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [isBidsModalOpen, setIsBidsModalOpen] = useState(false);
+  
+  // Notification state
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState('success');
 
   // Fetch offers on component mount
   useEffect(() => {
     dispatch(fetchPreviousOffers());
   }, [dispatch]);
+
+  // Handle re-auction success
+  useEffect(() => {
+    if (reAuctionSuccess) {
+      setNotificationMessage('Vehicle re-auctioned successfully! It has been moved to live auctions.');
+      setNotificationType('success');
+      setShowNotification(true);
+      
+      // Refresh previous offers to get updated data
+      dispatch(fetchPreviousOffers());
+      
+      // Clear success state after a delay
+      const timer = setTimeout(() => {
+        dispatch(clearReAuctionStates());
+        setShowNotification(false);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [reAuctionSuccess, dispatch]);
+
+  // Handle re-auction error
+  useEffect(() => {
+    if (reAuctionError) {
+      let message = 'Failed to re-auction vehicle. Please try again.';
+      
+      if (reAuctionError.type === 'DAYS_REMAINING') {
+        message = `Cannot re-auction this vehicle yet. Please wait ${reAuctionError.days_remaining} more days.`;
+      } else if (reAuctionError.type === 'UNAUTHORIZED') {
+        message = 'You are not authorized to re-auction this vehicle.';
+      } else if (reAuctionError.type === 'NOT_FOUND') {
+        message = 'Vehicle not found.';
+      } else if (reAuctionError.type === 'NO_CASH_OFFER') {
+        message = 'No instant cash offer found for this vehicle.';
+      } else if (reAuctionError.message) {
+        message = reAuctionError.message;
+      }
+      
+      setNotificationMessage(message);
+      setNotificationType('error');
+      setShowNotification(true);
+      
+      // Clear error state after a delay
+      const timer = setTimeout(() => {
+        dispatch(clearReAuctionStates());
+        setShowNotification(false);
+      }, 8000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [reAuctionError, dispatch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -143,6 +207,16 @@ const PreviousOffersPage = () => {
   const handleCloseBidsModal = () => {
     setIsBidsModalOpen(false);
     setSelectedOffer(null);
+  };
+
+  // Handle re-auction vehicle
+  const handleReAuctionVehicle = async (productId) => {
+    try {
+      await dispatch(reAuctionVehicle(productId)).unwrap();
+    } catch (error) {
+      console.error('Error re-auctioning vehicle:', error);
+      // Error is handled by Redux state
+    }
   };
 
   // Get search results for previous offers
@@ -448,9 +522,13 @@ const PreviousOffersPage = () => {
                             <Eye className="w-4 h-4" />
                             <span>View Details</span>
                           </button>
-                          <button className="cursor-pointer btn-secondary flex items-center space-x-2">
-                            <RefreshCw className="w-4 h-4" />
-                            <span>Relist Vehicle</span>
+                          <button 
+                            onClick={() => handleReAuctionVehicle(formattedOffer.id)}
+                            disabled={reAuctionLoading}
+                            className="cursor-pointer btn-secondary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <RefreshCw className={`w-4 h-4 ${reAuctionLoading ? 'animate-spin' : ''}`} />
+                            <span>{reAuctionLoading ? 'Relisting...' : 'Relist Vehicle'}</span>
                           </button>
                         </div>
                       </div>
@@ -627,6 +705,58 @@ const PreviousOffersPage = () => {
                  </button>
                </div>
              </motion.div>
+           </motion.div>
+         )}
+       </AnimatePresence>
+
+       {/* Notification */}
+       <AnimatePresence>
+         {showNotification && (
+           <motion.div
+             initial={{ opacity: 0, y: 50, scale: 0.9 }}
+             animate={{ opacity: 1, y: 0, scale: 1 }}
+             exit={{ opacity: 0, y: 50, scale: 0.9 }}
+             className="fixed bottom-6 right-6 z-50"
+           >
+             <div className={`max-w-md p-4 rounded-xl shadow-lg border-l-4 ${
+               notificationType === 'success' 
+                 ? 'bg-green-50 border-green-500 text-green-800' 
+                 : 'bg-red-50 border-red-500 text-red-800'
+             }`}>
+               <div className="flex items-start space-x-3">
+                 <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                   notificationType === 'success' 
+                     ? 'bg-green-100' 
+                     : 'bg-red-100'
+                 }`}>
+                   {notificationType === 'success' ? (
+                     <CheckCircle className="w-4 h-4 text-green-600" />
+                   ) : (
+                     <AlertCircle className="w-4 h-4 text-red-600" />
+                   )}
+                 </div>
+                 <div className="flex-1">
+                   <h4 className={`font-semibold ${
+                     notificationType === 'success' ? 'text-green-800' : 'text-red-800'
+                   }`}>
+                     {notificationType === 'success' ? 'Success!' : 'Error'}
+                   </h4>
+                   <p className={`text-sm mt-1 ${
+                     notificationType === 'success' ? 'text-green-700' : 'text-red-700'
+                   }`}>
+                     {notificationMessage}
+                   </p>
+                 </div>
+                 <button
+                   onClick={() => setShowNotification(false)}
+                   className={`ml-2 p-1 rounded-full hover:bg-white/50 transition-colors ${
+                     notificationType === 'success' ? 'text-green-600' : 'text-red-600'
+                   }`}
+                 >
+                   <X className="w-4 h-4" />
+                 </button>
+               </div>
+             </div>
            </motion.div>
          )}
        </AnimatePresence>

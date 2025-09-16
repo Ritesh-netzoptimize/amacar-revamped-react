@@ -156,6 +156,75 @@ export const rejectBid = createAsyncThunk(
   }
 );
 
+// Async thunk to re-auction a vehicle
+export const reAuctionVehicle = createAsyncThunk(
+  'offers/reAuctionVehicle',
+  async (productId, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/vehicle/re-auction', {
+        product_id: productId
+      });
+      
+      console.log('Re-auction vehicle response:', response);
+      console.log('Re-auction vehicle response data:', response.data);
+      
+      if (!response.data.success) {
+        // Handle specific error cases
+        const errorData = response.data;
+        if (errorData.days_remaining !== undefined) {
+          // 7-day rule error
+          return rejectWithValue({
+            type: 'DAYS_REMAINING',
+            message: errorData.message,
+            days_remaining: errorData.days_remaining,
+            offer_date: errorData.offer_date,
+            redirect_to_homepage: errorData.redirect_to_homepage
+          });
+        } else if (errorData.message?.includes('not authorized')) {
+          // Authorization error
+          return rejectWithValue({
+            type: 'UNAUTHORIZED',
+            message: errorData.message
+          });
+        } else if (errorData.message?.includes('not found')) {
+          // Product not found error
+          return rejectWithValue({
+            type: 'NOT_FOUND',
+            message: errorData.message
+          });
+        } else if (errorData.message?.includes('instant cash offer')) {
+          // No instant cash offer error
+          return rejectWithValue({
+            type: 'NO_CASH_OFFER',
+            message: errorData.message
+          });
+        } else {
+          // Generic error
+          return rejectWithValue({
+            type: 'GENERIC',
+            message: errorData.message || 'Failed to re-auction vehicle'
+          });
+        }
+      }
+
+      return response.data;
+    } catch (error) {
+      // Handle network or other errors
+      const errorResponse = error.response?.data;
+      if (errorResponse) {
+        return rejectWithValue({
+          type: 'NETWORK',
+          message: errorResponse.message || error.message || 'Network error occurred'
+        });
+      }
+      return rejectWithValue({
+        type: 'NETWORK',
+        message: error.message || 'Failed to re-auction vehicle'
+      });
+    }
+  }
+);
+
 const initialState = {
   loading: false,
   error: null,
@@ -172,6 +241,10 @@ const initialState = {
   bidOperationLoading: false,
   bidOperationError: null,
   bidOperationSuccess: false,
+  // Re-auction operation states
+  reAuctionLoading: false,
+  reAuctionError: null,
+  reAuctionSuccess: false,
 };
 
 const offersSlice = createSlice({
@@ -235,6 +308,22 @@ const offersSlice = createSlice({
       state.bidOperationLoading = false;
       state.bidOperationError = null;
       state.bidOperationSuccess = false;
+    },
+    
+    // Clear re-auction operation states
+    clearReAuctionStates: (state) => {
+      state.reAuctionLoading = false;
+      state.reAuctionError = null;
+      state.reAuctionSuccess = false;
+    },
+    
+    // Move vehicle from previous offers to live auctions
+    moveToLiveAuctions: (state, action) => {
+      const { productId, auctionData } = action.payload;
+      // Remove from previous offers
+      state.previousOffers = state.previousOffers.filter(offer => offer.product_id !== productId);
+      // Add to live auctions (this would typically come from a separate API call)
+      // For now, we'll just remove from previous offers
     },
     
     // Update bid status in live auctions
@@ -391,6 +480,25 @@ const offersSlice = createSlice({
         state.bidOperationLoading = false;
         state.bidOperationError = action.payload || 'Failed to reject bid';
         state.bidOperationSuccess = false;
+      })
+      // Re-auction vehicle
+      .addCase(reAuctionVehicle.pending, (state) => {
+        state.reAuctionLoading = true;
+        state.reAuctionError = null;
+        state.reAuctionSuccess = false;
+      })
+      .addCase(reAuctionVehicle.fulfilled, (state, action) => {
+        state.reAuctionLoading = false;
+        state.reAuctionError = null;
+        state.reAuctionSuccess = true;
+        // Remove the vehicle from previous offers
+        const productId = action.meta.arg;
+        state.previousOffers = state.previousOffers.filter(offer => offer.product_id !== productId);
+      })
+      .addCase(reAuctionVehicle.rejected, (state, action) => {
+        state.reAuctionLoading = false;
+        state.reAuctionError = action.payload;
+        state.reAuctionSuccess = false;
       });
   },
 });
@@ -404,6 +512,8 @@ export const {
   removePendingOffer,
   clearError,
   clearBidOperationStates,
+  clearReAuctionStates,
+  moveToLiveAuctions,
   updateBidStatus,
 } = offersSlice.actions;
 
@@ -427,3 +537,7 @@ export const selectHasAppointments = (state) => state.offers.hasAppointments;
 export const selectBidOperationLoading = (state) => state.offers.bidOperationLoading;
 export const selectBidOperationError = (state) => state.offers.bidOperationError;
 export const selectBidOperationSuccess = (state) => state.offers.bidOperationSuccess;
+// Re-auction operation selectors
+export const selectReAuctionLoading = (state) => state.offers.reAuctionLoading;
+export const selectReAuctionError = (state) => state.offers.reAuctionError;
+export const selectReAuctionSuccess = (state) => state.offers.reAuctionSuccess;
