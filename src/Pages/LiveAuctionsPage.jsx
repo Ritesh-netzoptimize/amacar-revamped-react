@@ -4,6 +4,7 @@ import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshC
 import { formatCurrency, formatTimeRemaining } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchLiveAuctions, selectLiveAuctions, selectOffersLoading, selectOffersError, selectHasAuctions } from '../redux/slices/offersSlice';
+import LiveAuctionsSkeleton from '../components/skeletons/LiveAuctionsSkeleton';
 
 const LiveAuctionsPage = () => {
   const dispatch = useDispatch();
@@ -145,18 +146,7 @@ const LiveAuctionsPage = () => {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-hero p-8">
-        <div className="max-w-8xl mx-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-neutral-600">Loading live auctions...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <LiveAuctionsSkeleton />;
   }
 
   // Error state
