@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchLiveAuctions, selectLiveAuctions, selectOffersLoading, selectOffersError, selectHasAuctions } from '../redux/slices/offersSlice';
 import LiveAuctionsSkeleton from '../components/skeletons/LiveAuctionsSkeleton';
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
+import LiveAuctionsSortingSkeleton from '@/components/skeletons/LiveAuctionsSortingSkeleton';
 
 const LiveAuctionsPage = () => {
   const dispatch = useDispatch();
@@ -457,32 +458,33 @@ const LiveAuctionsPage = () => {
           >
             {/* Sorting Loading State - Show skeleton for auctions grid */}
             {isSorting && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="col-span-full"
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="card overflow-hidden animate-pulse">
-                      <div className="h-48 bg-neutral-200"></div>
-                      <div className="p-6">
-                        <div className="h-6 bg-neutral-200 rounded-md w-3/4 mb-2"></div>
-                        <div className="h-4 bg-neutral-200 rounded-md w-full mb-2"></div>
-                        <div className="h-3 bg-neutral-200 rounded-md w-1/2 mb-4"></div>
-                        <div className="h-16 bg-neutral-200 rounded-lg mb-4"></div>
-                        <div className="h-4 bg-neutral-200 rounded-md w-1/3 mb-4"></div>
-                        <div className="flex space-x-4">
-                          <div className="h-10 bg-neutral-200 rounded-lg flex-1"></div>
-                          <div className="h-10 bg-neutral-200 rounded-lg flex-1"></div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+              // <motion.div
+              //   initial={{ opacity: 0, y: 20 }}
+              //   animate={{ opacity: 1, y: 0 }}
+              //   exit={{ opacity: 0, y: 20 }}
+              //   transition={{ duration: 0.3, ease: "easeOut" }}
+              //   className="col-span-full"
+              // >
+              //   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              //     {Array.from({ length: 3 }).map((_, index) => (
+              //       <div key={index} className="card overflow-hidden animate-pulse">
+              //         <div className="h-48 bg-neutral-200"></div>
+              //         <div className="p-6">
+              //           <div className="h-6 bg-neutral-200 rounded-md w-3/4 mb-2"></div>
+              //           <div className="h-4 bg-neutral-200 rounded-md w-full mb-2"></div>
+              //           <div className="h-3 bg-neutral-200 rounded-md w-1/2 mb-4"></div>
+              //           <div className="h-16 bg-neutral-200 rounded-lg mb-4"></div>
+              //           <div className="h-4 bg-neutral-200 rounded-md w-1/3 mb-4"></div>
+              //           <div className="flex space-x-4">
+              //             <div className="h-10 bg-neutral-200 rounded-lg flex-1"></div>
+              //             <div className="h-10 bg-neutral-200 rounded-lg flex-1"></div>
+              //           </div>
+              //         </div>
+              //       </div>
+              //     ))}
+              //   </div>
+              // </motion.div>
+              <LiveAuctionsSortingSkeleton />
             )}
 
             {/* Auctions Grid - Hidden during sorting */}
