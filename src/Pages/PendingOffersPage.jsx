@@ -479,7 +479,7 @@ const PendingOffersPage = () => {
               <div className="p-6 overflow-y-auto max-h-[60vh]">
                 {selectedOffer.bids && selectedOffer.bids.length > 0 ? (
                   <div className="space-y-4">
-                    {selectedOffer.bids
+                    {[...selectedOffer.bids]
                       .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount))
                       .map((bid, index) => (
                       <motion.div

@@ -68,7 +68,7 @@ const PendingOffersSkeleton = () => {
               key={index}
               variants={itemVariants}
               className={`card p-6 border-l-4 ${
-                index === 0 ? 'border-error' : 'border-warning'
+                index === 0 ? '' : ''
               } animate-pulse`}
             >
               {/* Main Content */}
