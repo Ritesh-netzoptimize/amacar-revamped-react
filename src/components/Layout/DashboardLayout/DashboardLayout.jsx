@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Menu, X, User, Search, LogOut, Settings, ChevronDown, X as XIcon } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import Sidebar from '../Sidebar/Sidebar';
 import { useSearch } from '../../../context/SearchContext';
 import BackToTop from '../../ui/back-to-top';
@@ -22,6 +23,9 @@ const DashboardLayout = ({ children }) => {
     clearSearch, 
     getSearchStats 
   } = useSearch();
+
+  // Get user data from Redux store
+  const { user } = useSelector((state) => state.user);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -66,10 +70,10 @@ const DashboardLayout = ({ children }) => {
     { id: 3, message: "Profile updated successfully.", time: "2 hrs ago" },
   ];
 
-  // Fake profile data
+  // Get real user profile data
   const profileData = {
-    name: "John Doe",
-    email: "john.doe@example.com",
+    name: user ? `${user.firstName || user.first_name || ''} ${user.lastName || user.last_name || ''}`.trim() || 'User' : 'User',
+    email: user?.email || '',
   };
 
   return (

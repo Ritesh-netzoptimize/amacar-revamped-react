@@ -522,46 +522,7 @@ const AcceptedOffersPage = () => {
                 </div>
               </div>
 
-              {/* Progress Steps */}
-              <div className="mb-6">
-                <div className="relative flex items-center justify-between">
-                  {statusSteps.map((step, index) => {
-                    const Icon = step.icon;
-                    const isActive = step.key === offer.status;
-                    const isCompleted = statusSteps.findIndex(s => s.key === offer.status) > index;
-
-                    return (
-                      <div key={step.key} className="flex flex-col items-center flex-1 relative">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                          isCompleted 
-                            ? 'bg-success text-white' 
-                            : isActive 
-                            ? 'bg-primary-500 text-white' 
-                            : 'bg-neutral-200 text-neutral-400'
-                        }`}>
-                          <Icon className="w-5 h-5" />
-                        </div>
-                        <span className={`text-xs font-medium text-center ${
-                          isActive ? 'text-primary-600' : 'text-neutral-500'
-                        }`}>
-                          {step.label}
-                        </span>
-                        {index < statusSteps.length - 1 && (
-                          <div
-                            className={`absolute top-5 h-0.5 ${
-                              isCompleted ? 'bg-success' : 'bg-neutral-200'
-                            }`}
-                            style={{
-                              width: 'calc(100% - 40px)',
-                              left: 'calc(50% + 20px)',
-                            }}
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+          
 
               {/* Dealer Information */}
               <div className="bg-neutral-50 rounded-lg p-4 mb-4">
@@ -599,11 +560,7 @@ const AcceptedOffersPage = () => {
               {/* Next Steps */}
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-semibold text-neutral-800">Next Step</p>
-                  <p className="text-sm text-neutral-600">{offer.nextStep}</p>
-                  <p className="text-xs text-neutral-500">
-                    Estimated completion: {formatDate(offer.estimatedCompletion)}
-                  </p>
+                  
                 </div>
                 <div className="flex space-x-2">
                   <button className="cursor-pointer btn-ghost flex items-center space-x-2">
