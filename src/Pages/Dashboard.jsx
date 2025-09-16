@@ -1,18 +1,41 @@
 import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { Car, DollarSign, Calendar, TrendingUp, Clock, Users, Bell, ArrowRight, Eye } from 'lucide-react';
 import CountUp from 'react-countup';
 import { formatCurrency, formatDate } from '../lib/utils';
+import { 
+  fetchLiveAuctions, 
+  fetchAcceptedOffers, 
+  fetchAppointments,
+  selectLiveAuctions, 
+  selectAcceptedOffers, 
+  selectAppointments,
+  selectOffersLoading, 
+  selectOffersError 
+} from '../redux/slices/offersSlice';
+import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
 
 const Dashboard = () => {
-  const [stats, setStats] = useState({
-    activeAuctions: 2,
-    totalEarnings: 45600,
-    pendingAppointments: 1,
-    profileCompletion: 85,
-  });
+  const dispatch = useDispatch();
+  
+  // Redux state
+  const liveAuctions = useSelector(selectLiveAuctions);
+  const acceptedOffers = useSelector(selectAcceptedOffers);
+  const appointments = useSelector(selectAppointments);
+  const loading = useSelector(selectOffersLoading);
+  const error = useSelector(selectOffersError);
 
-  const [recentActivity, setRecentActivity] = useState([
+  // Calculate stats from real data
+  const stats = {
+    activeAuctions: liveAuctions?.length || 0,
+    totalEarnings: calculateTotalEarnings(acceptedOffers),
+    pendingAppointments: appointments?.length || 0,
+    profileCompletion: 85, // Keep this as static for now
+  };
+
+  // Keep recent activity as static for now
+  const recentActivity = [
     {
       id: 1,
       type: 'bid',
@@ -35,28 +58,24 @@ const Dashboard = () => {
       time: '1 hour ago',
       appointmentId: 'APT-001',
     },
-  ]);
+  ];
 
-  const [liveAuctions, setLiveAuctions] = useState([
-    {
-      id: 'AUC-001',
-      vehicle: '2020 Honda Civic',
-      currentBid: 18500,
-      timeRemaining: '6h 23m',
-      bidCount: 8,
-      image: '/api/placeholder/300/200',
-      status: 'live',
-    },
-    {
-      id: 'AUC-002',
-      vehicle: '2019 Toyota Camry',
-      currentBid: 22100,
-      timeRemaining: '2h 15m',
-      bidCount: 12,
-      image: '/api/placeholder/300/200',
-      status: 'live',
-    },
-  ]);
+  // Fetch data on component mount
+  useEffect(() => {
+    dispatch(fetchLiveAuctions());
+    dispatch(fetchAcceptedOffers());
+    dispatch(fetchAppointments());
+  }, [dispatch]);
+
+  // Helper function to calculate total earnings from accepted offers
+  function calculateTotalEarnings(offers) {
+    if (!offers || offers.length === 0) return 0;
+    
+    return offers.reduce((total, offer) => {
+      const offerAmount = parseFloat(offer.cash_offer) || 0;
+      return total + offerAmount;
+    }, 0);
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -86,6 +105,38 @@ const Dashboard = () => {
     },
     tap: { scale: 0.95, transition: { duration: 0.2 } },
   };
+
+  // Show loading state
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-hero p-8">
+        <div className="max-w-8xl mx-auto">
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Car className="w-12 h-12 text-red-500" />
+            </div>
+            <h3 className="text-xl font-semibold text-neutral-800 mb-2">Error Loading Dashboard</h3>
+            <p className="text-neutral-600 mb-6">{error}</p>
+            <button 
+              onClick={() => {
+                dispatch(fetchLiveAuctions());
+                dispatch(fetchAcceptedOffers());
+                dispatch(fetchAppointments());
+              }}
+              className="btn-primary"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -205,30 +256,45 @@ const Dashboard = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {liveAuctions.map((auction) => (
-                    <motion.div
-                      key={auction.id}
-                      className="flex items-center space-x-4 p-4 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
-                      whileHover={{ scale: 1.02 }}
-                    >
-                      <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center">
-                        <Car className="w-8 h-8 text-neutral-400" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-neutral-800">{auction.vehicle}</h3>
-                        <div className="flex items-center space-x-4 text-sm text-neutral-600">
-                          <span>Current Bid: <span className="font-semibold text-success">{formatCurrency(auction.currentBid)}</span></span>
-                          <span>•</span>
-                          <span>{auction.bidCount} bids</span>
-                          <span>•</span>
-                          <span className="text-warning">{auction.timeRemaining} left</span>
+                  {liveAuctions && liveAuctions.length > 0 ? (
+                    liveAuctions.slice(0, 3).map((auction) => (
+                      <motion.div
+                        key={auction.id}
+                        className="flex items-center space-x-4 p-4 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center overflow-hidden">
+                          {auction.image_url ? (
+                            <img 
+                              src={auction.image_url} 
+                              alt={auction.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Car className="w-8 h-8 text-neutral-400" />
+                          )}
                         </div>
-                      </div>
-                      <button className="btn-ghost p-2">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </motion.div>
-                  ))}
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-neutral-800">{auction.title}</h3>
+                          <div className="flex items-center space-x-4 text-sm text-neutral-600">
+                            <span>Current Bid: <span className="font-semibold text-success">{formatCurrency(parseFloat(auction.current_bid) || 0)}</span></span>
+                            <span>•</span>
+                            <span>{auction.bid_count || 0} bids</span>
+                            <span>•</span>
+                            <span className="text-warning">{auction.time_remaining || 'Live'}</span>
+                          </div>
+                        </div>
+                        <button className="btn-ghost p-2">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Car className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
+                      <p className="text-neutral-500">No live auctions at the moment</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
