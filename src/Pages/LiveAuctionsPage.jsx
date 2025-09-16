@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
+import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search } from 'lucide-react';
 import { formatCurrency, formatTimeRemaining } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchLiveAuctions, selectLiveAuctions, selectOffersLoading, selectOffersError, selectHasAuctions } from '../redux/slices/offersSlice';
+import { useSearch } from '../context/SearchContext';
 import LiveAuctionsSkeleton from '../components/skeletons/LiveAuctionsSkeleton';
-import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 import LiveAuctionsSortingSkeleton from '@/components/skeletons/LiveAuctionsSortingSkeleton';
 
 const LiveAuctionsPage = () => {
@@ -14,6 +14,9 @@ const LiveAuctionsPage = () => {
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
   const hasAuctions = useSelector(selectHasAuctions);
+
+  // Search context
+  const { getSearchResults, searchQuery, clearSearch } = useSearch();
 
   // Sorting state
   const [sortBy, setSortBy] = useState('time-asc');
@@ -65,7 +68,9 @@ const LiveAuctionsPage = () => {
     });
   };
 
-  const auctions = transformAuctionsData(liveAuctionsData);
+  // Get search results for live auctions
+  const searchResults = getSearchResults('liveAuctions');
+  const auctions = transformAuctionsData(searchResults);
 
   useEffect(() => {
     dispatch(fetchLiveAuctions());
@@ -348,6 +353,33 @@ const LiveAuctionsPage = () => {
             <div className="text-sm text-neutral-600">Shortest Time Left</div>
           </motion.div>
         </motion.div>
+
+        {/* Search Indicator */}
+        {searchQuery && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mb-4"
+          >
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Search className="w-5 h-5 text-primary-600" />
+                  <span className="text-sm font-medium text-primary-800">
+                    Showing {auctions.length} results for "{searchQuery}"
+                  </span>
+                </div>
+                <button
+                  onClick={clearSearch}
+                  className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                >
+                  Clear Search
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Sorting Section */}
         {!loading && !error && auctions.length > 0 && (

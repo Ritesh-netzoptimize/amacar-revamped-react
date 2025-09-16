@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Menu, X, User, Search, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { Bell, Menu, X, User, Search, LogOut, Settings, ChevronDown, X as XIcon } from 'lucide-react';
 import Sidebar from '../Sidebar/Sidebar';
+import { useSearch } from '../../../context/SearchContext';
 
 const DashboardLayout = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -11,6 +12,15 @@ const DashboardLayout = ({ children }) => {
 
   const profileRef = useRef(null);
   const notificationsRef = useRef(null);
+
+  // Search context
+  const { 
+    searchQuery, 
+    setSearchQuery, 
+    isSearching, 
+    clearSearch, 
+    getSearchStats 
+  } = useSearch();
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -123,13 +133,41 @@ const DashboardLayout = ({ children }) => {
               <div className="relative w-full">
                 <input
                   type="text"
-                  placeholder="Search..."
-                  className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 transition-all duration-300 shadow-sm hover:shadow-md"
+                  placeholder="Search car names..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-10 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 transition-all duration-300 shadow-sm hover:shadow-md"
                   style={{ background: 'linear-gradient(145deg, #ffffff, #f8fafc)' }}
                 />
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-primary-500" />
+                {searchQuery && (
+                  <button
+                    onClick={clearSearch}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-neutral-100 rounded-full transition-colors duration-200"
+                  >
+                    <XIcon className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />
+                  </button>
+                )}
+                {isSearching && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Search Results Indicator */}
+            {searchQuery && (
+              <div className="flex items-center space-x-2 px-3 py-1 bg-primary-50 rounded-lg border border-primary-200">
+                <span className="text-sm text-primary-700 font-medium">
+                  {getSearchStats().totalResults} results
+                </span>
+                <div className="w-1 h-1 bg-primary-400 rounded-full"></div>
+                <span className="text-xs text-primary-600">
+                  {isSearching ? 'Searching...' : 'Found'}
+                </span>
+              </div>
+            )}
 
             {/* Right Side: Icons */}
             <div className="flex items-center space-x-3">

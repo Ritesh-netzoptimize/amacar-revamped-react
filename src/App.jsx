@@ -19,6 +19,7 @@ import ReviewPage from './Pages/ReviewPage.jsx';
 import UnauthorizedPage from './Pages/UnauthorizedPage.jsx';
 import { AuthProvider } from './provider/AuthProvider'; // Updated Redux-based AuthProvider
 import PrivateRoute from './components/Auth/PrivateRoute'; // Updated PrivateRoute
+import { SearchProvider } from './context/SearchContext';
 
 function App() {
   const location = useLocation();
@@ -33,7 +34,8 @@ function App() {
 
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-slate-50">
+      <SearchProvider>
+        <div className="min-h-screen bg-slate-50">
         <Toaster
           position="top-right"
           toastOptions={{
@@ -139,7 +141,8 @@ function App() {
         </main>
 
         {!hideHeaderFooter && <Footer />}
-      </div>
+        </div>
+      </SearchProvider>
     </AuthProvider>
   );
 }
