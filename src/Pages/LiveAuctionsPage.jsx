@@ -653,58 +653,36 @@ const LiveAuctionsPage = () => {
                   <p className="text-neutral-500 text-xs">VIN: {auction.vin}</p>
                 </div>
 
-                {/* Bids and Offers Summary */}
-                <div className="space-y-4 mb-6">
-                  {/* Highest Bid */}
+                {/* Bids and Offers Badges */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {/* Highest Bid Badge */}
                   {auction.bidCount > 0 && (
-                    <div className="bg-gradient-to-r from-success/10 to-success/5 rounded-xl p-4 border border-success/20">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center">
-                            <DollarSign className="w-5 h-5 text-success" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-neutral-600">Highest Bid</p>
-                            <p className="text-2xl font-bold text-success">{formatCurrency(auction.currentBid)}</p>
-                            <p className="text-xs text-neutral-500">by {auction.highestBidder}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="bg-success/20 text-success px-3 py-1 rounded-full text-xs font-semibold">
-                            {auction.bidCount} active
-                          </div>
-                          <p className="text-xs text-neutral-500 mt-1">
-                            {auction.totalBids} total bids
-                          </p>
-                        </div>
-                      </div>
+                    <div className="inline-flex items-center gap-2 bg-success/10 text-success px-3 py-2 rounded-full border border-success/20">
+                      <DollarSign className="w-4 h-4" />
+                      <span className="text-sm font-semibold">
+                        {formatCurrency(auction.currentBid)}
+                      </span>
+                      <span className="text-xs bg-success/20 px-2 py-0.5 rounded-full">
+                        {auction.bidCount} active
+                      </span>
                     </div>
                   )}
 
-                  {/* Cash Offer */}
-                  <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-4 border border-primary/20">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                          <DollarSign className="w-5 h-5 text-primary-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-neutral-600">Cash Offer</p>
-                          <p className="text-xl font-bold text-primary-600">
-                            {auction.cashOffer > 0 ? formatCurrency(auction.cashOffer) : 'No cash offer'}
-                          </p>
-                          {auction.cashOffer > 0 && auction.cashOfferExpires && (
-                            <p className="text-xs text-neutral-500">{auction.cashOfferExpires}</p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="bg-primary/20 text-primary-600 px-3 py-1 rounded-full text-xs font-semibold">
-                          Instant
-                        </div>
-                        <p className="text-xs text-neutral-500 mt-1">No bidding</p>
-                      </div>
-                    </div>
+                  {/* Cash Offer Badge */}
+                  <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border ${
+                    auction.cashOffer > 0 
+                      ? 'bg-primary/10 text-primary-600 border-primary/20' 
+                      : 'bg-neutral-100 text-neutral-500 border-neutral-200'
+                  }`}>
+                    <DollarSign className="w-4 h-4" />
+                    <span className="text-sm font-semibold">
+                      {auction.cashOffer > 0 ? formatCurrency(auction.cashOffer) : 'No cash offer'}
+                    </span>
+                    {auction.cashOffer > 0 && (
+                      <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full">
+                        Instant
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -721,9 +699,9 @@ const LiveAuctionsPage = () => {
                   </div>
                 </div>
 
-                {/* View All Bids Button */}
-                {auction.totalBids > 0 && (
-                  <div className="mb-4">
+                {/* View All Bids Button or No Bids Message */}
+                <div className="mb-4">
+                  {auction.totalBids > 0 ? (
                     <button
                       onClick={() => handleViewAllBids(auction)}
                       className="cursor-pointer w-full py-3 px-4 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-primary/20 hover:border-primary/30"
@@ -731,8 +709,13 @@ const LiveAuctionsPage = () => {
                       <Eye className="w-4 h-4" />
                       <span>View All Bids ({auction.totalBids})</span>
                     </button>
-                  </div>
-                )}
+                  ) : (
+                    <div className="w-full py-3 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
+                      <DollarSign className="w-4 h-4" />
+                      <span>No bids yet</span>
+                    </div>
+                  )}
+                </div>
 
                 {/* Actions */}
                 <div className="flex space-x-3">
