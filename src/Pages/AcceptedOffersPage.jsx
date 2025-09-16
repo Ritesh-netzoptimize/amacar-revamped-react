@@ -1,34 +1,94 @@
 import { motion } from 'framer-motion';
-import { Car, CheckCircle, Clock, FileText, Phone, MapPin } from 'lucide-react';
+import { Car, CheckCircle, Clock, FileText, Phone, MapPin, RefreshCw, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { fetchAcceptedOffers, selectAcceptedOffers, selectOffersLoading, selectOffersError } from '../redux/slices/offersSlice';
+import AcceptedOffersSkeleton from '../components/skeletons/AcceptedOffersSkeleton';
 
 const AcceptedOffersPage = () => {
-  const acceptedOffers = [
-    {
-      id: 'ACC-001',
-      vehicle: '2020 Honda Civic',
-      offerAmount: 19500,
-      status: 'paperwork',
-      dealer: 'ABC Motors',
-      dealerPhone: '(555) 123-4567',
-      dealerAddress: '123 Main St, San Francisco, CA',
-      acceptedDate: new Date('2024-01-20'),
-      nextStep: 'Complete paperwork',
-      estimatedCompletion: new Date('2024-01-25'),
-    },
-    {
-      id: 'ACC-002',
-      vehicle: '2019 Toyota Camry',
-      offerAmount: 23500,
-      status: 'pickup_scheduled',
-      dealer: 'XYZ Auto',
-      dealerPhone: '(555) 987-6543',
-      dealerAddress: '456 Oak Ave, San Francisco, CA',
-      acceptedDate: new Date('2024-01-18'),
-      nextStep: 'Pickup scheduled',
-      estimatedCompletion: new Date('2024-01-22'),
-    },
-  ];
+  const dispatch = useDispatch();
+  const acceptedOffersData = useSelector(selectAcceptedOffers);
+  const loading = useSelector(selectOffersLoading);
+  const error = useSelector(selectOffersError);
+
+  // Transform API data to match component structure
+  const transformAcceptedOffersData = (offers) => {
+    if (!offers || !Array.isArray(offers)) return [];
+    
+    return offers.map(offer => {
+      // Find the accepted bid
+      const acceptedBid = offer.bid?.find(bid => bid.is_accepted && bid.status === 'accepted') || offer.bid?.[0];
+      
+      // Parse accepted date safely
+      let acceptedDate;
+      try {
+        acceptedDate = new Date(acceptedBid?.accepted_at_raw || offer.bid?.[0]?.created_at_raw || new Date());
+        if (isNaN(acceptedDate.getTime())) {
+          acceptedDate = new Date();
+        }
+      } catch (e) {
+        acceptedDate = new Date();
+      }
+
+      // Determine status based on accepted date and other factors
+      const now = new Date();
+      const daysSinceAccepted = Math.floor((now - acceptedDate) / (1000 * 60 * 60 * 24));
+      
+      let status = 'accepted';
+      let nextStep = 'Complete paperwork';
+      let estimatedCompletion = new Date(acceptedDate.getTime() + 5 * 24 * 60 * 60 * 1000); // 5 days from accepted
+
+      if (daysSinceAccepted >= 1) {
+        status = 'paperwork';
+        nextStep = 'Complete paperwork';
+        estimatedCompletion = new Date(acceptedDate.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from accepted
+      }
+      
+      if (daysSinceAccepted >= 3) {
+        status = 'pickup_scheduled';
+        nextStep = 'Schedule pickup';
+        estimatedCompletion = new Date(acceptedDate.getTime() + 10 * 24 * 60 * 60 * 1000); // 10 days from accepted
+      }
+      
+      if (daysSinceAccepted >= 7) {
+        status = 'completed';
+        nextStep = 'Transaction completed';
+        estimatedCompletion = new Date(acceptedDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+      }
+
+      return {
+        id: offer.product_id?.toString() || 'unknown',
+        vehicle: `${offer.year || 'N/A'} ${offer.make || 'Unknown'} ${offer.model || 'Vehicle'}`,
+        year: parseInt(offer.year) || 0,
+        make: offer.make || 'Unknown',
+        model: offer.model || 'Unknown',
+        trim: offer.trim || 'N/A',
+        vin: offer.vin || 'N/A',
+        offerAmount: parseFloat(acceptedBid?.amount || offer.cash_offer || '0'),
+        status: status,
+        dealer: acceptedBid?.bidder_display_name || 'Unknown Dealer',
+        dealerEmail: acceptedBid?.bidder_email || '',
+        dealerId: acceptedBid?.bidder_id || '',
+        dealerPhone: 'Contact via email', // Not provided in API
+        dealerAddress: 'Address not provided', // Not provided in API
+        acceptedDate: acceptedDate,
+        nextStep: nextStep,
+        estimatedCompletion: estimatedCompletion,
+        imageUrl: offer.image_url || '',
+        title: offer.title || '',
+        appointmentUrl: offer.appointment_url || '',
+        acceptedBidData: acceptedBid,
+        cashOffer: parseFloat(offer.cash_offer || '0')
+      };
+    });
+  };
+
+  const acceptedOffers = transformAcceptedOffersData(acceptedOffersData);
+
+  useEffect(() => {
+    dispatch(fetchAcceptedOffers());
+  }, [dispatch]);
 
   const statusSteps = [
     { key: 'accepted', label: 'Offer Accepted', icon: CheckCircle },
@@ -57,6 +117,36 @@ const AcceptedOffersPage = () => {
     },
   };
 
+  // Loading state
+  if (loading) {
+    return <AcceptedOffersSkeleton />;
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-hero p-8">
+        <div className="max-w-8xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-error" />
+              </div>
+              <h3 className="text-xl font-semibold text-neutral-800 mb-2">Error Loading Offers</h3>
+              <p className="text-neutral-600 mb-4">{error}</p>
+              <button 
+                onClick={() => dispatch(fetchAcceptedOffers())}
+                className="btn-primary"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-hero p-8">
       <div className="max-w-8xl mx-auto">
@@ -66,13 +156,44 @@ const AcceptedOffersPage = () => {
           animate="visible"
           className="mb-8"
         >
-          <motion.h1 variants={itemVariants} className="text-3xl font-bold text-neutral-800 mb-2">
-            Accepted Offers
-          </motion.h1>
-          <motion.p variants={itemVariants} className="text-neutral-600">
-            Track the progress of your accepted offers through to completion.
-          </motion.p>
+          <div className="flex items-center justify-between">
+            <div>
+              <motion.h1 variants={itemVariants} className="text-3xl font-bold text-neutral-800 mb-2">
+                Accepted Offers
+              </motion.h1>
+              <motion.p variants={itemVariants} className="text-neutral-600">
+                Track the progress of your accepted offers through to completion.
+              </motion.p>
+            </div>
+            <motion.button
+              variants={itemVariants}
+              onClick={() => dispatch(fetchAcceptedOffers())}
+              disabled={loading}
+              className="btn-ghost flex items-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </motion.button>
+          </div>
         </motion.div>
+
+        {/* No Offers State */}
+        {!loading && !error && acceptedOffers.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-16"
+          >
+            <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-12 h-12 text-neutral-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-neutral-800 mb-2">No Accepted Offers</h3>
+            <p className="text-neutral-600 mb-6">You don't have any accepted offers at the moment.</p>
+            <button className="btn-primary">
+              View Pending Offers
+            </button>
+          </motion.div>
+        )}
 
         <motion.div
           variants={containerVariants}
@@ -88,13 +209,24 @@ const AcceptedOffersPage = () => {
             >
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center">
-                    <Car className="w-8 h-8 text-neutral-400" />
+                  <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center overflow-hidden">
+                    {offer.imageUrl ? (
+                      <img 
+                        src={offer.imageUrl} 
+                        alt={offer.vehicle}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Car className="w-8 h-8 text-neutral-400" />
+                    )}
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-neutral-800">{offer.vehicle}</h3>
                     <p className="text-neutral-600">
                       Accepted on {formatDate(offer.acceptedDate)}
+                    </p>
+                    <p className="text-sm text-neutral-500">
+                      VIN: {offer.vin} • {offer.title}
                     </p>
                   </div>
                 </div>
@@ -162,10 +294,24 @@ const AcceptedOffersPage = () => {
                     <Phone className="w-4 h-4 text-neutral-500" />
                     <span className="text-sm text-neutral-700">{offer.dealerPhone}</span>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-neutral-500">Email:</span>
+                    <span className="text-sm text-neutral-700">{offer.dealerEmail}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-neutral-500">Dealer ID:</span>
+                    <span className="text-sm text-neutral-700">#{offer.dealerId}</span>
+                  </div>
                   <div className="flex items-center space-x-2 md:col-span-2">
                     <MapPin className="w-4 h-4 text-neutral-500" />
                     <span className="text-sm text-neutral-700">{offer.dealerAddress}</span>
                   </div>
+                  {offer.cashOffer > 0 && (
+                    <div className="flex items-center space-x-2 md:col-span-2">
+                      <span className="text-sm text-neutral-500">Cash Offer:</span>
+                      <span className="text-sm font-medium text-success">{formatCurrency(offer.cashOffer)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -183,6 +329,17 @@ const AcceptedOffersPage = () => {
                     <Phone className="w-4 h-4" />
                     <span>Contact Dealer</span>
                   </button>
+                  {offer.appointmentUrl && (
+                    <a
+                      href={offer.appointmentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-secondary flex items-center space-x-2"
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span>Schedule Appointment</span>
+                    </a>
+                  )}
                   <button className="btn-primary">
                     View Details
                   </button>

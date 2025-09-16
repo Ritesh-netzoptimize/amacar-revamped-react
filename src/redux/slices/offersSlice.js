@@ -43,6 +43,27 @@ export const fetchPendingOffers = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch accepted offers
+export const fetchAcceptedOffers = createAsyncThunk(
+  'offers/fetchAcceptedOffers',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Use the axios instance which already handles auth headers
+      const response = await api.get('/dashboard/accepted-offers');
+      console.log('Accepted offers response:', response);
+      console.log('Accepted offers response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch accepted offers');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch accepted offers');
+    }
+  }
+);
+
 const initialState = {
   loading: false,
   error: null,
@@ -138,6 +159,22 @@ const offersSlice = createSlice({
       .addCase(fetchPendingOffers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch pending offers';
+      })
+      // Fetch accepted offers
+      .addCase(fetchAcceptedOffers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAcceptedOffers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.acceptedOffers = action.payload.offers || [];
+        state.totalCount = action.payload.total_count || 0;
+        state.hasOffers = action.payload.has_offers || false;
+      })
+      .addCase(fetchAcceptedOffers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch accepted offers';
       });
   },
 });
