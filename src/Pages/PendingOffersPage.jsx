@@ -1,16 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Clock, DollarSign, Users, CheckCircle, X, Eye, AlertCircle, RefreshCw } from 'lucide-react';
+import { Car, Clock, DollarSign, Users, CheckCircle, X, Eye, AlertCircle, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
 import { formatCurrency, formatDate, formatTimeRemaining } from '../lib/utils';
 import { fetchPendingOffers, selectPendingOffers, selectOffersLoading, selectOffersError } from '../redux/slices/offersSlice';
 import PendingOffersSkeleton from '../components/skeletons/PendingOffersSkeleton';
+import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 
 const PendingOffersPage = () => {
   const dispatch = useDispatch();
   const pendingOffersData = useSelector(selectPendingOffers);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
+
+  // Sorting state
+  const [sortBy, setSortBy] = useState('date-desc');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSorting, setIsSorting] = useState(false);
+  const [sortProgress, setSortProgress] = useState(0);
+  const dropdownRef = useRef(null);
 
   // Transform API data to match component structure
   const transformOffersData = (offers) => {
@@ -81,6 +89,20 @@ const PendingOffersPage = () => {
     dispatch(fetchPendingOffers());
   }, [dispatch]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleAcceptOffer = (offerId) => {
     // TODO: Implement API call to accept offer
     console.log('Accepting offer:', offerId);
@@ -114,6 +136,81 @@ const PendingOffersPage = () => {
     // Close modal after accepting
     handleCloseBidsModal();
   };
+
+  // Sort options
+  const sortOptions = [
+    { value: 'date-desc', label: 'Newest First', icon: ArrowDown, description: 'Most recent offers' },
+    { value: 'date-asc', label: 'Oldest First', icon: ArrowUp, description: 'Earliest offers' },
+    { value: 'amount-desc', label: 'Highest Amount', icon: ArrowDown, description: 'Highest to lowest' },
+    { value: 'amount-asc', label: 'Lowest Amount', icon: ArrowUp, description: 'Lowest to highest' },
+    { value: 'urgent-first', label: 'Urgent First', icon: AlertCircle, description: 'Urgent offers first' },
+  ];
+
+  // Get current selected option
+  const selectedOption = sortOptions.find(option => option.value === sortBy) || sortOptions[0];
+
+  // Handle sort selection with loading animation
+  const handleSortSelect = (value) => {
+    if (value === sortBy) {
+      setIsDropdownOpen(false);
+      return;
+    }
+    
+    setIsSorting(true);
+    setSortProgress(0);
+    setIsDropdownOpen(false);
+    
+    // Simulate sorting process with random delay and progress
+    const randomDelay = Math.random() * 1000 + 500; // 500-1500ms
+    const progressInterval = 50; // Update progress every 50ms
+    
+    const progressTimer = setInterval(() => {
+      setSortProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressTimer);
+          return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, progressInterval);
+    
+    setTimeout(() => {
+      clearInterval(progressTimer);
+      setSortProgress(100);
+      setSortBy(value);
+      
+      // Reset after a short delay
+      setTimeout(() => {
+        setIsSorting(false);
+        setSortProgress(0);
+      }, 200);
+    }, randomDelay);
+  };
+
+  // Sort offers based on selected options
+  const sortedOffers = useMemo(() => {
+    if (!pendingOffers || pendingOffers.length === 0) return [];
+
+    // Sort the offers
+    return [...pendingOffers].sort((a, b) => {
+      switch (sortBy) {
+        case 'date-desc':
+          return b.auctionEndTime - a.auctionEndTime;
+        case 'date-asc':
+          return a.auctionEndTime - b.auctionEndTime;
+        case 'amount-desc':
+          return Math.max(b.highestBid, b.cashOffer) - Math.max(a.highestBid, a.cashOffer);
+        case 'amount-asc':
+          return Math.max(a.highestBid, a.cashOffer) - Math.max(b.highestBid, b.cashOffer);
+        case 'urgent-first':
+          if (a.status === 'urgent' && b.status !== 'urgent') return -1;
+          if (b.status === 'urgent' && a.status !== 'urgent') return 1;
+          return b.auctionEndTime - a.auctionEndTime; // Then by date
+        default:
+          return 0;
+      }
+    });
+  }, [pendingOffers, sortBy]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -263,14 +360,129 @@ const PendingOffersPage = () => {
           </motion.div>
         </motion.div>
 
-        {/* Pending Offers List */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-6"
-        >
-          {pendingOffers.map((offer) => (
+        {/* Sorting Section */}
+        {!loading && !error && pendingOffers.length > 0 && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mb-6"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-800 mb-1">Pending Offers</h2>
+                <p className="text-sm text-neutral-600">{pendingOffers.length} offers pending review</p>
+              </div>
+              
+              {/* Modern Sort Dropdown */}
+              <motion.div
+                variants={containerVariants}
+                className="relative w-[200px]"
+                ref={dropdownRef}
+              >
+                {/* Dropdown Trigger */}
+                <button
+                  onClick={() => !isSorting && setIsDropdownOpen(!isDropdownOpen)}
+                  disabled={isSorting}
+                  className={`cursor-pointer flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${
+                    isSorting ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {isSorting ? (
+                      <RefreshCw className="w-4 h-4 text-orange-500 animate-spin" />
+                    ) : (
+                      <ArrowUpDown className="w-4 h-4 text-neutral-500 group-hover:text-orange-500 transition-colors" />
+                    )}
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-neutral-700">
+                        {isSorting ? 'Sorting...' : selectedOption.label}
+                      </div>
+                    </div>
+                  </div>
+                  {!isSorting && (
+                    <ChevronDown 
+                      className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
+                        isDropdownOpen ? 'rotate-180' : ''
+                      }`} 
+                    />
+                  )}
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white border border-neutral-200 rounded-xl shadow-lg z-50 overflow-hidden"
+                    >
+                      {sortOptions.map((option, index) => {
+                        const IconComponent = option.icon;
+                        const isSelected = option.value === sortBy;
+                        
+                        return (
+                          <button
+                            key={option.value}
+                            onClick={() => handleSortSelect(option.value)}
+                            className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 transition-colors duration-150 ${
+                              isSelected ? 'bg-orange-50 text-orange-700' : 'text-neutral-700'
+                            } ${index !== sortOptions.length - 1 ? 'border-b border-neutral-100' : ''}`}
+                          >
+                            <div className={`p-1.5 rounded-lg ${
+                              isSelected ? 'bg-orange-100' : 'bg-neutral-100'
+                            }`}>
+                              <IconComponent className={`w-3.5 h-3.5 ${
+                                isSelected ? 'text-orange-600' : 'text-neutral-500'
+                              }`} />
+                            </div>
+                            <div className="flex-1">
+                              <div className={`text-sm font-medium ${
+                                isSelected ? 'text-orange-700' : 'text-neutral-700'
+                              }`}>
+                                {option.label}
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Pending Offers List or Sorting Loading */}
+        {!loading && !error && sortedOffers.length > 0 && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6"
+          >
+            {/* Sorting Loading State - Show skeleton for offers list */}
+            {isSorting && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <OffersListSkeleton />
+              </motion.div>
+            )}
+
+            {/* Offers List - Hidden during sorting */}
+            {!isSorting && (
+              <>
+                {sortedOffers.map((offer) => (
             <motion.div
               key={offer.id}
               variants={itemVariants}
@@ -418,8 +630,11 @@ const PendingOffersPage = () => {
                 </div>
               </div>
             </motion.div>
-          ))}
-        </motion.div>
+                ))}
+              </>
+            )}
+          </motion.div>
+        )}
 
         {/* Empty State */}
         {pendingOffers.length === 0 && (
