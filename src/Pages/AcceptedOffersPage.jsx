@@ -611,7 +611,7 @@ const AcceptedOffersPage = () => {
                   </button>
                   <button 
                     onClick={() => handleOpenAppointmentModal(offer)}
-                    className="btn-secondary flex items-center space-x-2"
+                    className="cursor-pointer btn-secondary flex items-center space-x-2"
                   >
                     <Clock className="w-4 h-4" />
                     <span>Schedule Appointment</span>

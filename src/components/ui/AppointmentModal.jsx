@@ -41,6 +41,7 @@ export default function AppointmentModal({
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef(null);
 
+
   // Simplified time slots (hourly only)
   const timeSlots = [
     "9:00", "10:00", "11:00", "12:00", 
@@ -372,7 +373,7 @@ export default function AppointmentModal({
                     <button
                       type="submit"
                       disabled={isSubmitting || !selectedDate || !selectedTime}
-                      className="w-full h-12 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md shadow-orange-500/25 transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                      className="cursor-pointer w-full h-12 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md shadow-orange-500/25 transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                     >
                       {isSubmitting ? (
                         <div className="flex items-center justify-center gap-2">
@@ -464,7 +465,7 @@ export default function AppointmentModal({
                   </div>
                   <button
                     onClick={() => onClose(false)}
-                    className="w-full h-12 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md shadow-orange-500/25 transition-all duration-200 hover:shadow-lg"
+                    className="cursor-pointer w-full h-12 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md shadow-orange-500/25 transition-all duration-200 hover:shadow-lg"
                   >
                     Close
                   </button>
