@@ -280,12 +280,31 @@ export default function Modal({
                 className="grid gap-5 place-items-center text-center"
               >
                 <motion.div className="relative" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 340, damping: 18 }}>
-                  <div className="grid place-items-center rounded-2xl border border-red-200 bg-gradient-to-b from-white to-emerald-50 p-4 shadow-sm">
+                  <div className="grid place-items-center rounded-2xl border border-red-200 bg-gradient-to-b from-white to-red-50 p-4 shadow-sm">
                     <X className="h-14 w-14 text-red-500" />
                   </div>
                 </motion.div>
                 <div className="space-y-1">
                   <h3 className="text-lg font-semibold text-slate-900">Can't fetch vehicle data!</h3>
+                  <p className="text-sm text-slate-600">Please check your VIN and ZIP code, then try again.</p>
+                </div>
+                <div className="flex gap-3 w-full">
+                  <button
+                    onClick={() => {
+                      setPhase("form");
+                      setStepIndex(0);
+                      setErrors({ vin: "", zip: "" });
+                    }}
+                    className="cursor-pointer flex-1 h-11 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-lg shadow-slate-900/20 hover:bg-slate-800 transition-colors"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    onClick={() => handleOpenChange(false)}
+                    className="cursor-pointer flex-1 h-11 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </motion.div>
             )}
