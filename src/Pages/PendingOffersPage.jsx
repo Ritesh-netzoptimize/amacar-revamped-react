@@ -3,18 +3,33 @@ import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Car, Clock, DollarSign, Users, CheckCircle, X, Eye, AlertCircle, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search } from 'lucide-react';
 import { formatCurrency, formatDate, formatTimeRemaining } from '../lib/utils';
-import { fetchPendingOffers, selectPendingOffers, selectOffersLoading, selectOffersError } from '../redux/slices/offersSlice';
+import { 
+  fetchPendingOffers, 
+  acceptBid, 
+  rejectBid, 
+  clearBidOperationStates,
+  selectPendingOffers, 
+  selectOffersLoading, 
+  selectOffersError,
+  selectBidOperationLoading,
+  selectBidOperationError,
+  selectBidOperationSuccess
+} from '../redux/slices/offersSlice';
 import { useSearch } from '../context/SearchContext';
 import PendingOffersSkeleton from '../components/skeletons/PendingOffersSkeleton';
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 import LoadMore from '../components/ui/load-more';
 import useLoadMore from '../hooks/useLoadMore';
+import BidConfirmationModal from '../components/ui/BidConfirmationModal';
 
 const PendingOffersPage = () => {
   const dispatch = useDispatch();
   const pendingOffersData = useSelector(selectPendingOffers);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
+  const bidOperationLoading = useSelector(selectBidOperationLoading);
+  const bidOperationError = useSelector(selectBidOperationError);
+  const bidOperationSuccess = useSelector(selectBidOperationSuccess);
 
   // Search context
   const { getSearchResults, searchQuery, clearSearch } = useSearch();
@@ -95,10 +110,30 @@ const PendingOffersPage = () => {
   // Modal state
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [isBidsModalOpen, setIsBidsModalOpen] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [confirmationData, setConfirmationData] = useState(null);
 
   useEffect(() => {
     dispatch(fetchPendingOffers());
   }, [dispatch]);
+
+  // Handle bid operation success
+  useEffect(() => {
+    if (bidOperationSuccess) {
+      // Refresh pending offers to get updated data
+      dispatch(fetchPendingOffers());
+      
+      // Auto-close modal after a short delay to show success message
+      const timer = setTimeout(() => {
+        setIsConfirmationModalOpen(false);
+        setIsBidsModalOpen(false);
+        setConfirmationData(null);
+        dispatch(clearBidOperationStates());
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [bidOperationSuccess, dispatch]);
 
   useEffect(() => {
     console.log("Selected offer:", selectedOffer);
@@ -118,11 +153,18 @@ const PendingOffersPage = () => {
     };
   }, []);
 
-  const handleAcceptOffer = (offerId) => {
-    // TODO: Implement API call to accept offer
-    console.log('Accepting offer:', offerId);
-    // For now, just dispatch the action to move to accepted offers
-    // dispatch(acceptOffer(offerId));
+  const handleAcceptOffer = (offer) => {
+    // Find the highest active bid
+    const activeBids = offer.bids?.filter(bid => !bid.is_expired && !bid.is_accepted && bid.status === 'pending') || [];
+    const highestBid = activeBids.reduce((max, bid) => 
+      parseFloat(bid.amount) > parseFloat(max.amount) ? bid : max, 
+      activeBids[0]
+    );
+    
+    if (highestBid) {
+      setConfirmationData({ bid: highestBid, action: 'accept', offer: offer });
+      setIsConfirmationModalOpen(true);
+    }
   };
 
   const handleRejectOffer = (offerId) => {
@@ -150,6 +192,45 @@ const PendingOffersPage = () => {
     console.log('Accepting bid:', bidId);
     // Close modal after accepting
     handleCloseBidsModal();
+  };
+
+  // Handle confirm bid action
+  const handleConfirmBidAction = async () => {
+    if (!confirmationData) return;
+    
+    const { bid, action, offer } = confirmationData;
+    const bidData = {
+      bidId: bid.id,
+      productId: offer.id,
+      bidderId: bid.bidder_id
+    };
+    
+    try {
+      if (action === 'accept') {
+        await dispatch(acceptBid(bidData)).unwrap();
+      } else if (action === 'reject') {
+        await dispatch(rejectBid(bidData)).unwrap();
+      }
+      
+      // Close modals and reset state on success
+      setIsConfirmationModalOpen(false);
+      setIsBidsModalOpen(false);
+      setConfirmationData(null);
+      
+    } catch (error) {
+      console.error(`Error ${action}ing bid:`, error);
+      // Error is handled by Redux state, no need to do anything here
+    }
+  };
+
+  // Handle close confirmation modal
+  const handleCloseConfirmationModal = () => {
+    if (!bidOperationLoading) {
+      setIsConfirmationModalOpen(false);
+      setConfirmationData(null);
+      // Clear any bid operation states
+      dispatch(clearBidOperationStates());
+    }
   };
 
   // Sort options
@@ -671,7 +752,7 @@ const PendingOffersPage = () => {
                     <span>Reject</span>
                   </button>
                   <button
-                    onClick={() => handleAcceptOffer(offer.id)}
+                    onClick={() => handleAcceptOffer(offer)}
                     disabled={offer.bidCount === 0}
                     className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -824,8 +905,8 @@ const PendingOffersPage = () => {
                             <span className="text-neutral-500">Bidder ID:</span>
                             <p className="font-medium text-neutral-800">#{bid.bidder_id}</p>
                           </div> */}
-                          {/* Accept Bid Button - Only for highest bid and if not already accepted/expired */}
-                        {!bid.is_accepted && !bid.is_expired && (
+                          {/* Accept Bid Button - Only for highest bid and if not already accepted/expired/rejected */}
+                        {!bid.is_accepted && !bid.is_expired && bid.status !== 'rejected' && (
                           <div className="mt-4 pt-4 border-t border-neutral-200">
                             <button
                               onClick={() => handleAcceptBid(bid.id)}
@@ -871,6 +952,18 @@ const PendingOffersPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Bid Confirmation Modal */}
+      <BidConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={handleCloseConfirmationModal}
+        onConfirm={handleConfirmBidAction}
+        action={confirmationData?.action}
+        bidData={confirmationData?.bid}
+        isLoading={bidOperationLoading}
+        error={bidOperationError}
+        success={bidOperationSuccess}
+      />
     </div>
   );
 };
