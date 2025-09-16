@@ -1,42 +1,78 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Camera, Save, Edit3, Check, X } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Edit3 } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { loadUser } from '../redux/slices/userSlice';
+import EditProfileModal from '../components/ui/EditProfileModal';
 
 const ProfilePage = () => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Main Street, San Francisco, CA 94102',
+  const dispatch = useDispatch();
+  const { user, loading } = useSelector((state) => state.user);
+  const [showEditModal, setShowEditModal] = useState(false);
+  
+  // Default profile data structure
+  const defaultProfile = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
     bio: 'Car enthusiast and frequent seller on Amacar platform.',
-    joinDate: '2024-01-01',
-    totalAuctions: 12,
-    totalEarnings: 45600,
-    rating: 4.9,
-  });
+    joinDate: '',
+    totalAuctions: 0,
+    totalEarnings: 0,
+    rating: 0,
+  };
 
+  const [profile, setProfile] = useState(defaultProfile);
   const [editData, setEditData] = useState({ ...profile });
+
+  // Load user data from Redux state
+  useEffect(() => {
+    if (user) {
+      const userProfile = {
+        firstName: user.firstName || user.first_name || '',
+        lastName: user.lastName || user.last_name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        bio: user.bio || defaultProfile.bio,
+        joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
+        totalAuctions: user.totalAuctions || user.total_auctions || 0,
+        totalEarnings: user.totalEarnings || user.total_earnings || 0,
+        rating: user.rating || 0,
+      };
+      setProfile(userProfile);
+      setEditData(userProfile);
+    }
+  }, [user]);
+
+  // Load user data on component mount
+  useEffect(() => {
+    dispatch(loadUser());
+  }, [dispatch]);
 
   const handleEdit = () => {
     setEditData({ ...profile });
-    setIsEditing(true);
+    setShowEditModal(true);
   };
 
-  const handleSave = () => {
-    setProfile({ ...editData });
-    setIsEditing(false);
+  const handleSave = async (updatedData) => {
+    try {
+      // The updateProfile action is already called in the EditProfileModal
+      // This function is called after successful API update
+      setProfile({ ...updatedData });
+      setShowEditModal(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
 
   const handleCancel = () => {
     setEditData({ ...profile });
-    setIsEditing(false);
+    setShowEditModal(false);
   };
 
-  const handleInputChange = (field, value) => {
-    setEditData(prev => ({ ...prev, [field]: value }));
-  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -58,6 +94,27 @@ const ProfilePage = () => {
     },
   };
 
+  if (loading) {
+    return (
+      <div className="mt-16 min-h-screen bg-gradient-hero p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="card p-8">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+              <div className="flex items-center space-x-6">
+                <div className="w-24 h-24 bg-gray-200 rounded-full"></div>
+                <div className="space-y-2">
+                  <div className="h-6 bg-gray-200 rounded w-48"></div>
+                  <div className="h-4 bg-gray-200 rounded w-32"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-16 min-h-screen bg-gradient-hero p-8">
       <div className="max-w-6xl mx-auto">
@@ -70,32 +127,13 @@ const ProfilePage = () => {
           <motion.div variants={itemVariants} className="card p-8 mb-8">
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-3xl font-bold text-neutral-800">Profile Settings</h1>
-              {!isEditing ? (
-                <button
-                  onClick={handleEdit}
-                  className="btn-secondary flex items-center space-x-2"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>Edit Profile</span>
-                </button>
-              ) : (
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleCancel}
-                    className="btn-ghost flex items-center space-x-2"
-                  >
-                    <X className="w-4 h-4" />
-                    <span>Cancel</span>
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    className="btn-primary flex items-center space-x-2"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>Save Changes</span>
-                  </button>
-                </div>
-              )}
+              <button
+                onClick={handleEdit}
+                className="btn-secondary flex items-center space-x-2"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Edit Profile</span>
+              </button>
             </div>
 
             {/* Profile Picture */}
@@ -104,34 +142,17 @@ const ProfilePage = () => {
                 <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center">
                   <User className="w-12 h-12 text-primary-600" />
                 </div>
-                {isEditing && (
-                  <button className="absolute bottom-0 right-0 w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors">
-                    <Camera className="w-4 h-4" />
-                  </button>
-                )}
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-neutral-800">
-                  {isEditing ? (
-                    <div className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={editData.firstName}
-                        onChange={(e) => handleInputChange('firstName', e.target.value)}
-                        className="input-field w-32"
-                      />
-                      <input
-                        type="text"
-                        value={editData.lastName}
-                        onChange={(e) => handleInputChange('lastName', e.target.value)}
-                        className="input-field w-32"
-                      />
-                    </div>
-                  ) : (
-                    `${profile.firstName} ${profile.lastName}`
-                  )}
+                  {profile.firstName && profile.lastName 
+                    ? `${profile.firstName} ${profile.lastName}`
+                    : 'User Profile'
+                  }
                 </h2>
-                <p className="text-neutral-600">Member since {profile.joinDate}</p>
+                <p className="text-neutral-600">
+                  {profile.joinDate ? `Member since ${profile.joinDate}` : 'New member'}
+                </p>
                 <div className="flex items-center space-x-4 mt-2">
                   <div className="flex items-center space-x-1">
                     <span className="text-sm text-neutral-600">Rating:</span>
@@ -155,82 +176,30 @@ const ProfilePage = () => {
                 <label className="block text-sm font-semibold text-neutral-700 mb-2">
                   Email Address
                 </label>
-                {isEditing ? (
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                    <input
-                      type="email"
-                      value={editData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="input-field pl-10"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2 text-neutral-600">
-                    <Mail className="w-5 h-5" />
-                    <span>{profile.email}</span>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2 text-neutral-600">
+                  <Mail className="w-5 h-5" />
+                  <span>{profile.email || 'Not provided'}</span>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-neutral-700 mb-2">
                   Phone Number
                 </label>
-                {isEditing ? (
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                    <input
-                      type="tel"
-                      value={editData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      className="input-field pl-10"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2 text-neutral-600">
-                    <Phone className="w-5 h-5" />
-                    <span>{profile.phone}</span>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2 text-neutral-600">
+                  <Phone className="w-5 h-5" />
+                  <span>{profile.phone || 'Not provided'}</span>
+                </div>
               </div>
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold text-neutral-700 mb-2">
                   Address
                 </label>
-                {isEditing ? (
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                    <input
-                      type="text"
-                      value={editData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                      className="input-field pl-10"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2 text-neutral-600">
-                    <MapPin className="w-5 h-5" />
-                    <span>{profile.address}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Bio
-                </label>
-                {isEditing ? (
-                  <textarea
-                    value={editData.bio}
-                    onChange={(e) => handleInputChange('bio', e.target.value)}
-                    className="input-field h-24 resize-none"
-                    placeholder="Tell us about yourself..."
-                  />
-                ) : (
-                  <p className="text-neutral-600">{profile.bio}</p>
-                )}
+                <div className="flex items-center space-x-2 text-neutral-600">
+                  <MapPin className="w-5 h-5" />
+                  <span>{profile.address || 'Not provided'}</span>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -301,6 +270,14 @@ const ProfilePage = () => {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={handleCancel}
+        onSave={handleSave}
+        initialData={editData}
+      />
     </div>
   );
 };

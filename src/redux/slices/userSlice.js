@@ -122,6 +122,21 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const updateProfile = createAsyncThunk(
+  'user/updateProfile',
+  async (profileData, { rejectWithValue }) => {
+    try {
+      const response = await api.put('/user/profile', profileData);
+      if (response.data.success) {
+        return response.data.user;
+      }
+      return rejectWithValue(response.data.message || 'Profile update failed');
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Profile update failed');
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: 'user',
   initialState: {
@@ -277,6 +292,21 @@ const userSlice = createSlice({
       .addCase(registerWithVin.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload?.message || 'Something went wrong';
+      })
+      // Update Profile
+      .addCase(updateProfile.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.user = action.payload;
+        // Update localStorage with new user data
+        localStorage.setItem('authUser', JSON.stringify(action.payload));
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
       });
   },
 });
