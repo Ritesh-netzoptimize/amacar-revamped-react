@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search, X, CheckCircle } from 'lucide-react';
+import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search, X, CheckCircle, XCircle } from 'lucide-react';
 import { formatCurrency, formatTimeRemaining } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchLiveAuctions, selectLiveAuctions, selectOffersLoading, selectOffersError, selectHasAuctions } from '../redux/slices/offersSlice';
@@ -273,6 +273,13 @@ const LiveAuctionsPage = () => {
     console.log('Accepting bid:', bidId);
     // You can add your accept bid logic here
     // For example: dispatch(acceptBid(bidId));
+  };
+
+  const handleRejectBid = (bidId) => {
+    // TODO: Implement reject bid functionality
+    console.log('Rejecting bid:', bidId);
+    // You can add your reject bid logic here
+    // For example: dispatch(rejectBid(bidId));
   };
 
   const toggleDropdown = (auctionId) => {
@@ -885,16 +892,26 @@ const LiveAuctionsPage = () => {
                           </div>
                         </div>
                         
-                        {/* Accept Bid Button - Only for active bids */}
+                        {/* Accept/Reject Bid Buttons - Only for active bids */}
                         {!bid.is_accepted && !bid.is_expired && (
                           <div className="mt-4 pt-4 border-t border-neutral-200">
+                            <div className="flex space-x-4 ">
                             <button
-                              onClick={() => handleAcceptBid(bid.id)}
-                              className="relative left-7/8 -translate-x-1/2 btn-primary flex items-center justify-center space-x-2"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                              <span>Accept This Bid</span>
-                            </button>
+                                onClick={() => handleRejectBid(bid.id)}
+                                className="flex-1 bg-white text-red-500 border-red-500   px-4 py-2 rounded-xl cursor-pointer  font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                              >
+                                <XCircle className="w-4 h-4" />
+                                <span>Reject Bid</span>
+                              </button>
+                              <button
+                                onClick={() => handleAcceptBid(bid.id)}
+                                className="flex-1 btn-primary flex items-center justify-center space-x-2"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                <span>Accept Bid</span>
+                              </button>
+                             
+                            </div>
                           </div>
                         )}
                         
