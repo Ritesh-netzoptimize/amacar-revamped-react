@@ -1,40 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, Phone, Video, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDate, formatTimeRemaining } from '../lib/utils';
+import { fetchAppointments, selectAppointments, selectOffersLoading, selectOffersError } from '../redux/slices/offersSlice';
 
 const MyAppointments = () => {
+  const dispatch = useDispatch();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState('week'); // 'week' or 'month'
 
-  const appointments = [
-    {
-      id: 'APT-001',
-      title: 'Vehicle Inspection - Honda Civic',
-      dealer: 'ABC Motors',
-      dealerPhone: '(555) 123-4567',
-      date: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-      time: '14:00',
-      duration: '60 minutes',
-      location: '123 Main St, San Francisco, CA',
-      type: 'inspection',
-      status: 'confirmed',
-      vehicle: '2020 Honda Civic',
-    },
-    {
-      id: 'APT-002',
-      title: 'Final Sale Discussion - Toyota Camry',
-      dealer: 'XYZ Auto',
-      dealerPhone: '(555) 987-6543',
-      date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-      time: '10:30',
-      duration: '45 minutes',
-      location: '456 Oak Ave, San Francisco, CA',
-      type: 'discussion',
-      status: 'confirmed',
-      vehicle: '2019 Toyota Camry',
-    },
-  ];
+  // Redux state
+  const appointments = useSelector(selectAppointments);
+  const loading = useSelector(selectOffersLoading);
+  const error = useSelector(selectOffersError);
+
+  // Fetch appointments on component mount
+  useEffect(() => {
+    dispatch(fetchAppointments());
+  }, [dispatch]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -57,15 +41,55 @@ const MyAppointments = () => {
   };
 
   const getUpcomingAppointments = () => {
-    return appointments.filter(apt => apt.date > new Date());
+    return appointments.filter(apt => new Date(apt.start_time) > new Date());
   };
 
   const getTodaysAppointments = () => {
     const today = new Date();
-    return appointments.filter(apt => 
-      apt.date.toDateString() === today.toDateString()
-    );
+    return appointments.filter(apt => {
+      const appointmentDate = new Date(apt.start_time);
+      return appointmentDate.toDateString() === today.toDateString();
+    });
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-hero p-8">
+        <div className="max-w-8xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+              <p className="text-neutral-600">Loading appointments...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-hero p-8">
+        <div className="max-w-8xl mx-auto">
+          <div className="text-center py-16">
+            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Calendar className="w-12 h-12 text-red-500" />
+            </div>
+            <h3 className="text-xl font-semibold text-neutral-800 mb-2">Error Loading Appointments</h3>
+            <p className="text-neutral-600 mb-6">{error}</p>
+            <button 
+              onClick={() => dispatch(fetchAppointments())}
+              className="btn-primary"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-hero p-8 ">
@@ -142,16 +166,19 @@ const MyAppointments = () => {
                         <Calendar className="w-6 h-6 text-primary-600" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-neutral-800">{appointment.title}</h3>
-                        <p className="text-sm text-neutral-600">{appointment.dealer}</p>
+                        <h3 className="font-semibold text-neutral-800">
+                          Appointment with {appointment.dealer_name}
+                        </h3>
+                        <p className="text-sm text-neutral-600">{appointment.dealer_email}</p>
                         <div className="flex items-center space-x-4 text-sm text-neutral-500">
                           <span className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
-                            <span>{appointment.time} ({appointment.duration})</span>
+                            <span>{appointment.formatted_time} ({appointment.duration} min)</span>
                           </span>
                           <span className="flex items-center space-x-1">
-                            <MapPin className="w-4 h-4" />
-                            <span>{appointment.location}</span>
+                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                              {appointment.formatted_status}
+                            </span>
                           </span>
                         </div>
                       </div>
@@ -189,16 +216,19 @@ const MyAppointments = () => {
                       <Calendar className="w-6 h-6 text-neutral-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-neutral-800">{appointment.title}</h3>
-                      <p className="text-sm text-neutral-600">{appointment.dealer}</p>
+                      <h3 className="font-semibold text-neutral-800">
+                        Appointment with {appointment.dealer_name}
+                      </h3>
+                      <p className="text-sm text-neutral-600">{appointment.dealer_email}</p>
                       <div className="flex items-center space-x-4 text-sm text-neutral-500">
                         <span className="flex items-center space-x-1">
                           <Clock className="w-4 h-4" />
-                          <span>{formatDate(appointment.date)} at {appointment.time}</span>
+                          <span>{appointment.formatted_date} at {appointment.formatted_time}</span>
                         </span>
                         <span className="flex items-center space-x-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{appointment.location}</span>
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            {appointment.formatted_status}
+                          </span>
                         </span>
                       </div>
                     </div>
@@ -208,7 +238,10 @@ const MyAppointments = () => {
                       <Phone className="w-4 h-4" />
                       <span>Call</span>
                     </button>
-                    <button className="btn-secondary">
+                    <button 
+                      className="btn-secondary"
+                      onClick={() => window.open(appointment.reschedule_url, '_blank')}
+                    >
                       Reschedule
                     </button>
                     <button className="btn-primary">
@@ -222,7 +255,7 @@ const MyAppointments = () => {
         </motion.div>
 
         {/* Empty State */}
-        {getUpcomingAppointments().length === 0 && (
+        {appointments.length === 0 && (
           <motion.div
             variants={itemVariants}
             className="text-center py-16"
@@ -230,7 +263,7 @@ const MyAppointments = () => {
             <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Calendar className="w-12 h-12 text-neutral-400" />
             </div>
-            <h3 className="text-xl font-semibold text-neutral-800 mb-2">No Upcoming Appointments</h3>
+            <h3 className="text-xl font-semibold text-neutral-800 mb-2">No Appointments</h3>
             <p className="text-neutral-600 mb-6">You don't have any scheduled appointments at the moment.</p>
             <button className="btn-primary">
               Schedule Appointment

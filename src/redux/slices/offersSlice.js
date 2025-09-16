@@ -85,6 +85,27 @@ export const fetchLiveAuctions = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch appointments
+export const fetchAppointments = createAsyncThunk(
+  'offers/fetchAppointments',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Use the axios instance which already handles auth headers
+      const response = await api.get('/dashboard/appointments');
+      console.log('Appointments response:', response);
+      console.log('Appointments response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch appointments');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch appointments');
+    }
+  }
+);
+
 const initialState = {
   loading: false,
   error: null,
@@ -92,9 +113,11 @@ const initialState = {
   acceptedOffers: [],
   pendingOffers: [],
   liveAuctions: [],
+  appointments: [],
   totalCount: 0,
   hasOffers: false,
   hasAuctions: false,
+  hasAppointments: false,
 };
 
 const offersSlice = createSlice({
@@ -109,9 +132,11 @@ const offersSlice = createSlice({
       state.acceptedOffers = [];
       state.pendingOffers = [];
       state.liveAuctions = [];
+      state.appointments = [];
       state.totalCount = 0;
       state.hasOffers = false;
       state.hasAuctions = false;
+      state.hasAppointments = false;
     },
     
     // Add offer to accepted offers
@@ -216,6 +241,22 @@ const offersSlice = createSlice({
       .addCase(fetchLiveAuctions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch live auctions';
+      })
+      // Fetch appointments
+      .addCase(fetchAppointments.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAppointments.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.appointments = action.payload.appointments || [];
+        state.totalCount = action.payload.total_count || 0;
+        state.hasAppointments = action.payload.has_appointments || false;
+      })
+      .addCase(fetchAppointments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch appointments';
       });
   },
 });
@@ -239,8 +280,10 @@ export const selectPreviousOffers = (state) => state.offers.previousOffers;
 export const selectAcceptedOffers = (state) => state.offers.acceptedOffers;
 export const selectPendingOffers = (state) => state.offers.pendingOffers;
 export const selectLiveAuctions = (state) => state.offers.liveAuctions;
+export const selectAppointments = (state) => state.offers.appointments;
 export const selectOffersLoading = (state) => state.offers.loading;
 export const selectOffersError = (state) => state.offers.error;
 export const selectTotalCount = (state) => state.offers.totalCount;
 export const selectHasOffers = (state) => state.offers.hasOffers;
 export const selectHasAuctions = (state) => state.offers.hasAuctions;
+export const selectHasAppointments = (state) => state.offers.hasAppointments;
