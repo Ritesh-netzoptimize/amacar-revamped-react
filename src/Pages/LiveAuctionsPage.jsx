@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search } from 'lucide-react';
+import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search, X } from 'lucide-react';
 import { formatCurrency, formatTimeRemaining } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchLiveAuctions, selectLiveAuctions, selectOffersLoading, selectOffersError, selectHasAuctions } from '../redux/slices/offersSlice';
@@ -28,7 +28,7 @@ const LiveAuctionsPage = () => {
   const dropdownRef = useRef(null);
 
   // Load more configuration
-  const itemsPerPage = 1;
+  const itemsPerPage = 3;
 
   // Transform API data to match component structure
   const transformAuctionsData = (auctions) => {
@@ -97,6 +97,8 @@ const LiveAuctionsPage = () => {
 
   const [selectedAuction, setSelectedAuction] = useState(null);
   const [isActionDropdownOpen, setIsActionDropdownOpen] = useState(false);
+  const [isBidsModalOpen, setIsBidsModalOpen] = useState(false);
+  const [selectedAuctionBids, setSelectedAuctionBids] = useState(null);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -229,14 +231,14 @@ const LiveAuctionsPage = () => {
   } = useLoadMore(sortedAuctions, itemsPerPage);
 
   // Debug logging
-  console.log('LiveAuctions Debug:', {
-    auctionsLength: auctions.length,
-    sortedAuctionsLength: sortedAuctions.length,
-    paginatedAuctionsLength: paginatedAuctions.length,
-    hasMoreItems,
-    remainingItems,
-    itemsPerPage
-  });
+  // console.log('LiveAuctions Debug:', {
+  //   auctionsLength: auctions.length,
+  //   sortedAuctionsLength: sortedAuctions.length,
+  //   paginatedAuctionsLength: paginatedAuctions.length,
+  //   hasMoreItems,
+  //   remainingItems,
+  //   itemsPerPage
+  // });
 
   const handleEndAuction = (auctionId) => {
     setAuctions((prev) =>
@@ -259,6 +261,11 @@ const LiveAuctionsPage = () => {
   const handleViewDetails = (auctionId) => {
     setSelectedAuction(auctionId);
     setIsActionDropdownOpen(false);
+  };
+
+  const handleViewAllBids = (auction) => {
+    setSelectedAuctionBids(auction);
+    setIsBidsModalOpen(true);
   };
 
   const toggleDropdown = (auctionId) => {
@@ -632,59 +639,106 @@ const LiveAuctionsPage = () => {
 
               {/* Content */}
               <div className="p-6">
-                <h3 className="text-xl font-bold text-neutral-800 mb-2">{auction.vehicle}</h3>
-                <p className="text-neutral-600 text-sm mb-2">{auction.description}</p>
-                <p className="text-neutral-500 text-xs mb-4">VIN: {auction.vin}</p>
+                {/* Vehicle Info */}
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-neutral-800 mb-2">{auction.vehicle}</h3>
+                  <p className="text-neutral-600 text-sm mb-1">{auction.description}</p>
+                  <p className="text-neutral-500 text-xs">VIN: {auction.vin}</p>
+                </div>
 
-                {/* Current Bid */}
-                <div className="bg-success/10 rounded-lg p-4 mb-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-neutral-600">
-                        {auction.bidCount > 0 ? 'Current Bid' : 'Cash Offer'}
-                      </p>
-                      <p className="text-2xl font-bold text-success">{formatCurrency(auction.currentBid)}</p>
-                      {auction.cashOffer > 0 && auction.bidCount === 0 && (
-                        <p className="text-xs text-neutral-500">{auction.cashOfferExpires}</p>
-                      )}
+                {/* Bids and Offers Summary */}
+                <div className="space-y-4 mb-6">
+                  {/* Highest Bid */}
+                  {auction.bidCount > 0 && (
+                    <div className="bg-gradient-to-r from-success/10 to-success/5 rounded-xl p-4 border border-success/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center">
+                            <DollarSign className="w-5 h-5 text-success" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-neutral-600">Highest Bid</p>
+                            <p className="text-2xl font-bold text-success">{formatCurrency(auction.currentBid)}</p>
+                            <p className="text-xs text-neutral-500">by {auction.highestBidder}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="bg-success/20 text-success px-3 py-1 rounded-full text-xs font-semibold">
+                            {auction.bidCount} active
+                          </div>
+                          <p className="text-xs text-neutral-500 mt-1">
+                            {auction.totalBids} total bids
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-neutral-600">
-                        {auction.bidCount} active bids
-                        {auction.totalBids > auction.bidCount && (
-                          <span className="text-neutral-400"> ({auction.totalBids - auction.bidCount} expired)</span>
-                        )}
-                      </p>
-                      <p className="text-xs text-neutral-500">by {auction.highestBidder}</p>
+                  )}
+
+                  {/* Cash Offer */}
+                  <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-4 border border-primary/20">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                          <DollarSign className="w-5 h-5 text-primary-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-neutral-600">Cash Offer</p>
+                          <p className="text-xl font-bold text-primary-600">
+                            {auction.cashOffer > 0 ? formatCurrency(auction.cashOffer) : 'No cash offer'}
+                          </p>
+                          {auction.cashOffer > 0 && auction.cashOfferExpires && (
+                            <p className="text-xs text-neutral-500">{auction.cashOfferExpires}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="bg-primary/20 text-primary-600 px-3 py-1 rounded-full text-xs font-semibold">
+                          Instant
+                        </div>
+                        <p className="text-xs text-neutral-500 mt-1">No bidding</p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Time Remaining */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-warning" />
-                    <span className="text-sm font-medium text-warning">
+                    <Clock className="w-5 h-5 text-warning" />
+                    <span className="text-sm font-semibold text-warning">
                       {formatTimeRemaining(auction.timeRemaining)}
                     </span>
                   </div>
-                  <button className="cursor-pointer p-2 text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg">
-                    <Eye className="w-4 h-4" />
-                  </button>
+                  <div className="text-right">
+                    <p className="text-xs text-neutral-500">Time remaining</p>
+                  </div>
                 </div>
 
+                {/* View All Bids Button */}
+                {auction.totalBids > 0 && (
+                  <div className="mb-4">
+                    <button
+                      onClick={() => handleViewAllBids(auction)}
+                      className="cursor-pointer w-full py-3 px-4 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-primary/20 hover:border-primary/30"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>View All Bids ({auction.totalBids})</span>
+                    </button>
+                  </div>
+                )}
+
                 {/* Actions */}
-                <div className="flex space-x-4">
+                <div className="flex space-x-3">
                   <button
                     onClick={() => handleEndAuction(auction.id)}
-                    className="cursor-pointer flex-1 btn-secondary flex items-center justify-center space-x-2"
+                    className="cursor-pointer flex-1 py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                   >
                     <Pause className="w-4 h-4" />
-                    <span>End Auction</span>
+                    <span>End</span>
                   </button>
-                  <button className="btn-primary flex items-center justify-center space-x-2">
+                  <button className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
                     <Play className="w-4 h-4" />
-                    <span>Pause Auction</span>
+                    <span>Pause</span>
                   </button>
                 </div>
               </div>
@@ -737,6 +791,140 @@ const LiveAuctionsPage = () => {
           exit={{ opacity: 0 }}
         />
       )}
+
+      {/* Bids Modal */}
+      <AnimatePresence>
+        {isBidsModalOpen && selectedAuctionBids && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setIsBidsModalOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-neutral-200">
+                <div>
+                  <h2 className="text-2xl font-bold text-neutral-800">
+                    Bids for {selectedAuctionBids.vehicle}
+                  </h2>
+                  <p className="text-sm text-neutral-600 mt-1">
+                    VIN: {selectedAuctionBids.vin} • {selectedAuctionBids.bids?.length || 0} total bids
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsBidsModalOpen(false)}
+                  className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                >
+                  <X className="w-6 h-6 text-neutral-500" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto max-h-[60vh]">
+                {selectedAuctionBids.bids && selectedAuctionBids.bids.length > 0 ? (
+                  <div className="space-y-4">
+                    {[...selectedAuctionBids.bids]
+                      .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount))
+                      .map((bid, index) => (
+                      <motion.div
+                        key={bid.id || index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className={`bg-neutral-50 rounded-xl p-4 border ${
+                          index === 0 ? 'border-success/30 bg-success/5' : 'border-neutral-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              index === 0 ? 'bg-success/20 text-success' : 'bg-primary-100 text-primary-600'
+                            }`}>
+                              <span className="font-semibold text-sm">
+                                {index + 1}
+                              </span>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-neutral-800">
+                                {bid.bidder_display_name || 'Unknown Bidder'}
+                              </h3>
+                              <p className="text-sm text-neutral-600">
+                                {bid.bidder_email || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={`text-2xl font-bold ${
+                              index === 0 ? 'text-success' : 'text-primary-600'
+                            }`}>
+                              {formatCurrency(parseFloat(bid.amount))}
+                            </div>
+                            <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              bid.is_accepted 
+                                ? 'bg-success/10 text-success'
+                                : bid.is_expired
+                                ? 'bg-warning/10 text-warning'
+                                : 'bg-primary/10 text-primary'
+                            }`}>
+                              {bid.is_accepted ? 'Accepted' : 
+                               bid.is_expired ? 'Expired' : 'Active'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-neutral-500">Bidder ID:</span>
+                            <p className="font-medium text-neutral-800">#{bid.bidder_id || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <span className="text-neutral-500">Bid Date:</span>
+                            <p className="font-medium text-neutral-800">
+                              {bid.created_at_raw ? new Date(bid.created_at_raw).toLocaleString() : 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {bid.notes && (
+                          <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-200">
+                            <span className="text-neutral-500 text-sm">Notes:</span>
+                            <p className="text-neutral-800 text-sm mt-1">{bid.notes}</p>
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <DollarSign className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Bids Available</h3>
+                    <p className="text-neutral-500">This auction doesn't have any bids yet.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-200 bg-neutral-50">
+                <button
+                  onClick={() => setIsBidsModalOpen(false)}
+                  className="cursor-pointer btn-ghost"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

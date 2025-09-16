@@ -21,13 +21,13 @@ const LoadMore = ({
     }
   };
 
-  // Debug logging
-  console.log('LoadMore Debug:', {
-    itemsLength: items.length,
-    hasMoreItems,
-    remainingItems,
-    itemsPerPage
-  });
+  // // Debug logging
+  // console.log('LoadMore Debug:', {
+  //   itemsLength: items.length,
+  //   hasMoreItems,
+  //   remainingItems,
+  //   itemsPerPage
+  // });
 
   // Don't render if no items or no more items to load
   if (!items.length) {

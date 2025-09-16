@@ -13,16 +13,16 @@ const useLoadMore = (items = [], itemsPerPage = 2) => {
   const remainingItems = Math.max(0, items.length - paginatedItems.length);
 
   // Debug logging
-  console.log('useLoadMore calculation:', {
-    itemsLength: items.length,
-    itemsPerPage,
-    currentPage,
-    endIndex,
-    totalPages,
-    hasMoreItems,
-    remainingItems,
-    paginatedItemsLength: paginatedItems.length
-  });
+  // console.log('useLoadMore calculation:', {
+  //   itemsLength: items.length,
+  //   itemsPerPage,
+  //   currentPage,
+  //   endIndex,
+  //   totalPages,
+  //   hasMoreItems,
+  //   remainingItems,
+  //   paginatedItemsLength: paginatedItems.length
+  // });
 
   // Reset to first page when items length changes (not on every items change)
   useEffect(() => {
@@ -34,14 +34,14 @@ const useLoadMore = (items = [], itemsPerPage = 2) => {
 
   // Load more handler
   const handleLoadMore = () => {
-    console.log('useLoadMore handleLoadMore called:', {
-      hasMoreItems,
-      isLoadingMore,
-      currentPage,
-      itemsLength: items.length,
-      endIndex,
-      remainingItems
-    });
+    // console.log('useLoadMore handleLoadMore called:', {
+    //   hasMoreItems,
+    //   isLoadingMore,
+    //   currentPage,
+    //   itemsLength: items.length,
+    //   endIndex,
+    //   remainingItems
+    // });
     
     if (hasMoreItems && !isLoadingMore) {
       setIsLoadingMore(true);
@@ -52,7 +52,7 @@ const useLoadMore = (items = [], itemsPerPage = 2) => {
       setTimeout(() => {
         setCurrentPage(prev => {
           const newPage = prev + 1;
-          console.log('useLoadMore page updated:', { from: prev, to: newPage });
+          // console.log('useLoadMore page updated:', { from: prev, to: newPage });
           return newPage;
         });
         setIsLoadingMore(false);
