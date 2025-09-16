@@ -44,7 +44,7 @@ const LiveAuctionsPage = () => {
   const dropdownRef = useRef(null);
 
   // Load more configuration
-  const itemsPerPage = 3;
+  const itemsPerPage = 10;
 
   // Transform API data to match component structure
   const transformAuctionsData = (auctions) => {

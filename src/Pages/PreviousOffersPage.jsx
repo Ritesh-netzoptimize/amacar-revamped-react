@@ -55,6 +55,9 @@ const PreviousOffersPage = () => {
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState('success');
+  
+  // Local loading state to track which specific vehicle is being re-auctioned
+  const [reAuctioningVehicleId, setReAuctioningVehicleId] = useState(null);
 
   // Fetch offers on component mount
   useEffect(() => {
@@ -67,6 +70,9 @@ const PreviousOffersPage = () => {
       setNotificationMessage('Vehicle re-auctioned successfully! It has been moved to live auctions.');
       setNotificationType('success');
       setShowNotification(true);
+      
+      // Clear local loading state
+      setReAuctioningVehicleId(null);
       
       // Refresh previous offers to get updated data
       dispatch(fetchPreviousOffers());
@@ -101,6 +107,9 @@ const PreviousOffersPage = () => {
       setNotificationMessage(message);
       setNotificationType('error');
       setShowNotification(true);
+      
+      // Clear local loading state
+      setReAuctioningVehicleId(null);
       
       // Clear error state after a delay
       const timer = setTimeout(() => {
@@ -212,9 +221,13 @@ const PreviousOffersPage = () => {
   // Handle re-auction vehicle
   const handleReAuctionVehicle = async (productId) => {
     try {
+      // Set local loading state for this specific vehicle
+      setReAuctioningVehicleId(productId);
       await dispatch(reAuctionVehicle(productId)).unwrap();
     } catch (error) {
       console.error('Error re-auctioning vehicle:', error);
+      // Clear local loading state on error
+      setReAuctioningVehicleId(null);
       // Error is handled by Redux state
     }
   };
@@ -524,11 +537,11 @@ const PreviousOffersPage = () => {
                           </button>
                           <button 
                             onClick={() => handleReAuctionVehicle(formattedOffer.id)}
-                            disabled={reAuctionLoading}
+                            disabled={reAuctioningVehicleId === formattedOffer.id}
                             className="cursor-pointer btn-secondary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <RefreshCw className={`w-4 h-4 ${reAuctionLoading ? 'animate-spin' : ''}`} />
-                            <span>{reAuctionLoading ? 'Relisting...' : 'Relist Vehicle'}</span>
+                            <RefreshCw className={`w-4 h-4 ${reAuctioningVehicleId === formattedOffer.id ? 'animate-spin' : ''}`} />
+                            <span>{reAuctioningVehicleId === formattedOffer.id ? 'Relisting...' : 'Relist Vehicle'}</span>
                           </button>
                         </div>
                       </div>
