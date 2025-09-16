@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, DollarSign, Clock, RefreshCw, Eye, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
+import { Car, DollarSign, Clock, RefreshCw, Eye, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState, useMemo, useRef } from 'react';
@@ -11,6 +11,7 @@ import {
   selectTotalCount,
   selectHasOffers
 } from '../redux/slices/offersSlice';
+import { useSearch } from '../context/SearchContext';
 import PreviousOffersSkeleton from '../components/Skeletons/PreviousOffersSkeleton';
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 
@@ -21,6 +22,9 @@ const PreviousOffersPage = () => {
   const error = useSelector(selectOffersError);
   const totalCount = useSelector(selectTotalCount);
   const hasOffers = useSelector(selectHasOffers);
+
+  // Search context
+  const { getSearchResults, searchQuery, clearSearch } = useSearch();
 
   // Sorting state
   const [sortBy, setSortBy] = useState('date-desc');
@@ -136,12 +140,15 @@ const PreviousOffersPage = () => {
     setSelectedOffer(null);
   };
 
+  // Get search results for previous offers
+  const searchResults = getSearchResults('previousOffers');
+
   // Sort offers based on selected options
   const sortedOffers = useMemo(() => {
-    if (!offers || offers.length === 0) return [];
+    if (!searchResults || searchResults.length === 0) return [];
 
     // Sort the offers
-    return [...offers].sort((a, b) => {
+    return [...searchResults].sort((a, b) => {
       const offerA = formatOfferData(a);
       const offerB = formatOfferData(b);
 
@@ -158,7 +165,7 @@ const PreviousOffersPage = () => {
           return 0;
       }
     });
-  }, [offers, sortBy]);
+  }, [searchResults, sortBy]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -200,7 +207,7 @@ const PreviousOffersPage = () => {
             </div>
             <div className="mb-8 flex items-center justify-end">
           {/* Modern Sort Dropdown */}
-          {!loading && !error && offers.length > 0 && (
+          {!loading && !error && searchResults.length > 0 && (
               <motion.div
                 variants={itemVariants}
                 className="relative w-[200px] left-6"
@@ -288,11 +295,32 @@ const PreviousOffersPage = () => {
           </div>
         </motion.div>
 
-      <motion.div>
-
-        
-      </motion.div>
-        
+        {/* Search Indicator */}
+        {searchQuery && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mb-4"
+          >
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Search className="w-5 h-5 text-primary-600" />
+                  <span className="text-sm font-medium text-primary-800">
+                    Showing {sortedOffers.length} results for "{searchQuery}"
+                  </span>
+                </div>
+                <button
+                  onClick={clearSearch}
+                  className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                >
+                  Clear Search
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Loading State */}
         {loading && <PreviousOffersSkeleton />}
@@ -315,7 +343,7 @@ const PreviousOffersPage = () => {
         )}
 
         {/* No Offers State */}
-        {!loading && !error && (!hasOffers || offers.length === 0) && (
+        {!loading && !error && (!hasOffers || searchResults.length === 0) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
