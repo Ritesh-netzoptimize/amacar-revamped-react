@@ -9,6 +9,7 @@ import LiveAuctionsSkeleton from '../components/skeletons/LiveAuctionsSkeleton';
 import LiveAuctionsSortingSkeleton from '@/components/skeletons/LiveAuctionsSortingSkeleton';
 import LoadMore from '../components/ui/load-more';
 import useLoadMore from '../hooks/useLoadMore';
+import BidConfirmationModal from '../components/ui/BidConfirmationModal';
 
 const LiveAuctionsPage = () => {
   const dispatch = useDispatch();
@@ -99,6 +100,9 @@ const LiveAuctionsPage = () => {
   const [isActionDropdownOpen, setIsActionDropdownOpen] = useState(false);
   const [isBidsModalOpen, setIsBidsModalOpen] = useState(false);
   const [selectedAuctionBids, setSelectedAuctionBids] = useState(null);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [confirmationData, setConfirmationData] = useState(null);
+  const [isProcessingBid, setIsProcessingBid] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -269,17 +273,55 @@ const LiveAuctionsPage = () => {
   };
 
   const handleAcceptBid = (bidId) => {
-    // TODO: Implement accept bid functionality
-    console.log('Accepting bid:', bidId);
-    // You can add your accept bid logic here
-    // For example: dispatch(acceptBid(bidId));
+    const bid = selectedAuctionBids?.bids?.find(b => b.id === bidId);
+    if (bid) {
+      setConfirmationData({ bid, action: 'accept' });
+      setIsConfirmationModalOpen(true);
+    }
   };
 
   const handleRejectBid = (bidId) => {
-    // TODO: Implement reject bid functionality
-    console.log('Rejecting bid:', bidId);
-    // You can add your reject bid logic here
-    // For example: dispatch(rejectBid(bidId));
+    const bid = selectedAuctionBids?.bids?.find(b => b.id === bidId);
+    if (bid) {
+      setConfirmationData({ bid, action: 'reject' });
+      setIsConfirmationModalOpen(true);
+    }
+  };
+
+  const handleConfirmBidAction = async () => {
+    if (!confirmationData) return;
+    
+    setIsProcessingBid(true);
+    
+    try {
+      // TODO: Implement actual API call here
+      // For now, just simulate a delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      console.log(`${confirmationData.action}ing bid:`, confirmationData.bid.id);
+      
+      // Close modals and reset state
+      setIsConfirmationModalOpen(false);
+      setIsBidsModalOpen(false);
+      setConfirmationData(null);
+      
+      // TODO: Add success notification
+      // toast.success(`Bid ${confirmationData.action}ed successfully!`);
+      
+    } catch (error) {
+      console.error(`Error ${confirmationData.action}ing bid:`, error);
+      // TODO: Add error notification
+      // toast.error(`Failed to ${confirmationData.action} bid. Please try again.`);
+    } finally {
+      setIsProcessingBid(false);
+    }
+  };
+
+  const handleCloseConfirmationModal = () => {
+    if (!isProcessingBid) {
+      setIsConfirmationModalOpen(false);
+      setConfirmationData(null);
+    }
   };
 
   const toggleDropdown = (auctionId) => {
@@ -946,6 +988,16 @@ const LiveAuctionsPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Bid Confirmation Modal */}
+      <BidConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={handleCloseConfirmationModal}
+        onConfirm={handleConfirmBidAction}
+        action={confirmationData?.action}
+        bidData={confirmationData?.bid}
+        isLoading={isProcessingBid}
+      />
     </div>
   );
 };
