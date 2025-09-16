@@ -123,6 +123,7 @@ const MyAppointments = () => {
         setIsSorting(false);
         setSortProgress(0);
       }, 200);
+      console.log(randomDelay)
     }, randomDelay);
   };
 
@@ -382,7 +383,7 @@ const MyAppointments = () => {
                 <motion.div
                   key={appointment.id}
                   className="card p-6 border-l-4 border-primary-500"
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ scale: 1.02 }}  
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">

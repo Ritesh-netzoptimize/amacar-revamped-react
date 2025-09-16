@@ -33,6 +33,11 @@ const PreviousOffersPage = () => {
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
 
+  // Load more state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const itemsPerPage = 2;
+
   
   // Modal state
   const [selectedOffer, setSelectedOffer] = useState(null);
@@ -166,6 +171,32 @@ const PreviousOffersPage = () => {
       }
     });
   }, [searchResults, sortBy]);
+
+  // Load more logic
+  const totalPages = Math.ceil(sortedOffers.length / itemsPerPage);
+  const endIndex = currentPage * itemsPerPage;
+  const paginatedOffers = sortedOffers.slice(0, endIndex);
+  const hasMoreItems = endIndex < sortedOffers.length;
+
+  // Reset to first page when search results change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchResults, sortBy]);
+
+  // Load more handler
+  const handleLoadMore = () => {
+    if (hasMoreItems && !isLoadingMore) {
+      setIsLoadingMore(true);
+      
+      // Random delay between 800ms to 1500ms for better UX
+      const randomDelay = Math.random() * 700 + 800;
+      
+      setTimeout(() => {
+        setCurrentPage(prev => prev + 1);
+        setIsLoadingMore(false);
+      }, randomDelay);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -357,7 +388,7 @@ const PreviousOffersPage = () => {
 
 
         {/* Offers List or Sorting Loading */}
-        {!loading && !error && sortedOffers.length > 0 && (
+        {!loading && !error && searchResults.length > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -379,7 +410,7 @@ const PreviousOffersPage = () => {
             {/* Offers List - Hidden during sorting */}
             {!isSorting && (
               <>
-                {sortedOffers.map((offer, index) => {
+                {paginatedOffers.map((offer, index) => {
               const formattedOffer = formatOfferData(offer);
               return (
                 <motion.div
@@ -472,6 +503,52 @@ const PreviousOffersPage = () => {
             )}
           </motion.div>
          )}
+
+        {/* Load More Section */}
+        {!loading && !error && searchResults.length > 0 && hasMoreItems && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mt-8 flex justify-center"
+          >
+            <motion.button
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${
+                isLoadingMore
+                  ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                  : 'bg-primary-500 text-white hover:bg-primary-600 hover:shadow-lg cursor-pointer'
+              }`}
+              whileHover={!isLoadingMore ? { scale: 1.02 } : {}}
+              whileTap={!isLoadingMore ? { scale: 0.98 } : {}}
+            >
+              {isLoadingMore ? (
+                <div className="flex items-center space-x-2">
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-extrabold">Load More</span>
+                </div>
+              )}
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* Loading More Skeleton */}
+        {isLoadingMore && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="mt-6"
+          >
+            <OffersListSkeleton />
+          </motion.div>
+        )}
        </div>
 
        {/* Bids Modal */}
