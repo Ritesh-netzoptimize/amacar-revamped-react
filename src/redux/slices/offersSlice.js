@@ -106,6 +106,56 @@ export const fetchAppointments = createAsyncThunk(
   }
 );
 
+// Async thunk to accept a bid
+export const acceptBid = createAsyncThunk(
+  'offers/acceptBid',
+  async (bidData, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/bid/accept', {
+        bid_id: bidData.bidId,
+        product_id: bidData.productId,
+        bidder_id: bidData.bidderId
+      });
+      
+      console.log('Accept bid response:', response);
+      console.log('Accept bid response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to accept bid');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to accept bid');
+    }
+  }
+);
+
+// Async thunk to reject a bid
+export const rejectBid = createAsyncThunk(
+  'offers/rejectBid',
+  async (bidData, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/bid/reject', {
+        bid_id: bidData.bidId,
+        product_id: bidData.productId,
+        bidder_id: bidData.bidderId
+      });
+      
+      console.log('Reject bid response:', response);
+      console.log('Reject bid response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to reject bid');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to reject bid');
+    }
+  }
+);
+
 const initialState = {
   loading: false,
   error: null,
@@ -118,6 +168,10 @@ const initialState = {
   hasOffers: false,
   hasAuctions: false,
   hasAppointments: false,
+  // Bid operation states
+  bidOperationLoading: false,
+  bidOperationError: null,
+  bidOperationSuccess: false,
 };
 
 const offersSlice = createSlice({
@@ -174,6 +228,26 @@ const offersSlice = createSlice({
     // Clear error
     clearError: (state) => {
       state.error = null;
+    },
+    
+    // Clear bid operation states
+    clearBidOperationStates: (state) => {
+      state.bidOperationLoading = false;
+      state.bidOperationError = null;
+      state.bidOperationSuccess = false;
+    },
+    
+    // Update bid status in live auctions
+    updateBidStatus: (state, action) => {
+      const { auctionId, bidId, status } = action.payload;
+      const auction = state.liveAuctions.find(auction => auction.product_id === auctionId);
+      if (auction && auction.bid) {
+        const bid = auction.bid.find(bid => bid.id === bidId);
+        if (bid) {
+          bid.is_accepted = status === 'accepted';
+          bid.is_expired = status === 'rejected';
+        }
+      }
     },
   },
   extraReducers: (builder) => {
@@ -257,6 +331,66 @@ const offersSlice = createSlice({
       .addCase(fetchAppointments.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch appointments';
+      })
+      // Accept bid
+      .addCase(acceptBid.pending, (state) => {
+        state.bidOperationLoading = true;
+        state.bidOperationError = null;
+        state.bidOperationSuccess = false;
+      })
+      .addCase(acceptBid.fulfilled, (state, action) => {
+        state.bidOperationLoading = false;
+        state.bidOperationError = null;
+        state.bidOperationSuccess = true;
+        // Update the bid status in live auctions
+        const { bidId, productId } = action.meta.arg;
+        const auction = state.liveAuctions.find(auction => auction.product_id === productId);
+        if (auction && auction.bid) {
+          // Mark the accepted bid as accepted
+          const acceptedBid = auction.bid.find(bid => bid.id === bidId);
+          if (acceptedBid) {
+            acceptedBid.is_accepted = true;
+            acceptedBid.is_expired = false;
+          }
+          // Mark all other bids as expired
+          auction.bid.forEach(bid => {
+            if (bid.id !== bidId) {
+              bid.is_accepted = false;
+              bid.is_expired = true;
+            }
+          });
+        }
+      })
+      .addCase(acceptBid.rejected, (state, action) => {
+        state.bidOperationLoading = false;
+        state.bidOperationError = action.payload || 'Failed to accept bid';
+        state.bidOperationSuccess = false;
+      })
+      // Reject bid
+      .addCase(rejectBid.pending, (state) => {
+        state.bidOperationLoading = true;
+        state.bidOperationError = null;
+        state.bidOperationSuccess = false;
+      })
+      .addCase(rejectBid.fulfilled, (state, action) => {
+        state.bidOperationLoading = false;
+        state.bidOperationError = null;
+        state.bidOperationSuccess = true;
+        // Update the bid status in live auctions
+        const { bidId, productId } = action.meta.arg;
+        const auction = state.liveAuctions.find(auction => auction.product_id === productId);
+        if (auction && auction.bid) {
+          const bid = auction.bid.find(bid => bid.id === bidId);
+          if (bid) {
+            bid.is_accepted = false;
+            bid.is_expired = true;
+          }
+        }
+      })
+      .addCase(rejectBid.rejected, (state, action) => {
+        state.bidOperationLoading = false;
+        state.bidOperationError = action.payload || 'Failed to reject bid';
+        state.bidOperationSuccess = false;
       });
   },
 });
@@ -269,6 +403,8 @@ export const {
   removeAcceptedOffer,
   removePendingOffer,
   clearError,
+  clearBidOperationStates,
+  updateBidStatus,
 } = offersSlice.actions;
 
 // Export reducer
@@ -287,3 +423,7 @@ export const selectTotalCount = (state) => state.offers.totalCount;
 export const selectHasOffers = (state) => state.offers.hasOffers;
 export const selectHasAuctions = (state) => state.offers.hasAuctions;
 export const selectHasAppointments = (state) => state.offers.hasAppointments;
+// Bid operation selectors
+export const selectBidOperationLoading = (state) => state.offers.bidOperationLoading;
+export const selectBidOperationError = (state) => state.offers.bidOperationError;
+export const selectBidOperationSuccess = (state) => state.offers.bidOperationSuccess;

@@ -8,7 +8,9 @@ const BidConfirmationModal = ({
   onConfirm, 
   action, 
   bidData, 
-  isLoading = false 
+  isLoading = false,
+  error = null,
+  success = false
 }) => {
   if (!isOpen || !bidData) return null;
 
@@ -83,6 +85,36 @@ const BidConfirmationModal = ({
                 {config.description}
               </p>
             </div>
+
+            {/* Error Display */}
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl"
+              >
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                  <p className="text-red-700 text-sm font-medium">{error}</p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Success Display */}
+            {success && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mx-6 mt-4 p-4 bg-success/10 border border-success/20 rounded-xl"
+              >
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-5 h-5 text-success" />
+                  <p className="text-success text-sm font-medium">
+                    Bid {action}ed successfully!
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
             {/* Bid Details */}
             <div className="p-6 bg-neutral-50">

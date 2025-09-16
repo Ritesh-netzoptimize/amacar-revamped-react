@@ -100,6 +100,10 @@ const PendingOffersPage = () => {
     dispatch(fetchPendingOffers());
   }, [dispatch]);
 
+  useEffect(() => {
+    console.log("Selected offer:", selectedOffer);
+  }, [selectedOffer]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {

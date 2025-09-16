@@ -3,7 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search, X, CheckCircle, XCircle } from 'lucide-react';
 import { formatCurrency, formatTimeRemaining } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchLiveAuctions, selectLiveAuctions, selectOffersLoading, selectOffersError, selectHasAuctions } from '../redux/slices/offersSlice';
+import { 
+  fetchLiveAuctions, 
+  acceptBid, 
+  rejectBid, 
+  clearBidOperationStates,
+  selectLiveAuctions, 
+  selectOffersLoading, 
+  selectOffersError, 
+  selectHasAuctions,
+  selectBidOperationLoading,
+  selectBidOperationError,
+  selectBidOperationSuccess
+} from '../redux/slices/offersSlice';
 import { useSearch } from '../context/SearchContext';
 import LiveAuctionsSkeleton from '../components/skeletons/LiveAuctionsSkeleton';
 import LiveAuctionsSortingSkeleton from '@/components/skeletons/LiveAuctionsSortingSkeleton';
@@ -17,6 +29,9 @@ const LiveAuctionsPage = () => {
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
   const hasAuctions = useSelector(selectHasAuctions);
+  const bidOperationLoading = useSelector(selectBidOperationLoading);
+  const bidOperationError = useSelector(selectBidOperationError);
+  const bidOperationSuccess = useSelector(selectBidOperationSuccess);
 
   // Search context
   const { getSearchResults, searchQuery, clearSearch } = useSearch();
@@ -36,8 +51,13 @@ const LiveAuctionsPage = () => {
     if (!auctions || !Array.isArray(auctions)) return [];
     
     return auctions.map(auction => {
-      // Find the highest active bid
-      const activeBids = auction.bid?.filter(bid => !bid.is_expired && bid.status === 'pending') || [];
+      // Find the highest active bid (not expired, not accepted, status pending)
+      const activeBids = auction.bid?.filter(bid => 
+        !bid.is_expired && 
+        !bid.is_accepted && 
+        bid.status === 'pending'
+      ) || [];
+      
       const highestBid = activeBids.reduce((max, bid) => 
         parseFloat(bid.amount) > parseFloat(max.amount) ? bid : max, 
         activeBids[0] || { amount: '0' }
@@ -45,6 +65,9 @@ const LiveAuctionsPage = () => {
 
       // Calculate time remaining from remaining_seconds
       const timeRemaining = new Date(Date.now() + (auction.remaining_seconds * 1000));
+
+      // Check if auction has any accepted bids
+      const hasAcceptedBid = auction.bid?.some(bid => bid.is_accepted) || false;
 
       return {
         id: auction.product_id?.toString() || 'unknown',
@@ -60,7 +83,7 @@ const LiveAuctionsPage = () => {
         bidCount: activeBids.length,
         totalBids: auction.bid?.length || 0,
         highestBidder: highestBid?.bidder_display_name || 'No Active Bids',
-        status: 'live',
+        status: hasAcceptedBid ? 'accepted' : 'live',
         images: auction.image_url ? [auction.image_url] : ['/api/placeholder/400/300'],
         description: auction.title || 'Vehicle description not available',
         cashOffer: parseFloat(auction.cash_offer || '0'),
@@ -69,18 +92,40 @@ const LiveAuctionsPage = () => {
         inWorkingHours: auction.in_working_hours || false,
         isSentToSalesforce: auction.is_sent_to_salesforce || '',
         bids: auction.bid || [],
-        highestBidData: highestBid
+        highestBidData: highestBid,
+        hasAcceptedBid: hasAcceptedBid
       };
     });
   };
 
   // Get search results for live auctions
   const searchResults = getSearchResults('liveAuctions');
-  const auctions = transformAuctionsData(searchResults);
+  const allAuctions = transformAuctionsData(searchResults);
+  
+  // Filter out auctions with accepted bids - only show live auctions
+  const auctions = allAuctions.filter(auction => !auction.hasAcceptedBid);
 
   useEffect(() => {
     dispatch(fetchLiveAuctions());
   }, [dispatch]);
+
+  // Handle bid operation success
+  useEffect(() => {
+    if (bidOperationSuccess) {
+      // Refresh live auctions to get updated data
+      dispatch(fetchLiveAuctions());
+      
+      // Auto-close modal after a short delay to show success message
+      const timer = setTimeout(() => {
+        setIsConfirmationModalOpen(false);
+        setIsBidsModalOpen(false);
+        setConfirmationData(null);
+        dispatch(clearBidOperationStates());
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [bidOperationSuccess, dispatch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -102,7 +147,6 @@ const LiveAuctionsPage = () => {
   const [selectedAuctionBids, setSelectedAuctionBids] = useState(null);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [confirmationData, setConfirmationData] = useState(null);
-  const [isProcessingBid, setIsProcessingBid] = useState(false);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -291,36 +335,37 @@ const LiveAuctionsPage = () => {
   const handleConfirmBidAction = async () => {
     if (!confirmationData) return;
     
-    setIsProcessingBid(true);
+    const { bid, action } = confirmationData;
+    const bidData = {
+      bidId: bid.id,
+      productId: selectedAuctionBids?.id,
+      bidderId: bid.bidder_id
+    };
     
     try {
-      // TODO: Implement actual API call here
-      // For now, just simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (action === 'accept') {
+        await dispatch(acceptBid(bidData)).unwrap();
+      } else if (action === 'reject') {
+        await dispatch(rejectBid(bidData)).unwrap();
+      }
       
-      console.log(`${confirmationData.action}ing bid:`, confirmationData.bid.id);
-      
-      // Close modals and reset state
+      // Close modals and reset state on success
       setIsConfirmationModalOpen(false);
       setIsBidsModalOpen(false);
       setConfirmationData(null);
       
-      // TODO: Add success notification
-      // toast.success(`Bid ${confirmationData.action}ed successfully!`);
-      
     } catch (error) {
-      console.error(`Error ${confirmationData.action}ing bid:`, error);
-      // TODO: Add error notification
-      // toast.error(`Failed to ${confirmationData.action} bid. Please try again.`);
-    } finally {
-      setIsProcessingBid(false);
+      console.error(`Error ${action}ing bid:`, error);
+      // Error is handled by Redux state, no need to do anything here
     }
   };
 
   const handleCloseConfirmationModal = () => {
-    if (!isProcessingBid) {
+    if (!bidOperationLoading) {
       setIsConfirmationModalOpen(false);
       setConfirmationData(null);
+      // Clear any bid operation states
+      dispatch(clearBidOperationStates());
     }
   };
 
@@ -629,8 +674,12 @@ const LiveAuctionsPage = () => {
                   </div>
                 )}
                 <div className="absolute top-4 left-4">
-                  <span className="bg-success text-white px-2 py-1 rounded-full text-xs font-semibold">
-                    LIVE
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    auction.status === 'accepted' 
+                      ? 'bg-success text-white' 
+                      : 'bg-success text-white'
+                  }`}>
+                    {auction.status === 'accepted' ? 'ACCEPTED' : 'LIVE'}
                   </span>
                 </div>
                 {/* Increase Amount Badge */}
@@ -766,18 +815,18 @@ const LiveAuctionsPage = () => {
                   >
                     <span>View details</span>
                   </button>
-                  {auction.totalBids > 0 ? (
+                  {auction.bidCount > 0 ? (
                     <button
                       onClick={() => handleViewAllBids(auction)}
                       className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                     >
                       <Eye className="w-4 h-4" />
-                      <span>View All Bids ({auction.totalBids})</span>
+                      <span>View Active Bids ({auction.bidCount})</span>
                     </button>
                   ) : (
                     <div className="flex-1 py-2.5 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
                       <DollarSign className="w-4 h-4" />
-                      <span>No bids yet</span>
+                      <span>No active bids</span>
                     </div>
                   )}
                 </div>
@@ -857,7 +906,7 @@ const LiveAuctionsPage = () => {
                     Bids for {selectedAuctionBids.vehicle}
                   </h2>
                   <p className="text-sm text-neutral-600 mt-1">
-                    VIN: {selectedAuctionBids.vin} • {selectedAuctionBids.bids?.length || 0} total bids
+                    VIN: {selectedAuctionBids.vin} • {selectedAuctionBids.bids?.filter(bid => !bid.is_expired).length || 0} active bids
                   </p>
                 </div>
                 <button
@@ -873,6 +922,7 @@ const LiveAuctionsPage = () => {
                 {selectedAuctionBids.bids && selectedAuctionBids.bids.length > 0 ? (
                   <div className="space-y-4">
                     {[...selectedAuctionBids.bids]
+                      .filter(bid => !bid.is_expired) // Filter out rejected/expired bids
                       .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount))
                       .map((bid, index) => (
                       <motion.div
@@ -969,8 +1019,8 @@ const LiveAuctionsPage = () => {
                 ) : (
                   <div className="text-center py-12">
                     <DollarSign className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Bids Available</h3>
-                    <p className="text-neutral-500">This auction doesn't have any bids yet.</p>
+                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Active Bids Available</h3>
+                    <p className="text-neutral-500">This auction doesn't have any active bids.</p>
                   </div>
                 )}
               </div>
@@ -996,7 +1046,9 @@ const LiveAuctionsPage = () => {
         onConfirm={handleConfirmBidAction}
         action={confirmationData?.action}
         bidData={confirmationData?.bid}
-        isLoading={isProcessingBid}
+        isLoading={bidOperationLoading}
+        error={bidOperationError}
+        success={bidOperationSuccess}
       />
     </div>
   );
