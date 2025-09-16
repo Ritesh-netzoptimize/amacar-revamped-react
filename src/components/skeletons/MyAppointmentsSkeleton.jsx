@@ -1,0 +1,146 @@
+import { motion } from 'framer-motion';
+
+const MyAppointmentsSkeleton = () => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-hero p-8">
+      <div className="max-w-8xl mx-auto">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="mb-8"
+        >
+          {/* Header Skeleton */}
+          <div className="mb-8">
+            <div className="h-8 bg-neutral-200 rounded-lg w-64 mb-2 animate-pulse"></div>
+            <div className="h-5 bg-neutral-200 rounded-md w-80 animate-pulse"></div>
+          </div>
+        </motion.div>
+
+        {/* View Mode Toggle Skeleton */}
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center justify-between mb-8"
+        >
+          <div className="flex items-center space-x-2">
+            {/* Week View Button Skeleton */}
+            <div className="h-10 bg-neutral-200 rounded-lg w-24 animate-pulse"></div>
+            {/* Month View Button Skeleton */}
+            <div className="h-10 bg-neutral-200 rounded-lg w-28 animate-pulse"></div>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {/* Previous Month Button Skeleton */}
+            <div className="w-10 h-10 bg-neutral-200 rounded-lg animate-pulse"></div>
+            {/* Current Month Text Skeleton */}
+            <div className="h-6 bg-neutral-200 rounded-md w-32 animate-pulse"></div>
+            {/* Next Month Button Skeleton */}
+            <div className="w-10 h-10 bg-neutral-200 rounded-lg animate-pulse"></div>
+          </div>
+        </motion.div>
+
+        {/* Today's Appointments Section Skeleton */}
+        <motion.div variants={itemVariants} className="mb-8">
+          <div className="h-6 bg-neutral-200 rounded-md w-48 mb-4 animate-pulse"></div>
+          <div className="space-y-4">
+            {Array.from({ length: 1 }).map((_, index) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                className="card p-6 border-l-4  animate-pulse"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {/* Calendar Icon Skeleton */}
+                    <div className="w-12 h-12 bg-primary-100 rounded-lg animate-pulse"></div>
+                    <div>
+                      {/* Appointment Title Skeleton */}
+                      <div className="h-6 bg-neutral-200 rounded-md w-64 mb-2 animate-pulse"></div>
+                      {/* Dealer Name Skeleton */}
+                      <div className="h-4 bg-neutral-200 rounded-md w-48 mb-2 animate-pulse"></div>
+                      <div className="flex items-center space-x-4">
+                        {/* Time Skeleton */}
+                        <div className="h-4 bg-neutral-200 rounded-md w-32 animate-pulse"></div>
+                        {/* Status Badge Skeleton */}
+                        <div className="h-6 bg-neutral-200 rounded-full w-20 animate-pulse"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    {/* Call Button Skeleton */}
+                    <div className="h-10 bg-neutral-200 rounded-lg w-20 animate-pulse"></div>
+                    {/* Join Button Skeleton */}
+                    <div className="h-10 bg-neutral-200 rounded-lg w-20 animate-pulse"></div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Upcoming Appointments Section Skeleton */}
+        <motion.div variants={itemVariants}>
+          <div className="h-6 bg-neutral-200 rounded-md w-56 mb-4 animate-pulse"></div>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                className="card p-6 hover:shadow-medium transition-all duration-300 animate-pulse"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {/* Calendar Icon Skeleton */}
+                    <div className="w-12 h-12 bg-neutral-100 rounded-lg animate-pulse"></div>
+                    <div>
+                      {/* Appointment Title Skeleton */}
+                      <div className="h-6 bg-neutral-200 rounded-md w-64 mb-2 animate-pulse"></div>
+                      {/* Dealer Email Skeleton */}
+                      <div className="h-4 bg-neutral-200 rounded-md w-48 mb-2 animate-pulse"></div>
+                      <div className="flex items-center space-x-4">
+                        {/* Date and Time Skeleton */}
+                        <div className="h-4 bg-neutral-200 rounded-md w-40 animate-pulse"></div>
+                        {/* Status Badge Skeleton */}
+                        <div className="h-6 bg-neutral-200 rounded-full w-20 animate-pulse"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    {/* Call Button Skeleton */}
+                    <div className="h-10 bg-neutral-200 rounded-lg w-20 animate-pulse"></div>
+                    {/* Reschedule Button Skeleton */}
+                    <div className="h-10 bg-neutral-200 rounded-lg w-28 animate-pulse"></div>
+                    {/* View Details Button Skeleton */}
+                    <div className="h-10 bg-neutral-200 rounded-lg w-32 animate-pulse"></div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+export default MyAppointmentsSkeleton;
