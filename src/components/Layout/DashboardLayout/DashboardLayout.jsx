@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Menu, X, User, Search, LogOut, Settings, ChevronDown, X as XIcon } from 'lucide-react';
 import Sidebar from '../Sidebar/Sidebar';
 import { useSearch } from '../../../context/SearchContext';
+import BackToTop from '../../ui/back-to-top';
 
 const DashboardLayout = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -253,6 +254,9 @@ const DashboardLayout = ({ children }) => {
         <div className="min-h-screen">
           {children}
         </div>
+        
+        {/* Back to Top Button */}
+        <BackToTop />
       </motion.main>
     </div>
   );

@@ -143,8 +143,8 @@ function App() {
 
         {!hideHeaderFooter && <Footer />}
         
-        {/* Back to Top Button */}
-        <BackToTop />
+        {/* Back to Top Button - Only for public pages */}
+        {!hideHeaderFooter && <BackToTop />}
         </div>
       </SearchProvider>
     </AuthProvider>

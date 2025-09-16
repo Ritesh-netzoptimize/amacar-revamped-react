@@ -36,7 +36,7 @@ const PreviousOffersPage = () => {
   const dropdownRef = useRef(null);
 
   // Load more configuration
-  const itemsPerPage = 2;
+  const itemsPerPage = 1;
 
   
   // Modal state
