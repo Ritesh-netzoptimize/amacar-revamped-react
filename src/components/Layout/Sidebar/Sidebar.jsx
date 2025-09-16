@@ -17,7 +17,7 @@ import {
   Plus
 } from 'lucide-react';
 import Modal from '@/components/ui/modal';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/slices/userSlice';
 import { persistor } from '@/redux/store';
 // import { AuthContext } from '@/contexts/AuthContext';
@@ -27,6 +27,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.user);
   // const { logout } = useContext(AuthContext);
 
   const navigation = [
@@ -252,8 +253,17 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
                     <User className="w-4 h-4 text-primary-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-neutral-800 truncate">John Doe</p>
-                    <p className="text-xs text-neutral-500 truncate">john@example.com</p>
+                    <p className="text-sm font-medium text-neutral-800 truncate">
+                      {user?.firstName && user?.lastName 
+                        ? `${user.firstName} ${user.lastName}`
+                        : user?.first_name && user?.last_name
+                        ? `${user.first_name} ${user.last_name}`
+                        : 'User Profile'
+                      }
+                    </p>
+                    <p className="text-xs text-neutral-500 truncate">
+                      {user?.email || 'No email provided'}
+                    </p>
                   </div>
                 </div>
               </motion.div>
