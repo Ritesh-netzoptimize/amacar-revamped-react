@@ -20,6 +20,7 @@ import UnauthorizedPage from './Pages/UnauthorizedPage.jsx';
 import { AuthProvider } from './provider/AuthProvider'; // Updated Redux-based AuthProvider
 import PrivateRoute from './components/Auth/PrivateRoute'; // Updated PrivateRoute
 import { SearchProvider } from './context/SearchContext';
+import BackToTop from './components/ui/back-to-top';
 
 function App() {
   const location = useLocation();
@@ -141,6 +142,9 @@ function App() {
         </main>
 
         {!hideHeaderFooter && <Footer />}
+        
+        {/* Back to Top Button */}
+        <BackToTop />
         </div>
       </SearchProvider>
     </AuthProvider>
