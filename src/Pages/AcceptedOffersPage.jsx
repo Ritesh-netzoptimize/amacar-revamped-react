@@ -9,6 +9,7 @@ import AcceptedOffersSkeleton from '../components/skeletons/AcceptedOffersSkelet
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 import LoadMore from '../components/ui/load-more';
 import useLoadMore from '../hooks/useLoadMore';
+import AppointmentModal from '../components/ui/AppointmentModal';
 
 const AcceptedOffersPage = () => {
   const dispatch = useDispatch();
@@ -25,6 +26,10 @@ const AcceptedOffersPage = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
+
+  // Appointment modal state
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState(null);
 
   // Load more configuration
   const itemsPerPage = 1;
@@ -170,6 +175,28 @@ const AcceptedOffersPage = () => {
         setSortProgress(0);
       }, 200);
     }, randomDelay);
+  };
+
+  // Handle appointment modal
+  const handleOpenAppointmentModal = (offer) => {
+    setSelectedOffer(offer);
+    setIsAppointmentModalOpen(true);
+  };
+
+  const handleCloseAppointmentModal = () => {
+    setIsAppointmentModalOpen(false);
+    setSelectedOffer(null);
+  };
+
+  const handleAppointmentSubmit = async (appointmentData) => {
+    // Here you would typically make an API call to schedule the appointment
+    console.log('Scheduling appointment:', appointmentData);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // You could dispatch an action to update the offer status or show a success message
+    // dispatch(updateOfferStatus({ offerId: selectedOffer.id, status: 'appointment_scheduled' }));
   };
 
   // Sort offers based on selected options
@@ -582,17 +609,13 @@ const AcceptedOffersPage = () => {
                     <Phone className="w-4 h-4" />
                     <span>Contact Dealer</span>
                   </button>
-                  {offer.appointmentUrl && (
-                    <a
-                      href={offer.appointmentUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-secondary flex items-center space-x-2"
-                    >
-                      <Clock className="w-4 h-4" />
-                      <span>Schedule Appointment</span>
-                    </a>
-                  )}
+                  <button 
+                    onClick={() => handleOpenAppointmentModal(offer)}
+                    className="btn-secondary flex items-center space-x-2"
+                  >
+                    <Clock className="w-4 h-4" />
+                    <span>Schedule Appointment</span>
+                  </button>
                   <button className="btn-primary">
                     View Details
                   </button>
@@ -656,6 +679,18 @@ const AcceptedOffersPage = () => {
         )}
 
       </div>
+
+      {/* Appointment Modal */}
+      <AppointmentModal
+        isOpen={isAppointmentModalOpen}
+        onClose={handleCloseAppointmentModal}
+        dealerName={selectedOffer?.dealer || ''}
+        dealerEmail={selectedOffer?.dealerEmail || ''}
+        vehicleInfo={selectedOffer?.vehicle || ''}
+        onAppointmentSubmit={handleAppointmentSubmit}
+        title="Schedule Appointment"
+        description="Choose a convenient date and time for your appointment with the dealer"
+      />
     </div>
   );
 };
