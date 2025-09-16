@@ -12,6 +12,7 @@ import {
   selectHasOffers
 } from '../redux/slices/offersSlice';
 import PreviousOffersSkeleton from '../components/Skeletons/PreviousOffersSkeleton';
+import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 
 const PreviousOffersPage = () => {
   const dispatch = useDispatch();
@@ -335,51 +336,15 @@ const PreviousOffersPage = () => {
             animate="visible"
             className="space-y-6"
           >
-            {/* Sorting Loading State - Center of offers area */}
+            {/* Sorting Loading State - Show skeleton for offers list */}
             {isSorting && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="flex flex-col items-center justify-center py-16"
               >
-                <div className="flex flex-col items-center gap-4 p-6 bg-white rounded-2xl shadow-lg border border-neutral-200">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <RefreshCw className="w-8 h-8 text-orange-500 animate-spin" />
-                      <div className="absolute inset-0 rounded-full border-2 border-orange-200 animate-ping"></div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-semibold text-neutral-800 mb-1">
-                        Sorting offers...
-                      </div>
-                      <div className="text-sm text-neutral-600">
-                        Organizing by {selectedOption.label.toLowerCase()}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="w-64">
-                    <div className="w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${sortProgress}%` }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                      />
-                    </div>
-                    <div className="flex justify-between items-center mt-2">
-                      <div className="text-sm font-medium text-orange-600">
-                        {Math.round(sortProgress)}% complete
-                      </div>
-                      <div className="text-xs text-neutral-500">
-                        Please wait...
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <OffersListSkeleton />
               </motion.div>
             )}
 
