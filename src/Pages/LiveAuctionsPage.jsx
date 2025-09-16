@@ -102,7 +102,7 @@ const LiveAuctionsPage = () => {
   const searchResults = getSearchResults('liveAuctions');
   const allAuctions = transformAuctionsData(searchResults);
   
-  // Filter out auctions with accepted bids - only show live auctions
+  // Filter out auctions with accepted bids, but show auctions with rejected bids
   const auctions = allAuctions.filter(auction => !auction.hasAcceptedBid);
 
   useEffect(() => {
@@ -470,7 +470,7 @@ const LiveAuctionsPage = () => {
               <Users className="w-6 h-6 text-warning" />
             </div>
             <div className="text-2xl font-bold text-neutral-800 mb-1">
-              {auctions.reduce((sum, auction) => sum + auction.bidCount, 0)}
+              {auctions.reduce((sum, auction) => sum + auction.totalBids, 0)}
             </div>
             <div className="text-sm text-neutral-600">Total Bids</div>
           </motion.div>
@@ -815,18 +815,18 @@ const LiveAuctionsPage = () => {
                   >
                     <span>View details</span>
                   </button>
-                  {auction.bidCount > 0 ? (
+                  {auction.totalBids > 0 ? (
                     <button
                       onClick={() => handleViewAllBids(auction)}
                       className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                     >
                       <Eye className="w-4 h-4" />
-                      <span>View Active Bids ({auction.bidCount})</span>
+                      <span>View All Bids ({auction.totalBids})</span>
                     </button>
                   ) : (
                     <div className="flex-1 py-2.5 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
                       <DollarSign className="w-4 h-4" />
-                      <span>No active bids</span>
+                      <span>No bids</span>
                     </div>
                   )}
                 </div>
@@ -906,7 +906,7 @@ const LiveAuctionsPage = () => {
                     Bids for {selectedAuctionBids.vehicle}
                   </h2>
                   <p className="text-sm text-neutral-600 mt-1">
-                    VIN: {selectedAuctionBids.vin} • {selectedAuctionBids.bids?.filter(bid => !bid.is_expired).length || 0} active bids
+                    VIN: {selectedAuctionBids.vin} • {selectedAuctionBids.bids?.length || 0} total bids
                   </p>
                 </div>
                 <button
@@ -922,7 +922,6 @@ const LiveAuctionsPage = () => {
                 {selectedAuctionBids.bids && selectedAuctionBids.bids.length > 0 ? (
                   <div className="space-y-4">
                     {[...selectedAuctionBids.bids]
-                      .filter(bid => !bid.is_expired) // Filter out rejected/expired bids
                       .sort((a, b) => parseFloat(b.amount) - parseFloat(a.amount))
                       .map((bid, index) => (
                       <motion.div
@@ -963,10 +962,13 @@ const LiveAuctionsPage = () => {
                                 ? 'bg-success/10 text-success'
                                 : bid.is_expired
                                 ? 'bg-warning/10 text-warning'
+                                : bid.status === 'rejected'
+                                ? 'bg-error/10 text-error'
                                 : 'bg-primary/10 text-primary'
                             }`}>
                               {bid.is_accepted ? 'Accepted' : 
-                               bid.is_expired ? 'Expired' : 'Active'}
+                               bid.is_expired ? 'Expired' : 
+                               bid.status === 'rejected' ? 'Rejected' : 'Pending'}
                             </div>
                           </div>
                         </div>
@@ -984,28 +986,6 @@ const LiveAuctionsPage = () => {
                           </div>
                         </div>
                         
-                        {/* Accept/Reject Bid Buttons - Only for active bids */}
-                        {!bid.is_accepted && !bid.is_expired && (
-                          <div className="mt-4 pt-4 border-t border-neutral-200">
-                            <div className="flex space-x-4 ">
-                            <button
-                                onClick={() => handleRejectBid(bid.id)}
-                                className="flex-1 bg-white text-red-500 border-red-500   px-4 py-2 rounded-xl cursor-pointer  font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                              >
-                                <XCircle className="w-4 h-4" />
-                                <span>Reject Bid</span>
-                              </button>
-                              <button
-                                onClick={() => handleAcceptBid(bid.id)}
-                                className="flex-1 btn-primary flex items-center justify-center space-x-2"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                                <span>Accept Bid</span>
-                              </button>
-                             
-                            </div>
-                          </div>
-                        )}
                         
                         {bid.notes && (
                           <div className="mt-3 p-3 bg-white rounded-lg border border-neutral-200">
@@ -1019,8 +999,8 @@ const LiveAuctionsPage = () => {
                 ) : (
                   <div className="text-center py-12">
                     <DollarSign className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Active Bids Available</h3>
-                    <p className="text-neutral-500">This auction doesn't have any active bids.</p>
+                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">No Bids Available</h3>
+                    <p className="text-neutral-500">This auction doesn't have any bids yet.</p>
                   </div>
                 )}
               </div>
