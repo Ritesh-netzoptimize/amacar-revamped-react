@@ -172,13 +172,13 @@ export default function AppointmentModal({
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white">
+          <div className="relative bg-[#f6851f] p-6 text-white">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent"></div>
             <div className="relative z-10">
               <DialogTitle className="text-lg font-bold mb-1">
                 {title}
               </DialogTitle>
-              <DialogDescription className="text-slate-300 text-sm">
+              <DialogDescription className="text-white text-sm">
                 {description}
               </DialogDescription>
             </div>
@@ -260,7 +260,7 @@ export default function AppointmentModal({
                       <button
                         type="button"
                         onClick={() => setShowCalendar(!showCalendar)}
-                        className="w-full h-12 rounded-lg border-2 border-slate-200 bg-white hover:border-orange-500 transition-all duration-200 flex items-center justify-between px-3 group"
+                        className="cursor-pointer w-full h-12 rounded-lg border-2 border-slate-200 bg-white hover:border-orange-500 transition-all duration-200 flex items-center justify-between px-3 group"
                       >
                         <span className={`text-sm ${selectedDate ? 'text-slate-900 font-medium' : 'text-slate-500'}`}>
                           {selectedDate ? formatDate(selectedDate) : 'Select date'}
@@ -274,7 +274,7 @@ export default function AppointmentModal({
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -10 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute z-50 mt-2 bg-white rounded-lg border border-slate-200 shadow-lg p-4 w-[320px]"
+                            className="absolute z-50 mt-2 bg-white rounded-lg border border-slate-200 shadow-lg p-4 w-full"
                           >
                             <CalendarComponent
                               mode="single"
@@ -298,7 +298,7 @@ export default function AppointmentModal({
                                 head_row: "flex",
                                 head_cell: "text-slate-500 rounded-md w-9 font-normal text-[0.8rem]",
                                 row: "flex w-full mt-1",
-                                cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-orange-500 [&:has([aria-selected])]:text-white first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                                cell: "rdp-outside text-center text-sm p-0 relative [&:has([aria-selected])]:bg-orange-500 [&:has([aria-selected])]:text-white first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
                                 day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-slate-100 rounded-md",
                                 day_selected: "bg-orange-500 text-white hover:bg-orange-600 hover:text-white focus:bg-orange-500 focus:text-white",
                                 day_today: "bg-orange-100 text-orange-700 font-semibold",

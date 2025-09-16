@@ -134,6 +134,14 @@ layer(utilities);
   }
 }
 
+.rdp-month_grid {
+  width: 100%;
+}
+
+.rdp-outside{
+  text-align: center;
+}
+
 @utility btn-primary {
   /* Button Components */
   @apply bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 hover:shadow-glow focus:outline-hidden focus:ring-4 focus:ring-primary-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
