@@ -188,7 +188,7 @@ const PendingOffersPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero p-8 ">
+    <div className="mt-16 min-h-screen bg-gradient-hero p-8 ">
       <div className="max-w-8xl mx-auto">
         <motion.div
           variants={containerVariants}
@@ -580,7 +580,7 @@ const PendingOffersPage = () => {
               <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-200 bg-neutral-50">
                 <button
                   onClick={handleCloseBidsModal}
-                  className="btn-ghost"
+                  className="cursor-pointer btn-ghost"
                 >
                   Close
                 </button>

@@ -148,7 +148,7 @@ const AcceptedOffersPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero p-8">
+    <div className="mt-16 min-h-screen bg-gradient-hero p-8">
       <div className="max-w-8xl mx-auto">
         <motion.div
           variants={containerVariants}
