@@ -7,6 +7,8 @@ import { fetchAcceptedOffers, selectAcceptedOffers, selectOffersLoading, selectO
 import { useSearch } from '../context/SearchContext';
 import AcceptedOffersSkeleton from '../components/skeletons/AcceptedOffersSkeleton';
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
+import LoadMore from '../components/ui/load-more';
+import useLoadMore from '../hooks/useLoadMore';
 
 const AcceptedOffersPage = () => {
   const dispatch = useDispatch();
@@ -23,6 +25,9 @@ const AcceptedOffersPage = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
+
+  // Load more configuration
+  const itemsPerPage = 1;
 
   // Transform API data to match component structure
   const transformAcceptedOffersData = (offers) => {
@@ -98,7 +103,7 @@ const AcceptedOffersPage = () => {
 
   // Get search results for accepted offers
   const searchResults = getSearchResults('acceptedOffers');
-  const acceptedOffers = transformAcceptedOffersData(searchResults);
+  const acceptedOffers = useMemo(() => transformAcceptedOffersData(searchResults), [searchResults]);
 
   useEffect(() => {
     dispatch(fetchAcceptedOffers());
@@ -187,6 +192,26 @@ const AcceptedOffersPage = () => {
       }
     });
   }, [acceptedOffers, sortBy]);
+
+  // Use load more hook
+  const {
+    paginatedItems: paginatedOffers,
+    hasMoreItems,
+    remainingItems,
+    isLoadingMore,
+    handleLoadMore
+  } = useLoadMore(sortedOffers, itemsPerPage);
+
+  // Debug logging
+  console.log('AcceptedOffers Debug:', {
+    acceptedOffersLength: acceptedOffers.length,
+    sortedOffersLength: sortedOffers.length,
+    paginatedOffersLength: paginatedOffers.length,
+    hasMoreItems,
+    remainingItems,
+    itemsPerPage,
+    searchResultsLength: searchResults.length
+  });
 
   const statusSteps = [
     { key: 'accepted', label: 'Offer Accepted', icon: CheckCircle },
@@ -429,7 +454,7 @@ const AcceptedOffersPage = () => {
             {/* Offers List - Hidden during sorting */}
             {!isSorting && (
               <>
-                {sortedOffers.map((offer) => (
+                {paginatedOffers.map((offer) => (
             <motion.div
               key={offer.id}
               variants={itemVariants}
@@ -575,10 +600,61 @@ const AcceptedOffersPage = () => {
               </div>
             </motion.div>
                 ))}
+
+                {/* Load More Button - Integrated within offers list */}
+                {hasMoreItems && remainingItems > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-8 flex justify-center"
+                  >
+                    <motion.button
+                      onClick={handleLoadMore}
+                      disabled={isLoadingMore}
+                      className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${
+                        isLoadingMore
+                          ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                          : 'bg-primary-500 text-white hover:bg-primary-600 hover:shadow-lg cursor-pointer'
+                      }`}
+                      whileHover={!isLoadingMore ? { scale: 1.02 } : {}}
+                      whileTap={!isLoadingMore ? { scale: 0.98 } : {}}
+                    >
+                      {isLoadingMore ? (
+                        <div className="flex items-center space-x-2">
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <span>Loading offers...</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-extrabold">Load More Offers</span>
+                          <span className="text-sm opacity-75">
+                            ({remainingItems} remaining)
+                          </span>
+                        </div>
+                      )}
+                    </motion.button>
+                  </motion.div>
+                )}
+
+                {/* Loading Skeleton */}
+                <AnimatePresence>
+                  {isLoadingMore && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="mt-6"
+                    >
+                      <OffersListSkeleton />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </>
             )}
           </motion.div>
         )}
+
       </div>
     </div>
   );

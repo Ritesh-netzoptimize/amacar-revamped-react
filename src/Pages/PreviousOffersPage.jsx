@@ -14,6 +14,8 @@ import {
 import { useSearch } from '../context/SearchContext';
 import PreviousOffersSkeleton from '../components/Skeletons/PreviousOffersSkeleton';
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
+import LoadMore from '../components/ui/load-more';
+import useLoadMore from '../hooks/useLoadMore';
 
 const PreviousOffersPage = () => {
   const dispatch = useDispatch();
@@ -33,9 +35,7 @@ const PreviousOffersPage = () => {
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
 
-  // Load more state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Load more configuration
   const itemsPerPage = 2;
 
   
@@ -172,31 +172,14 @@ const PreviousOffersPage = () => {
     });
   }, [searchResults, sortBy]);
 
-  // Load more logic
-  const totalPages = Math.ceil(sortedOffers.length / itemsPerPage);
-  const endIndex = currentPage * itemsPerPage;
-  const paginatedOffers = sortedOffers.slice(0, endIndex);
-  const hasMoreItems = endIndex < sortedOffers.length;
-
-  // Reset to first page when search results change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchResults, sortBy]);
-
-  // Load more handler
-  const handleLoadMore = () => {
-    if (hasMoreItems && !isLoadingMore) {
-      setIsLoadingMore(true);
-      
-      // Random delay between 800ms to 1500ms for better UX
-      const randomDelay = Math.random() * 700 + 800;
-      
-      setTimeout(() => {
-        setCurrentPage(prev => prev + 1);
-        setIsLoadingMore(false);
-      }, randomDelay);
-    }
-  };
+  // Use load more hook
+  const {
+    paginatedItems: paginatedOffers,
+    hasMoreItems,
+    remainingItems,
+    isLoadingMore,
+    handleLoadMore
+  } = useLoadMore(sortedOffers, itemsPerPage);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -504,50 +487,20 @@ const PreviousOffersPage = () => {
           </motion.div>
          )}
 
-        {/* Load More Section */}
-        {!loading && !error && searchResults.length > 0 && hasMoreItems && (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="mt-8 flex justify-center"
-          >
-            <motion.button
-              onClick={handleLoadMore}
-              disabled={isLoadingMore}
-              className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${
-                isLoadingMore
-                  ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
-                  : 'bg-primary-500 text-white hover:bg-primary-600 hover:shadow-lg cursor-pointer'
-              }`}
-              whileHover={!isLoadingMore ? { scale: 1.02 } : {}}
-              whileTap={!isLoadingMore ? { scale: 0.98 } : {}}
-            >
-              {isLoadingMore ? (
-                <div className="flex items-center space-x-2">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Loading...</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-extrabold">Load More</span>
-                </div>
-              )}
-            </motion.button>
-          </motion.div>
-        )}
-
-        {/* Loading More Skeleton */}
-        {isLoadingMore && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="mt-6"
-          >
-            <OffersListSkeleton />
-          </motion.div>
+        {/* Load More Component */}
+        {!loading && !error && searchResults.length > 0 && (
+          <LoadMore
+            items={sortedOffers}
+            itemsPerPage={itemsPerPage}
+            onLoadMore={handleLoadMore}
+            isLoadingMore={isLoadingMore}
+            hasMoreItems={hasMoreItems}
+            remainingItems={remainingItems}
+            SkeletonComponent={OffersListSkeleton}
+            buttonText="Load More Offers"
+            loadingText="Loading offers..."
+            showRemainingCount={true}
+          />
         )}
        </div>
 

@@ -7,6 +7,8 @@ import { fetchLiveAuctions, selectLiveAuctions, selectOffersLoading, selectOffer
 import { useSearch } from '../context/SearchContext';
 import LiveAuctionsSkeleton from '../components/skeletons/LiveAuctionsSkeleton';
 import LiveAuctionsSortingSkeleton from '@/components/skeletons/LiveAuctionsSortingSkeleton';
+import LoadMore from '../components/ui/load-more';
+import useLoadMore from '../hooks/useLoadMore';
 
 const LiveAuctionsPage = () => {
   const dispatch = useDispatch();
@@ -24,6 +26,9 @@ const LiveAuctionsPage = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
+
+  // Load more configuration
+  const itemsPerPage = 1;
 
   // Transform API data to match component structure
   const transformAuctionsData = (auctions) => {
@@ -213,6 +218,25 @@ const LiveAuctionsPage = () => {
       }
     });
   }, [auctions, sortBy]);
+
+  // Use load more hook
+  const {
+    paginatedItems: paginatedAuctions,
+    hasMoreItems,
+    remainingItems,
+    isLoadingMore,
+    handleLoadMore
+  } = useLoadMore(sortedAuctions, itemsPerPage);
+
+  // Debug logging
+  console.log('LiveAuctions Debug:', {
+    auctionsLength: auctions.length,
+    sortedAuctionsLength: sortedAuctions.length,
+    paginatedAuctionsLength: paginatedAuctions.length,
+    hasMoreItems,
+    remainingItems,
+    itemsPerPage
+  });
 
   const handleEndAuction = (auctionId) => {
     setAuctions((prev) =>
@@ -522,7 +546,7 @@ const LiveAuctionsPage = () => {
             {/* Auctions Grid - Hidden during sorting */}
             {!isSorting && (
               <>
-                {sortedAuctions.map((auction) => (
+                {paginatedAuctions.map((auction) => (
             <motion.div
               key={auction.id}
               variants={itemVariants}
@@ -669,6 +693,22 @@ const LiveAuctionsPage = () => {
               </>
             )}
           </motion.div>
+        )}
+
+        {/* Load More Component */}
+        {!loading && !error && sortedAuctions.length > 0 && (
+          <LoadMore
+            items={sortedAuctions}
+            itemsPerPage={itemsPerPage}
+            onLoadMore={handleLoadMore}
+            isLoadingMore={isLoadingMore}
+            hasMoreItems={hasMoreItems}
+            remainingItems={remainingItems}
+            SkeletonComponent={LiveAuctionsSortingSkeleton}
+            buttonText="Load More Auctions"
+            loadingText="Loading auctions..."
+            showRemainingCount={true}
+          />
         )}
 
         {/* Empty State */}

@@ -6,6 +6,8 @@ import { formatDate, formatTimeRemaining } from '../lib/utils';
 import { fetchAppointments, selectAppointments, selectOffersLoading, selectOffersError } from '../redux/slices/offersSlice';
 import MyAppointmentsSkeleton from '../components/skeletons/MyAppointmentsSkeleton';
 import MyAppointmentsSortingSkeleton from '../components/skeletons/MyAppointmentsSortingSkeleton';
+import LoadMore from '../components/ui/load-more';
+import useLoadMore from '../hooks/useLoadMore';
 
 const MyAppointments = () => {
   const dispatch = useDispatch();
@@ -18,6 +20,9 @@ const MyAppointments = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
+
+  // Load more configuration
+  const itemsPerPage = 1;
 
   // Redux state
   const appointments = useSelector(selectAppointments);
@@ -152,10 +157,19 @@ const MyAppointments = () => {
     });
   }, [appointments, sortBy]);
 
+  // Use load more hook
+  const {
+    paginatedItems: paginatedAppointments,
+    hasMoreItems,
+    remainingItems,
+    isLoadingMore,
+    handleLoadMore
+  } = useLoadMore(sortedAppointments, itemsPerPage);
+
   // Get sorted today's appointments
   const getSortedTodaysAppointments = () => {
     const today = new Date();
-    return sortedAppointments.filter(apt => {
+    return paginatedAppointments.filter(apt => {
       const appointmentDate = new Date(apt.start_time);
       return appointmentDate.toDateString() === today.toDateString();
     });
@@ -163,7 +177,7 @@ const MyAppointments = () => {
 
   // Get sorted upcoming appointments
   const getSortedUpcomingAppointments = () => {
-    return sortedAppointments.filter(apt => new Date(apt.start_time) > new Date());
+    return paginatedAppointments.filter(apt => new Date(apt.start_time) > new Date());
   };
 
   // Show loading state
@@ -481,6 +495,22 @@ const MyAppointments = () => {
               </>
             )}
           </motion.div>
+        )}
+
+        {/* Load More Component */}
+        {!loading && !error && appointments.length > 0 && (
+          <LoadMore
+            items={sortedAppointments}
+            itemsPerPage={itemsPerPage}
+            onLoadMore={handleLoadMore}
+            isLoadingMore={isLoadingMore}
+            hasMoreItems={hasMoreItems}
+            remainingItems={remainingItems}
+            SkeletonComponent={MyAppointmentsSortingSkeleton}
+            buttonText="Load More Appointments"
+            loadingText="Loading appointments..."
+            showRemainingCount={true}
+          />
         )}
 
         {/* Empty State */}

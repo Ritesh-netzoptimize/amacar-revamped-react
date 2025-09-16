@@ -7,6 +7,8 @@ import { fetchPendingOffers, selectPendingOffers, selectOffersLoading, selectOff
 import { useSearch } from '../context/SearchContext';
 import PendingOffersSkeleton from '../components/skeletons/PendingOffersSkeleton';
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
+import LoadMore from '../components/ui/load-more';
+import useLoadMore from '../hooks/useLoadMore';
 
 const PendingOffersPage = () => {
   const dispatch = useDispatch();
@@ -23,6 +25,9 @@ const PendingOffersPage = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
+
+  // Load more configuration
+  const itemsPerPage = 1;
 
   // Transform API data to match component structure
   const transformOffersData = (offers) => {
@@ -217,6 +222,15 @@ const PendingOffersPage = () => {
       }
     });
   }, [pendingOffers, sortBy]);
+
+  // Use load more hook
+  const {
+    paginatedItems: paginatedOffers,
+    hasMoreItems,
+    remainingItems,
+    isLoadingMore,
+    handleLoadMore
+  } = useLoadMore(sortedOffers, itemsPerPage);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -515,7 +529,7 @@ const PendingOffersPage = () => {
             {/* Offers List - Hidden during sorting */}
             {!isSorting && (
               <>
-                {sortedOffers.map((offer) => (
+                {paginatedOffers.map((offer) => (
             <motion.div
               key={offer.id}
               variants={itemVariants}
@@ -667,6 +681,22 @@ const PendingOffersPage = () => {
               </>
             )}
           </motion.div>
+        )}
+
+        {/* Load More Component */}
+        {!loading && !error && searchResults.length > 0 && (
+          <LoadMore
+            items={sortedOffers}
+            itemsPerPage={itemsPerPage}
+            onLoadMore={handleLoadMore}
+            isLoadingMore={isLoadingMore}
+            hasMoreItems={hasMoreItems}
+            remainingItems={remainingItems}
+            SkeletonComponent={OffersListSkeleton}
+            buttonText="Load More Offers"
+            loadingText="Loading offers..."
+            showRemainingCount={true}
+          />
         )}
 
         {/* Empty State */}
