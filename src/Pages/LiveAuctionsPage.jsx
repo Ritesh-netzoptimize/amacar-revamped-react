@@ -1,56 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause } from 'lucide-react';
+import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatTimeRemaining } from '../lib/utils';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchLiveAuctions, selectLiveAuctions, selectOffersLoading, selectOffersError, selectHasAuctions } from '../redux/slices/offersSlice';
 
 const LiveAuctionsPage = () => {
-  const [auctions, setAuctions] = useState([
-    {
-      id: 'AUC-001',
-      vehicle: '2020 Honda Civic',
-      year: 2020,
-      make: 'Honda',
-      model: 'Civic',
-      mileage: '45,000',
-      currentBid: 18500,
-      timeRemaining: new Date(Date.now() + 6 * 60 * 60 * 1000), // 6 hours from now
-      bidCount: 8,
-      highestBidder: 'ABC Motors',
-      status: 'live',
-      images: ['/api/placeholder/400/300'],
-      description: 'Well-maintained vehicle with complete service history.',
-    },
-    {
-      id: 'AUC-002',
-      vehicle: '2019 Toyota Camry',
-      year: 2019,
-      make: 'Toyota',
-      model: 'Camry',
-      mileage: '52,000',
-      currentBid: 22100,
-      timeRemaining: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours from now
-      bidCount: 12,
-      highestBidder: 'XYZ Auto',
-      status: 'live',
-      images: ['/api/placeholder/400/300'],
-      description: 'Single owner, garage kept, excellent condition.',
-    },
-    {
-      id: 'AUC-003',
-      vehicle: '2021 BMW 3 Series',
-      year: 2021,
-      make: 'BMW',
-      model: '3 Series',
-      mileage: '28,000',
-      currentBid: 32500,
-      timeRemaining: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4 hours from now
-      bidCount: 15,
-      highestBidder: 'Premium Motors',
-      status: 'live',
-      images: ['/api/placeholder/400/300'],
-      description: 'Certified pre-owned, all options included.',
-    },
-  ]);
+  const dispatch = useDispatch();
+  const liveAuctionsData = useSelector(selectLiveAuctions);
+  const loading = useSelector(selectOffersLoading);
+  const error = useSelector(selectOffersError);
+  const hasAuctions = useSelector(selectHasAuctions);
+
+  // Transform API data to match component structure
+  const transformAuctionsData = (auctions) => {
+    if (!auctions || !Array.isArray(auctions)) return [];
+    
+    return auctions.map(auction => {
+      // Find the highest active bid
+      const activeBids = auction.bid?.filter(bid => !bid.is_expired && bid.status === 'pending') || [];
+      const highestBid = activeBids.reduce((max, bid) => 
+        parseFloat(bid.amount) > parseFloat(max.amount) ? bid : max, 
+        activeBids[0] || { amount: '0' }
+      );
+
+      // Calculate time remaining from remaining_seconds
+      const timeRemaining = new Date(Date.now() + (auction.remaining_seconds * 1000));
+
+      return {
+        id: auction.product_id?.toString() || 'unknown',
+        vehicle: `${auction.year || 'N/A'} ${auction.make || 'Unknown'} ${auction.model || 'Vehicle'}`,
+        year: parseInt(auction.year) || 0,
+        make: auction.make || 'Unknown',
+        model: auction.model || 'Unknown',
+        trim: auction.trim || 'N/A',
+        vin: auction.vin || 'N/A',
+        mileage: 'N/A', // Not provided in API
+        currentBid: parseFloat(highestBid?.amount || auction.cash_offer || '0'),
+        timeRemaining: timeRemaining,
+        bidCount: activeBids.length,
+        totalBids: auction.bid?.length || 0,
+        highestBidder: highestBid?.bidder_display_name || 'No Active Bids',
+        status: 'live',
+        images: auction.image_url ? [auction.image_url] : ['/api/placeholder/400/300'],
+        description: auction.title || 'Vehicle description not available',
+        cashOffer: parseFloat(auction.cash_offer || '0'),
+        cashOfferExpires: auction.cash_offer_expires_in || '',
+        auctionEndsAt: auction.auction_ends_at || '',
+        inWorkingHours: auction.in_working_hours || false,
+        isSentToSalesforce: auction.is_sent_to_salesforce || '',
+        bids: auction.bid || [],
+        highestBidData: highestBid
+      };
+    });
+  };
+
+  const auctions = transformAuctionsData(liveAuctionsData);
+
+  useEffect(() => {
+    dispatch(fetchLiveAuctions());
+  }, [dispatch]);
 
   const [selectedAuction, setSelectedAuction] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -134,6 +143,47 @@ const LiveAuctionsPage = () => {
     }
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-hero p-8">
+        <div className="max-w-8xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-neutral-600">Loading live auctions...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-hero p-8">
+        <div className="max-w-8xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-error" />
+              </div>
+              <h3 className="text-xl font-semibold text-neutral-800 mb-2">Error Loading Auctions</h3>
+              <p className="text-neutral-600 mb-4">{error}</p>
+              <button 
+                onClick={() => dispatch(fetchLiveAuctions())}
+                className="btn-primary"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-hero p-8">
       <div className="max-w-8xl mx-auto">
@@ -143,12 +193,25 @@ const LiveAuctionsPage = () => {
           animate="visible"
           className="mb-8"
         >
-          <motion.h1 variants={itemVariants} className="text-3xl font-bold text-neutral-800 mb-2">
-            Live Auctions
-          </motion.h1>
-          <motion.p variants={itemVariants} className="text-neutral-600">
-            Monitor your active auctions and manage bidding in real-time.
-          </motion.p>
+          <div className="flex items-center justify-between">
+            <div>
+              <motion.h1 variants={itemVariants} className="text-3xl font-bold text-neutral-800 mb-2">
+                Live Auctions
+              </motion.h1>
+              <motion.p variants={itemVariants} className="text-neutral-600">
+                Monitor your active auctions and manage bidding in real-time.
+              </motion.p>
+            </div>
+            <motion.button
+              variants={itemVariants}
+              onClick={() => dispatch(fetchLiveAuctions())}
+              disabled={loading}
+              className="btn-ghost flex items-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </motion.button>
+          </div>
         </motion.div>
 
         {/* Stats Overview */}
@@ -191,7 +254,7 @@ const LiveAuctionsPage = () => {
               <Clock className="w-6 h-6 text-primary-600" />
             </div>
             <div className="text-2xl font-bold text-neutral-800 mb-1">
-              {Math.min(...auctions.map(a => Math.floor((a.timeRemaining - new Date()) / (1000 * 60 * 60))))}h
+              {auctions.length > 0 ? Math.min(...auctions.map(a => Math.floor((a.timeRemaining - new Date()) / (1000 * 60 * 60)))) : 0}h
             </div>
             <div className="text-sm text-neutral-600">Shortest Time Left</div>
           </motion.div>
@@ -211,10 +274,18 @@ const LiveAuctionsPage = () => {
               className="card overflow-hidden hover:shadow-medium relative"
             >
               {/* Image */}
-              <div className="relative h-48 bg-neutral-200">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Car className="w-16 h-16 text-neutral-400" />
-                </div>
+              <div className="relative h-48 bg-neutral-200 overflow-hidden">
+                {auction.images[0] && auction.images[0] !== '/api/placeholder/400/300' ? (
+                  <img 
+                    src={auction.images[0]} 
+                    alt={auction.vehicle}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Car className="w-16 h-16 text-neutral-400" />
+                  </div>
+                )}
                 <div className="absolute top-4 left-4">
                   <span className="bg-success text-white px-2 py-1 rounded-full text-xs font-semibold">
                     LIVE
@@ -283,17 +354,28 @@ const LiveAuctionsPage = () => {
               {/* Content */}
               <div className="p-6">
                 <h3 className="text-xl font-bold text-neutral-800 mb-2">{auction.vehicle}</h3>
-                <p className="text-neutral-600 text-sm mb-4">{auction.mileage} miles • {auction.description}</p>
+                <p className="text-neutral-600 text-sm mb-2">{auction.description}</p>
+                <p className="text-neutral-500 text-xs mb-4">VIN: {auction.vin}</p>
 
                 {/* Current Bid */}
                 <div className="bg-success/10 rounded-lg p-4 mb-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-neutral-600">Current Bid</p>
+                      <p className="text-sm text-neutral-600">
+                        {auction.bidCount > 0 ? 'Current Bid' : 'Cash Offer'}
+                      </p>
                       <p className="text-2xl font-bold text-success">{formatCurrency(auction.currentBid)}</p>
+                      {auction.cashOffer > 0 && auction.bidCount === 0 && (
+                        <p className="text-xs text-neutral-500">{auction.cashOfferExpires}</p>
+                      )}
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-neutral-600">{auction.bidCount} bids</p>
+                      <p className="text-sm text-neutral-600">
+                        {auction.bidCount} active bids
+                        {auction.totalBids > auction.bidCount && (
+                          <span className="text-neutral-400"> ({auction.totalBids - auction.bidCount} expired)</span>
+                        )}
+                      </p>
                       <p className="text-xs text-neutral-500">by {auction.highestBidder}</p>
                     </div>
                   </div>
@@ -332,7 +414,7 @@ const LiveAuctionsPage = () => {
         </motion.div>
 
         {/* Empty State */}
-        {auctions.length === 0 && (
+        {!loading && !error && (!hasAuctions || auctions.length === 0) && (
           <motion.div
             variants={itemVariants}
             className="text-center py-16"

@@ -64,14 +64,37 @@ export const fetchAcceptedOffers = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch live auctions
+export const fetchLiveAuctions = createAsyncThunk(
+  'offers/fetchLiveAuctions',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Use the axios instance which already handles auth headers
+      const response = await api.get('/dashboard/live-auctions');
+      console.log('Live auctions response:', response);
+      console.log('Live auctions response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch live auctions');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch live auctions');
+    }
+  }
+);
+
 const initialState = {
   loading: false,
   error: null,
   previousOffers: [],
   acceptedOffers: [],
   pendingOffers: [],
+  liveAuctions: [],
   totalCount: 0,
   hasOffers: false,
+  hasAuctions: false,
 };
 
 const offersSlice = createSlice({
@@ -85,8 +108,10 @@ const offersSlice = createSlice({
       state.previousOffers = [];
       state.acceptedOffers = [];
       state.pendingOffers = [];
+      state.liveAuctions = [];
       state.totalCount = 0;
       state.hasOffers = false;
+      state.hasAuctions = false;
     },
     
     // Add offer to accepted offers
@@ -175,6 +200,22 @@ const offersSlice = createSlice({
       .addCase(fetchAcceptedOffers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || 'Failed to fetch accepted offers';
+      })
+      // Fetch live auctions
+      .addCase(fetchLiveAuctions.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLiveAuctions.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.liveAuctions = action.payload.auctions || [];
+        state.totalCount = action.payload.total_count || 0;
+        state.hasAuctions = action.payload.has_auctions || false;
+      })
+      .addCase(fetchLiveAuctions.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch live auctions';
       });
   },
 });
@@ -197,7 +238,9 @@ export const selectOffers = (state) => state.offers;
 export const selectPreviousOffers = (state) => state.offers.previousOffers;
 export const selectAcceptedOffers = (state) => state.offers.acceptedOffers;
 export const selectPendingOffers = (state) => state.offers.pendingOffers;
+export const selectLiveAuctions = (state) => state.offers.liveAuctions;
 export const selectOffersLoading = (state) => state.offers.loading;
 export const selectOffersError = (state) => state.offers.error;
 export const selectTotalCount = (state) => state.offers.totalCount;
 export const selectHasOffers = (state) => state.offers.hasOffers;
+export const selectHasAuctions = (state) => state.offers.hasAuctions;
