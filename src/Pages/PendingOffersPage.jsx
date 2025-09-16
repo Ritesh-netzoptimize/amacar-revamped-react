@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Clock, DollarSign, Users, CheckCircle, X, Eye, AlertCircle, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
+import { Car, Clock, DollarSign, Users, CheckCircle, X, Eye, AlertCircle, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search } from 'lucide-react';
 import { formatCurrency, formatDate, formatTimeRemaining } from '../lib/utils';
 import { fetchPendingOffers, selectPendingOffers, selectOffersLoading, selectOffersError } from '../redux/slices/offersSlice';
+import { useSearch } from '../context/SearchContext';
 import PendingOffersSkeleton from '../components/skeletons/PendingOffersSkeleton';
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 
@@ -12,6 +13,9 @@ const PendingOffersPage = () => {
   const pendingOffersData = useSelector(selectPendingOffers);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
+
+  // Search context
+  const { getSearchResults, searchQuery, clearSearch } = useSearch();
 
   // Sorting state
   const [sortBy, setSortBy] = useState('date-desc');
@@ -79,7 +83,9 @@ const PendingOffersPage = () => {
     });
   };
 
-  const pendingOffers = transformOffersData(pendingOffersData);
+  // Get search results for pending offers
+  const searchResults = getSearchResults('pendingOffers');
+  const pendingOffers = transformOffersData(searchResults);
 
   // Modal state
   const [selectedOffer, setSelectedOffer] = useState(null);
@@ -360,8 +366,35 @@ const PendingOffersPage = () => {
           </motion.div>
         </motion.div>
 
+        {/* Search Indicator */}
+        {searchQuery && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mb-4"
+          >
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Search className="w-5 h-5 text-primary-600" />
+                  <span className="text-sm font-medium text-primary-800">
+                    Showing {pendingOffers.length} results for "{searchQuery}"
+                  </span>
+                </div>
+                <button
+                  onClick={clearSearch}
+                  className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                >
+                  Clear Search
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Sorting Section */}
-        {!loading && !error && pendingOffers.length > 0 && (
+        {!loading && !error && searchResults.length > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -371,7 +404,7 @@ const PendingOffersPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-neutral-800 mb-1">Pending Offers</h2>
-                <p className="text-sm text-neutral-600">{pendingOffers.length} offers pending review</p>
+                <p className="text-sm text-neutral-600">{searchResults.length} offers pending review</p>
               </div>
               
               {/* Modern Sort Dropdown */}
@@ -460,7 +493,7 @@ const PendingOffersPage = () => {
         )}
 
         {/* Pending Offers List or Sorting Loading */}
-        {!loading && !error && sortedOffers.length > 0 && (
+        {!loading && !error && searchResults.length > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -637,7 +670,7 @@ const PendingOffersPage = () => {
         )}
 
         {/* Empty State */}
-        {pendingOffers.length === 0 && (
+        {!loading && !error && searchResults.length === 0 && (
           <motion.div
             variants={itemVariants}
             className="text-center py-16"
