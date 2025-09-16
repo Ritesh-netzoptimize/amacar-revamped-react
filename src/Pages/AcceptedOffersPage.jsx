@@ -180,6 +180,7 @@ const AcceptedOffersPage = () => {
   // Handle appointment modal
   const handleOpenAppointmentModal = (offer) => {
     setSelectedOffer(offer);
+    // console.log("offer", )
     setIsAppointmentModalOpen(true);
   };
 
@@ -685,6 +686,7 @@ const AcceptedOffersPage = () => {
         isOpen={isAppointmentModalOpen}
         onClose={handleCloseAppointmentModal}
         dealerName={selectedOffer?.dealer || ''}
+        dealerId = {selectedOffer?.acceptedBidData?.bidder_id || ''}
         dealerEmail={selectedOffer?.dealerEmail || ''}
         vehicleInfo={selectedOffer?.vehicle || ''}
         onAppointmentSubmit={handleAppointmentSubmit}

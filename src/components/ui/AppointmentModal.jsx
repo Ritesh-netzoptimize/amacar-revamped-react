@@ -21,11 +21,13 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { useSelector } from "react-redux";
 
 export default function AppointmentModal({
   isOpen,
   onClose,
   dealerName = "Premium Auto Dealer",
+  dealerId,
   dealerEmail = "contact@premiumauto.com",
   vehicleInfo = "2024 Tesla Model S",
   onAppointmentSubmit,
@@ -40,7 +42,12 @@ export default function AppointmentModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const calendarRef = useRef(null);
+  const {acceptedOffers} = useSelector(state => state.offers);
+  const {user} = useSelector(state => state.user);
 
+  useEffect(() => {
+    console.log("user.id", user.id)
+  })
 
   // Simplified time slots (hourly only)
   const timeSlots = [
@@ -109,9 +116,8 @@ export default function AppointmentModal({
     
     try {
       const appointmentData = {
-        dealerName,
-        dealerEmail,
-        vehicleInfo,
+        dealerId,
+        userId: user.id,
         date: selectedDate,
         time: selectedTime,
         notes: notes.trim()
@@ -161,7 +167,7 @@ export default function AppointmentModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="max-w-[800px] w-full max-h-[85vh] rounded-2xl shadow-2xl p-0 overflow-hidden bg-white border-0"
+        className="sm:max-w-[800px] w-full max-h-[85vh] rounded-2xl shadow-2xl p-0 overflow-hidden bg-white border-0"
         showCloseButton={!isCloseDisabled}
       >
         <div className="flex flex-col h-full">
