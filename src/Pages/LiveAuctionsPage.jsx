@@ -584,7 +584,16 @@ const LiveAuctionsPage = () => {
                     LIVE
                   </span>
                 </div>
-                <div className="absolute top-4 right-4 dropdown-container">
+                {/* Increase Amount Badge */}
+                {auction.currentBid > auction.cashOffer && auction.cashOffer > 0 && (
+                  <div className="absolute top-4 right-4">
+                    <div className="bg-success text-white px-2 py-1 rounded-full text-md font-semibold flex items-center space-x-1">
+                      <ArrowUp className="w-3 h-3" />
+                      <span>+{formatCurrency(auction.currentBid - auction.cashOffer)}</span>
+                    </div>
+                  </div>
+                )}
+                {/* <div className="absolute top-4 right-4 dropdown-container">
                   <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                     <button 
                       onClick={() => toggleDropdown(auction.id)}
@@ -641,7 +650,7 @@ const LiveAuctionsPage = () => {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </div>
+                </div> */}
               </div>
 
               {/* Content */}
@@ -699,23 +708,6 @@ const LiveAuctionsPage = () => {
                   </div>
                 </div>
 
-                {/* View All Bids Button or No Bids Message */}
-                <div className="mb-4">
-                  {auction.totalBids > 0 ? (
-                    <button
-                      onClick={() => handleViewAllBids(auction)}
-                      className="cursor-pointer w-full py-3 px-4 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 border border-primary/20 hover:border-primary/30"
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span>View All Bids ({auction.totalBids})</span>
-                    </button>
-                  ) : (
-                    <div className="w-full py-3 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
-                      <DollarSign className="w-4 h-4" />
-                      <span>No bids yet</span>
-                    </div>
-                  )}
-                </div>
 
                 {/* Actions */}
                 <div className="flex space-x-3">
@@ -723,13 +715,22 @@ const LiveAuctionsPage = () => {
                     onClick={() => handleEndAuction(auction.id)}
                     className="cursor-pointer flex-1 py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                   >
-                    <Pause className="w-4 h-4" />
-                    <span>End</span>
+                    <span>View details</span>
                   </button>
-                  <button className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2">
-                    <Play className="w-4 h-4" />
-                    <span>Pause</span>
-                  </button>
+                  {auction.totalBids > 0 ? (
+                    <button
+                      onClick={() => handleViewAllBids(auction)}
+                      className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>View All Bids ({auction.totalBids})</span>
+                    </button>
+                  ) : (
+                    <div className="flex-1 py-2.5 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
+                      <DollarSign className="w-4 h-4" />
+                      <span>No bids yet</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
