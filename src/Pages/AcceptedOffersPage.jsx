@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, CheckCircle, Clock, FileText, Phone, MapPin, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
+import { Car, CheckCircle, Clock, FileText, Phone, MapPin, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { fetchAcceptedOffers, selectAcceptedOffers, selectOffersLoading, selectOffersError } from '../redux/slices/offersSlice';
+import { useSearch } from '../context/SearchContext';
 import AcceptedOffersSkeleton from '../components/skeletons/AcceptedOffersSkeleton';
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 
@@ -12,6 +13,9 @@ const AcceptedOffersPage = () => {
   const acceptedOffersData = useSelector(selectAcceptedOffers);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
+
+  // Search context
+  const { getSearchResults, searchQuery, clearSearch } = useSearch();
 
   // Sorting state
   const [sortBy, setSortBy] = useState('date-desc');
@@ -92,7 +96,9 @@ const AcceptedOffersPage = () => {
     });
   };
 
-  const acceptedOffers = transformAcceptedOffersData(acceptedOffersData);
+  // Get search results for accepted offers
+  const searchResults = getSearchResults('acceptedOffers');
+  const acceptedOffers = transformAcceptedOffersData(searchResults);
 
   useEffect(() => {
     dispatch(fetchAcceptedOffers());
@@ -269,7 +275,7 @@ const AcceptedOffersPage = () => {
               </motion.button>
               
               {/* Modern Sort Dropdown */}
-              {!loading && !error && acceptedOffers.length > 0 && (
+              {!loading && !error && searchResults.length > 0 && (
                 <motion.div
                   variants={itemVariants}
                   className="relative w-[200px]"
@@ -355,8 +361,35 @@ const AcceptedOffersPage = () => {
           </div>
         </motion.div>
 
+        {/* Search Indicator */}
+        {searchQuery && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="mb-4"
+          >
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Search className="w-5 h-5 text-primary-600" />
+                  <span className="text-sm font-medium text-primary-800">
+                    Showing {acceptedOffers.length} results for "{searchQuery}"
+                  </span>
+                </div>
+                <button
+                  onClick={clearSearch}
+                  className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                >
+                  Clear Search
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* No Offers State */}
-        {!loading && !error && acceptedOffers.length === 0 && (
+        {!loading && !error && searchResults.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -374,7 +407,7 @@ const AcceptedOffersPage = () => {
         )}
 
         {/* Offers List or Sorting Loading */}
-        {!loading && !error && sortedOffers.length > 0 && (
+        {!loading && !error && searchResults.length > 0 && (
           <motion.div
             variants={containerVariants}
             initial="hidden"
