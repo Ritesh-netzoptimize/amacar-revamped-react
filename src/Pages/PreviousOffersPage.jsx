@@ -210,7 +210,7 @@ const PreviousOffersPage = () => {
                 <button
                   onClick={() => !isSorting && setIsDropdownOpen(!isDropdownOpen)}
                   disabled={isSorting}
-                  className={`flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${
+                  className={`cursor-pointer flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${
                     isSorting ? 'opacity-75 cursor-not-allowed' : ''
                   }`}
                 >
@@ -253,7 +253,7 @@ const PreviousOffersPage = () => {
                           <button
                             key={option.value}
                             onClick={() => handleSortSelect(option.value)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 transition-colors duration-150 ${
+                            className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 transition-colors duration-150 ${
                               isSelected ? 'bg-orange-50 text-orange-700' : 'text-neutral-700'
                             } ${index !== sortOptions.length - 1 ? 'border-b border-neutral-100' : ''}`}
                           >
@@ -402,11 +402,11 @@ const PreviousOffersPage = () => {
                           <strong>Status:</strong> {formattedOffer.reason}
                         </p>
                         <div className="flex space-x-2">
-                          <button className="btn-ghost flex items-center space-x-2">
+                          <button className="cursor-pointer btn-ghost flex items-center space-x-2">
                             <Eye className="w-4 h-4" />
                             <span>View Details</span>
                           </button>
-                          <button className="btn-secondary flex items-center space-x-2">
+                          <button className="cursor-pointer btn-secondary flex items-center space-x-2">
                             <RefreshCw className="w-4 h-4" />
                             <span>Relist Vehicle</span>
                           </button>

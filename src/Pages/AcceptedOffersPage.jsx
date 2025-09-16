@@ -325,7 +325,7 @@ const AcceptedOffersPage = () => {
                   </p>
                 </div>
                 <div className="flex space-x-2">
-                  <button className="btn-ghost flex items-center space-x-2">
+                  <button className="cursor-pointer btn-ghost flex items-center space-x-2">
                     <Phone className="w-4 h-4" />
                     <span>Contact Dealer</span>
                   </button>

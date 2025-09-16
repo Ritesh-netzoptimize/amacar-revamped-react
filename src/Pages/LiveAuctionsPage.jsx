@@ -196,7 +196,7 @@ const LiveAuctionsPage = () => {
               variants={itemVariants}
               onClick={() => dispatch(fetchLiveAuctions())}
               disabled={loading}
-              className="btn-ghost flex items-center space-x-2"
+              className="cursor-pointer btn-ghost flex items-center space-x-2"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
@@ -305,7 +305,7 @@ const LiveAuctionsPage = () => {
                         >
                           <button
                             onClick={() => handleViewDetails(auction.id)}
-                            className="w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-primary-50 hover:text-primary-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
+                            className="cursor-pointer w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-primary-50 hover:text-primary-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
                           >
                             <Eye className="w-4 h-4" />
                             <span>View Details</span>
@@ -317,7 +317,7 @@ const LiveAuctionsPage = () => {
                         >
                           <button
                             onClick={() => handleEndAuction(auction.id)}
-                            className="w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
+                            className="cursor-pointer w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
                           >
                             <Pause className="w-4 h-4" />
                             <span>End Auction</span>
@@ -329,7 +329,7 @@ const LiveAuctionsPage = () => {
                         >
                           <button
                             onClick={() => handlePauseAuction(auction.id)}
-                            className="w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-yellow-50 hover:text-yellow-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
+                            className="cursor-pointer w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-yellow-50 hover:text-yellow-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
                           >
                             <Play className="w-4 h-4" />
                             <span>Pause Auction</span>
@@ -379,7 +379,7 @@ const LiveAuctionsPage = () => {
                       {formatTimeRemaining(auction.timeRemaining)}
                     </span>
                   </div>
-                  <button className="p-2 text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg">
+                  <button className="cursor-pointer p-2 text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg">
                     <Eye className="w-4 h-4" />
                   </button>
                 </div>
@@ -388,7 +388,7 @@ const LiveAuctionsPage = () => {
                 <div className="flex space-x-4">
                   <button
                     onClick={() => handleEndAuction(auction.id)}
-                    className="flex-1 btn-secondary flex items-center justify-center space-x-2"
+                    className="cursor-pointer flex-1 btn-secondary flex items-center justify-center space-x-2"
                   >
                     <Pause className="w-4 h-4" />
                     <span>End Auction</span>

@@ -209,7 +209,7 @@ const PendingOffersPage = () => {
               variants={itemVariants}
               onClick={() => dispatch(fetchPendingOffers())}
               disabled={loading}
-              className="btn-ghost flex items-center space-x-2"
+              className="cursor-pointer btn-ghost flex items-center space-x-2"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               <span>Refresh</span>
@@ -385,12 +385,12 @@ const PendingOffersPage = () => {
               {/* Action Buttons */}
               <div className="flex items-center justify-between">
                 <div className="flex space-x-2">
-                  <button className="btn-ghost flex items-center space-x-2">
+                  <button className="cursor-pointer btn-ghost flex items-center space-x-2">
                     <Eye className="w-4 h-4" />
                     <span>View Details</span>
                   </button>
                   <button 
-                    className="btn-secondary" 
+                    className="btn-secondary cursor-pointer" 
                     onClick={() => handleShowBids(offer)}
                     disabled={offer.totalBids === 0}
                   >
@@ -402,7 +402,7 @@ const PendingOffersPage = () => {
                   <button
                     onClick={() => handleRejectOffer(offer.id)}
                     disabled={offer.bidCount === 0}
-                    className="btn-ghost text-error hover:bg-error/10 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="cursor-pointer btn-ghost text-error hover:bg-error/10 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <X className="w-4 h-4" />
                     <span>Reject</span>
