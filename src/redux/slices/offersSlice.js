@@ -106,6 +106,27 @@ export const fetchAppointments = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch dashboard summary
+export const fetchDashboardSummary = createAsyncThunk(
+  'offers/fetchDashboardSummary',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Use the axios instance which already handles auth headers
+      const response = await api.get('/dashboard/summary');
+      console.log('Dashboard summary response:', response);
+      console.log('Dashboard summary response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch dashboard summary');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch dashboard summary');
+    }
+  }
+);
+
 // Async thunk to create appointments
 export const createAppointments = createAsyncThunk(
   'offers/createAppointments',
@@ -307,6 +328,7 @@ const initialState = {
   pendingOffers: [],
   liveAuctions: [],
   appointments: [],
+  dashboardSummary: null,
   totalCount: 0,
   hasOffers: false,
   hasAuctions: false,
@@ -508,6 +530,20 @@ const offersSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Failed to fetch appointments';
       })
+      // Fetch dashboard summary
+      .addCase(fetchDashboardSummary.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDashboardSummary.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.dashboardSummary = action.payload;
+      })
+      .addCase(fetchDashboardSummary.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch dashboard summary';
+      })
       // Create appointments
       .addCase(createAppointments.pending, (state) => {
         state.appointmentOperationLoading = true;
@@ -689,6 +725,7 @@ export const selectAcceptedOffers = (state) => state.offers.acceptedOffers;
 export const selectPendingOffers = (state) => state.offers.pendingOffers;
 export const selectLiveAuctions = (state) => state.offers.liveAuctions;
 export const selectAppointments = (state) => state.offers.appointments;
+export const selectDashboardSummary = (state) => state.offers.dashboardSummary;
 export const selectOffersLoading = (state) => state.offers.loading;
 export const selectOffersError = (state) => state.offers.error;
 export const selectTotalCount = (state) => state.offers.totalCount;

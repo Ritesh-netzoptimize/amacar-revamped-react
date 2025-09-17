@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Car, DollarSign, Calendar, TrendingUp, Clock, Users, Bell, ArrowRight, Eye } from 'lucide-react';
+import { Car, DollarSign, Calendar, TrendingUp, Clock, Users, Bell, ArrowRight, Eye, CheckCircle, Gavel, Car as CarIcon, Calendar as CalendarIcon, DollarSign as DollarIcon } from 'lucide-react';
 import CountUp from 'react-countup';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { 
   fetchLiveAuctions, 
   fetchAcceptedOffers, 
   fetchAppointments,
+  fetchDashboardSummary,
   selectLiveAuctions, 
   selectAcceptedOffers, 
   selectAppointments,
+  selectDashboardSummary,
   selectOffersLoading, 
   selectOffersError 
 } from '../redux/slices/offersSlice';
@@ -23,59 +25,30 @@ const Dashboard = () => {
   const liveAuctions = useSelector(selectLiveAuctions);
   const acceptedOffers = useSelector(selectAcceptedOffers);
   const appointments = useSelector(selectAppointments);
+  const dashboardSummary = useSelector(selectDashboardSummary);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
 
-  // Calculate stats from real data
+  // Calculate stats from dashboard summary data
   const stats = {
-    activeAuctions: liveAuctions?.length || 0,
-    totalEarnings: calculateTotalEarnings(acceptedOffers),
-    pendingAppointments: appointments?.length || 0,
-    profileCompletion: 85, // Keep this as static for now
+    acceptedOffers: dashboardSummary?.accepted_offers || 0,
+    activeAuctions: dashboardSummary?.active_auctions || 0,
+    totalVehicles: dashboardSummary?.total_vehicles || 0,
+    upcomingAppointments: dashboardSummary?.upcoming_appointments || 0,
+    totalBidValue: dashboardSummary?.total_bid_value || 0,
   };
 
-  // Keep recent activity as static for now
-  const recentActivity = [
-    {
-      id: 1,
-      type: 'bid',
-      message: 'New bid received on your 2020 Honda Civic',
-      amount: 18500,
-      time: '2 minutes ago',
-      auctionId: 'AUC-001',
-    },
-    {
-      id: 2,
-      type: 'auction',
-      message: 'Auction ending in 2 hours for Toyota Camry',
-      time: '15 minutes ago',
-      auctionId: 'AUC-002',
-    },
-    {
-      id: 3,
-      type: 'appointment',
-      message: 'Appointment confirmed with ABC Motors',
-      time: '1 hour ago',
-      appointmentId: 'APT-001',
-    },
-  ];
+  // Get recent activity from dashboard summary
+  const recentActivity = dashboardSummary?.recent_activity || [];
 
   // Fetch data on component mount
   useEffect(() => {
+    dispatch(fetchDashboardSummary());
     dispatch(fetchLiveAuctions());
     dispatch(fetchAcceptedOffers());
     dispatch(fetchAppointments());
   }, [dispatch]);
 
-  // Helper function to calculate total earnings from accepted offers
-  function calculateTotalEarnings(offers) {
-    if (!offers || offers.length === 0) return 0;
-    
-    return offers.reduce((total, offer) => {
-      const offerAmount = parseFloat(offer.cash_offer) || 0;
-      return total + offerAmount;
-    }, 0);
-  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -124,6 +97,7 @@ const Dashboard = () => {
             <p className="text-neutral-600 mb-6">{error}</p>
             <button 
               onClick={() => {
+                dispatch(fetchDashboardSummary());
                 dispatch(fetchLiveAuctions());
                 dispatch(fetchAcceptedOffers());
                 dispatch(fetchAppointments());
@@ -161,12 +135,32 @@ const Dashboard = () => {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8"
           >
+            {/* Accepted Offers */}
             <motion.div variants={itemVariants} className="card p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
-                  <Car className="w-6 h-6 text-primary-600" />
+                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-neutral-800">
+                    <CountUp end={stats.acceptedOffers} duration={1} />
+                  </div>
+                  <div className="text-sm text-neutral-600">Accepted Offers</div>
+                </div>
+              </div>
+              <div className="flex items-center text-sm text-green-600">
+                <TrendingUp className="w-4 h-4 mr-1" />
+                <span>Offers accepted</span>
+              </div>
+            </motion.div>
+
+            {/* Active Auctions */}
+            <motion.div variants={itemVariants} className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                  <Gavel className="w-6 h-6 text-orange-600" />
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-neutral-800">
@@ -175,67 +169,66 @@ const Dashboard = () => {
                   <div className="text-sm text-neutral-600">Active Auctions</div>
                 </div>
               </div>
-              <div className="flex items-center text-sm text-success">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                <span>+2 this week</span>
-              </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-success" />
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-neutral-800">
-                    <CountUp end={stats.totalEarnings} duration={1} prefix="$" separator="," />
-                  </div>
-                  <div className="text-sm text-neutral-600">Total Earnings</div>
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-success">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                <span>+12.5% this month</span>
-              </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-warning" />
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-neutral-800">
-                    <CountUp end={stats.pendingAppointments} duration={1} />
-                  </div>
-                  <div className="text-sm text-neutral-600">Appointments</div>
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-neutral-600">
+              <div className="flex items-center text-sm text-orange-600">
                 <Clock className="w-4 h-4 mr-1" />
-                <span>Next: Tomorrow 2PM</span>
+                <span>Currently live</span>
               </div>
             </motion.div>
 
+            {/* Total Vehicles */}
             <motion.div variants={itemVariants} className="card p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
-                  <Users className="w-6 h-6 text-primary-600" />
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <CarIcon className="w-6 h-6 text-blue-600" />
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-neutral-800">
-                    <CountUp end={stats.profileCompletion} duration={1} suffix="%" />
+                    <CountUp end={stats.totalVehicles} duration={1} />
                   </div>
-                  <div className="text-sm text-neutral-600">Profile Complete</div>
+                  <div className="text-sm text-neutral-600">Total Vehicles</div>
                 </div>
               </div>
-              <div className="w-full bg-neutral-200 rounded-full h-2 mt-2">
-                <motion.div
-                  className="bg-gradient-to-r from-primary-400 to-primary-600 h-2 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${stats.profileCompletion}%` }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                />
+              <div className="flex items-center text-sm text-blue-600">
+                <Car className="w-4 h-4 mr-1" />
+                <span>In your fleet</span>
+              </div>
+            </motion.div>
+
+            {/* Upcoming Appointments */}
+            <motion.div variants={itemVariants} className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <CalendarIcon className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-neutral-800">
+                    <CountUp end={stats.upcomingAppointments} duration={1} />
+                  </div>
+                  <div className="text-sm text-neutral-600">Upcoming Appointments</div>
+                </div>
+              </div>
+              <div className="flex items-center text-sm text-purple-600">
+                <Calendar className="w-4 h-4 mr-1" />
+                <span>Scheduled meetings</span>
+              </div>
+            </motion.div>
+
+            {/* Total Bid Value */}
+            <motion.div variants={itemVariants} className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                  <DollarIcon className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-neutral-800">
+                    <CountUp end={stats.totalBidValue} duration={1} prefix="$" separator="," />
+                  </div>
+                  <div className="text-sm text-neutral-600">Total Bid Value</div>
+                </div>
+              </div>
+              <div className="flex items-center text-sm text-emerald-600">
+                <TrendingUp className="w-4 h-4 mr-1" />
+                <span>All time bids</span>
               </div>
             </motion.div>
           </motion.div>
@@ -310,27 +303,33 @@ const Dashboard = () => {
                 </div>
 
                 <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <motion.div
-                      key={activity.id}
-                      className="flex items-start space-x-3 p-3 hover:bg-neutral-50 rounded-lg transition-colors"
-                      whileHover={{ scale: 1.02 }}
-                    >
-                      <div className={`w-2 h-2 rounded-full mt-2 ${
-                        activity.type === 'bid' ? 'bg-success' :
-                        activity.type === 'auction' ? 'bg-warning' :
-                        activity.type === 'appointment' ? 'bg-primary-500' :
-                        'bg-neutral-400'
-                      }`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-neutral-800">{activity.message}</p>
-                        {activity.amount && (
-                          <p className="text-sm font-semibold text-success">{formatCurrency(activity.amount)}</p>
-                        )}
-                        <p className="text-xs text-neutral-500">{activity.time}</p>
-                      </div>
-                    </motion.div>
-                  ))}
+                  {recentActivity.length > 0 ? (
+                    recentActivity.map((activity, index) => (
+                      <motion.div
+                        key={index}
+                        className="flex items-start space-x-3 p-3 hover:bg-neutral-50 rounded-lg transition-colors"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <div className={`w-2 h-2 rounded-full mt-2 ${
+                          activity.type === 'bid' ? 'bg-emerald-500' :
+                          activity.type === 'auction' ? 'bg-orange-500' :
+                          activity.type === 'appointment' ? 'bg-purple-500' :
+                          'bg-neutral-400'
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-neutral-800">{activity.message}</p>
+                          <p className="text-xs text-neutral-500">
+                            {activity.formatted_date?.date} at {activity.formatted_date?.time}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Bell className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
+                      <p className="text-neutral-500">No recent activity</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* <button className="w-full mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium">
