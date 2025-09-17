@@ -148,10 +148,10 @@ const Dashboard = () => {
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-neutral-800">Live Auctions</h2>
-                  <button className="cursor-pointer text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                  <Link to={'/auctions'} className="cursor-pointer text-primary-600 hover:text-primary-700 font-medium flex items-center">
                     View All
                     <ArrowRight className="w-4 h-4 ml-1" />
-                  </button>
+                  </Link>
                 </div>
 
                 <div className="space-y-4">
