@@ -165,34 +165,33 @@ export default function AppointmentDetailsModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="sm:max-w-[600px] w-full max-h-[85vh] rounded-2xl shadow-2xl p-0 overflow-hidden bg-white border-0"
+        className="sm:max-w-[600px] w-full max-h-[90vh] rounded-2xl shadow-2xl p-0 bg-white border-0 flex flex-col"
         showCloseButton={!isCloseDisabled}
       >
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="relative bg-[#f6851f] p-6 text-white">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent"></div>
-            <div className="relative z-10">
-              <DialogTitle className="text-lg font-bold mb-1">
-                Appointment Details
-              </DialogTitle>
-              <DialogDescription className="text-white text-sm">
-                View and manage your appointment information
-              </DialogDescription>
-            </div>
-            {/* Decorative elements */}
-            <div className="absolute -top-4 -right-4 w-20 h-20 bg-orange-500/10 rounded-full blur-xl"></div>
-            <div className="absolute -bottom-2 -left-2 w-12 h-12 bg-orange-500/20 rounded-full blur-lg"></div>
+        {/* Header - Fixed */}
+        <div className="relative bg-[#f6851f] p-6 text-white flex-shrink-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent"></div>
+          <div className="relative z-10">
+            <DialogTitle className="text-lg font-bold mb-1">
+              Appointment Details
+            </DialogTitle>
+            <DialogDescription className="text-white text-sm">
+              View and manage your appointment information
+            </DialogDescription>
           </div>
+          {/* Decorative elements */}
+          <div className="absolute -top-4 -right-4 w-20 h-20 bg-orange-500/10 rounded-full blur-xl"></div>
+          <div className="absolute -bottom-2 -left-2 w-12 h-12 bg-orange-500/20 rounded-full blur-lg"></div>
+        </div>
 
-          {/* Content Area */}
-          <div className="flex-1 p-6 overflow-y-auto">
+        {/* Content Area - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6 min-h-0 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 hover:scrollbar-thumb-slate-400 scroll-smooth">
             {appointment ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="space-y-6"
+                className="space-y-6 pb-4"
               >
                 {/* Appointment Status */}
                 <div className="flex items-center justify-between">
@@ -410,7 +409,6 @@ export default function AppointmentDetailsModal({
                 </button>
               </div>
             )}
-          </div>
         </div>
       </DialogContent>
 
