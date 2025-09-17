@@ -662,12 +662,12 @@ useEffect(() => {
                           <p className="font-medium text-slate-900">{values.interiorColor || "—"}</p>
                         </div>
                         <div className="rounded-xl border border-slate-200 bg-white p-3">
-                          <p className="text-xs text-slate-500">Engine Type</p>
-                          <p className="font-medium text-slate-900">{values.engineType || "—"}</p>
+                          <p className="text-xs text-slate-500 ">Engine Type</p>
+                          <p className="font-medium text-slate-900 overflow-hidden text-ellipsis">{values.engineType || "—"}</p>
                         </div>
                         <div className="rounded-xl border border-slate-200 bg-white p-3">
-                          <p className="text-xs text-slate-500">Body Engine</p>
-                          <p className="font-medium text-slate-900">{values.bodyEngineType || "—"}</p>
+                          <p className="text-xs text-slate-500 ">Body Engine</p>
+                          <p className="font-medium text-slate-900 overflow-hidden text-ellipsis">{values.bodyEngineType || "—"}</p>
                         </div>
                       </div>
                     </div>

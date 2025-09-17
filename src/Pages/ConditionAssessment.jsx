@@ -445,7 +445,7 @@ export default function ConditionAssessment() {
                     </label>
                     <div className="relative">
                       <MapPin className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        userState?.zipcode ? "text-orange-500" : "text-slate-400"
+                        userState?.zipcode || stateZip ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
                         value={user.zipcode || stateZip || ""}
@@ -713,7 +713,7 @@ export default function ConditionAssessment() {
                                 <span className="truncate min-w-0">{q.label}</span>
                               </div>
                               <span
-                                className={`text-xs font-medium whitespace-nowrap ${
+                                className={`text-xs overflow-hidden text-ellipsis font-medium whitespace-nowrap ${
                                   q.answer ? "text-orange-700" : "text-slate-500"
                                 }`}
                               >
