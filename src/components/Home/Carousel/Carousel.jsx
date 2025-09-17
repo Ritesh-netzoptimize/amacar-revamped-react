@@ -36,8 +36,29 @@ const slides = [
 export default function Carousel() {
     const [index, setIndex] = useState(0)
     const [direction, setDirection] = useState('next') // 'next' or 'prev'
+    const [isHovered, setIsHovered] = useState(false)
+    const intervalRef = useRef(null)
 
-    // stop autoplay: intentionally no timeout/useEffect here
+    // Permanent autoplay functionality
+    useEffect(() => {
+        if (!isHovered) {
+            intervalRef.current = setInterval(() => {
+                setDirection('next')
+                setIndex((i) => (i + 1) % slides.length)
+            }, 2500) // Change slide every 2.5 seconds
+        } else {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+                intervalRef.current = null
+            }
+        }
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+            }
+        }
+    }, [isHovered])
 
     function goDelta(delta) {
         setDirection(delta > 0 ? 'next' : 'prev')
@@ -50,10 +71,22 @@ export default function Carousel() {
         setIndex(n)
     }
 
+    function handleMouseEnter() {
+        setIsHovered(true)
+    }
+
+    function handleMouseLeave() {
+        setIsHovered(false)
+    }
+
     return (
         <div className="carousel w-full">
             <div className="max-w-6xl mx-auto px-6 py-12 carousel-outer-div">
-                <div className="relative overflow-hidden rounded-lg carousel-inner-div">
+                <div 
+                    className="relative overflow-hidden rounded-lg carousel-inner-div"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
                     {slides.map((s, i) => (
                         <section
                             key={i}
@@ -84,8 +117,12 @@ export default function Carousel() {
                     ))}
 
                     {/* arrows */}
-                    <button type="button" className="arrow left" onClick={() => goDelta(-1)} aria-label="Previous slide">‹</button>
-                    <button type="button" className="arrow right" onClick={() => goDelta(1)} aria-label="Next slide">›</button>
+                    <button type="button" className="arrow left" onClick={() => goDelta(-1)} aria-label="Previous slide">
+                        <span className="arrow-icon">←</span>
+                    </button>
+                    <button type="button" className="arrow right" onClick={() => goDelta(1)} aria-label="Next slide">
+                        <span className="arrow-icon">→</span>
+                    </button>
 
                     {/* dots */}
                     <div className="dots" role="tablist" aria-label="Carousel pagination">

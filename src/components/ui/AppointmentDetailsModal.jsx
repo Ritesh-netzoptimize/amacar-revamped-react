@@ -281,6 +281,18 @@ export default function AppointmentDetailsModal({
                     </button>
                   </div>
 
+                  {/* Cancelled Appointment Notice */}
+                  {appointment.status === 'cancelled' && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="w-4 h-4 text-red-600" />
+                        <p className="text-sm text-red-700">
+                          This appointment has been cancelled. Management actions are not available.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <AnimatePresence>
                     {showActions && (
                       <motion.div
@@ -291,21 +303,23 @@ export default function AppointmentDetailsModal({
                         className="space-y-2"
                       >
                         {/* Management Actions */}
-                        <div className="grid grid-cols-1 gap-2">
-                          <button
-                            onClick={() => onReschedule && onReschedule(appointment)}
-                            // disabled={isProcessing || !appointment.can_reschedule}
-                            disabled={isProcessing}
-                            className="cursor-pointer flex items-center justify-center gap-2 h-10 bg-orange-50 text-orange-700 rounded-lg border border-orange-200 hover:bg-orange-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                            <span className="text-sm font-medium">
-                              {isProcessing && processingAction === 'reschedule' ? 'Processing...' : 'Reschedule'}
-                            </span>
-                          </button>
-                        </div>
+                        {appointment.status !== 'cancelled' && (
+                          <div className="grid grid-cols-1 gap-2">
+                            <button
+                              onClick={() => onReschedule && onReschedule(appointment)}
+                              // disabled={isProcessing || !appointment.can_reschedule}
+                              disabled={isProcessing}
+                              className="cursor-pointer flex items-center justify-center gap-2 h-10 bg-orange-50 text-orange-700 rounded-lg border border-orange-200 hover:bg-orange-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                              <span className="text-sm font-medium">
+                                {isProcessing && processingAction === 'reschedule' ? 'Processing...' : 'Reschedule'}
+                              </span>
+                            </button>
+                          </div>
+                        )}
                         {/* Communication Actions */}
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className={`grid gap-2 ${appointment.status === 'cancelled' ? 'grid-cols-1' : 'grid-cols-2'}`}>
                           <button
                             onClick={() => onCall && onCall(appointment)}
                             className="cursor-pointer flex items-center justify-center gap-2 h-10 bg-green-50 text-green-700 rounded-lg border border-green-200 hover:bg-green-100 transition-colors"
@@ -314,14 +328,16 @@ export default function AppointmentDetailsModal({
                             <span className="text-sm font-medium">Call</span>
                           </button>
                           
-                          <button
-                            onClick={handleCancelClick}
-                            disabled={isProcessing || isCancelProcessing}
-                            className="cursor-pointer flex items-center justify-center gap-2 h-10 bg-red-50 text-red-700 rounded-lg border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            <span className="text-sm font-medium">Cancel</span>
-                          </button>
+                          {appointment.status !== 'cancelled' && (
+                            <button
+                              onClick={handleCancelClick}
+                              disabled={isProcessing || isCancelProcessing}
+                              className="cursor-pointer flex items-center justify-center gap-2 h-10 bg-red-50 text-red-700 rounded-lg border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              <span className="text-sm font-medium">Cancel</span>
+                            </button>
+                          )}
                         </div>
 
                       </motion.div>
@@ -358,7 +374,7 @@ export default function AppointmentDetailsModal({
                   >
                     Close
                   </button>
-                  {/* {appointment.can_reschedule && ( */}
+                  {appointment.status !== 'cancelled' && (
                     <button
                       onClick={() => onReschedule && onReschedule(appointment)}
                       disabled={isProcessing}
@@ -366,7 +382,7 @@ export default function AppointmentDetailsModal({
                     >
                       Reschedule
                     </button>
-                  {/* )} */}
+                  )}
                 </div>
               </motion.div>
             ) : (

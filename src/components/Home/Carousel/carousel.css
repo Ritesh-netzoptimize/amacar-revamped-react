@@ -163,36 +163,72 @@
 
 /* Arrows */
 .arrow {
-    font-size: xx-large;
+    font-size: 1.5rem;
+    font-weight: 700;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: #fff;
-    border: none;
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border: 2px solid rgba(57, 77, 161, 0.1);
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.08);
-    transition: transform .12s ease, background .12s ease;
-    z-index: 10;
+    box-shadow: 0 4px 20px rgba(57, 77, 161, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 20;
     pointer-events: auto;
+    color: white;
+    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, var(--brand-purple) 0%, #2d3a7c 100%);
+
 }
 
 .arrow.left {
-    left: 12px;
+    left: 2px;
 }
 
 .arrow.right {
-    right: 12px;
+    right: 2px;
 }
 
 .arrow:hover {
-    transform: translateY(-50%) scale(1.08);
-    background: #f8fafc;
+    transform: translateY(-50%) scale(1.1);
+    background: white;
+    color: var(--brand-purple);
+    border-color: var(--brand-purple);
+    box-shadow: 0 8px 30px rgba(57, 77, 161, 0.3), 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.arrow:active {
+    transform: translateY(-50%) scale(1.05);
+}
+
+.arrow:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(57, 77, 161, 0.2), 0 4px 20px rgba(57, 77, 161, 0.15);
+}
+
+.arrow-icon {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.arrow:hover .arrow-icon {
+    transform: scale(1.1);
+}
+
+.arrow.left:hover .arrow-icon {
+    transform: translateX(-2px) scale(1.1);
+}
+
+.arrow.right:hover .arrow-icon {
+    transform: translateX(2px) scale(1.1);
 }
 
 /* Dots */
@@ -289,16 +325,17 @@
     }
 
     .arrow {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
+        font-size: 1.25rem;
     }
 
     .arrow.left {
-        left: 8px;
+        left: 12px;
     }
 
     .arrow.right {
-        right: 8px;
+        right: 12px;
     }
 
     .dots {
