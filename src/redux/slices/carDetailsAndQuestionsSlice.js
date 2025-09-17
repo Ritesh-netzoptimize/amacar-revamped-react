@@ -614,6 +614,7 @@ const carDetailsAndQuestionsSlice = createSlice({
           timestamp: action.payload.timestamp
         };
         state.auctionStartError = null;
+        // return initialState; // re check by neeraj sir
       })
       .addCase(startAuction.rejected, (state, action) => {
         state.auctionStartStatus = 'failed';
