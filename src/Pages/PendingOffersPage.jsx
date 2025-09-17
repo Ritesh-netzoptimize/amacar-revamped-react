@@ -5,10 +5,12 @@ import { Car, Clock, DollarSign, Users, CheckCircle, X, Eye, AlertCircle, Refres
 import { formatCurrency, formatDate, formatTimeRemaining } from '../lib/utils';
 import { 
   fetchPendingOffers, 
+  fetchDashboardSummary,
   acceptBid, 
   rejectBid, 
   clearBidOperationStates,
   selectPendingOffers, 
+  selectDashboardSummary,
   selectOffersLoading, 
   selectOffersError,
   selectBidOperationLoading,
@@ -22,10 +24,12 @@ import LoadMore from '../components/ui/load-more';
 import useLoadMore from '../hooks/useLoadMore';
 import BidConfirmationModal from '../components/ui/BidConfirmationModal';
 import BidsModal from '../components/ui/BidsModal';
+import StatsCards from '../components/ui/StatsCards';
 
 const PendingOffersPage = () => {
   const dispatch = useDispatch();
   const pendingOffersData = useSelector(selectPendingOffers);
+  const dashboardSummary = useSelector(selectDashboardSummary);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
   const bidOperationLoading = useSelector(selectBidOperationLoading);
@@ -115,6 +119,7 @@ const PendingOffersPage = () => {
   const [confirmationData, setConfirmationData] = useState(null);
 
   useEffect(() => {
+    dispatch(fetchDashboardSummary());
     dispatch(fetchPendingOffers());
   }, [dispatch]);
 
@@ -413,51 +418,18 @@ const PendingOffersPage = () => {
           </div>
         </motion.div>
 
-        {/* Stats Overview */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
-        >
-          <motion.div variants={itemVariants} className="card p-6 text-center">
-            <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-6 h-6 text-warning" />
-            </div>
-            <div className="text-2xl font-bold text-neutral-800 mb-1">{pendingOffers.length}</div>
-            <div className="text-sm text-neutral-600">Pending Offers</div>
-          </motion.div>
+        {/* Stats Cards */}
+        <StatsCards 
+          data={dashboardSummary}
+          loading={loading}
+          className="mb-8"
+          showAcceptedOffers={true}
+          showActiveAuctions={true}
+          showTotalVehicles={true}
+          showUpcomingAppointments={true}
+          showTotalBidValue={true}
+        />
 
-          <motion.div variants={itemVariants} className="card p-6 text-center">
-            <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <DollarSign className="w-6 h-6 text-primary-600" />
-            </div>
-            <div className="text-2xl font-bold text-neutral-800 mb-1">
-              {pendingOffers.length > 0 ? formatCurrency(Math.max(...pendingOffers.map(o => Math.max(o.highestBid, o.cashOffer)))) : '$0'}
-            </div>
-            <div className="text-sm text-neutral-600">Highest Offer</div>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="card p-6 text-center">
-            <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Users className="w-6 h-6 text-success" />
-            </div>
-            <div className="text-2xl font-bold text-neutral-800 mb-1">
-              {pendingOffers.reduce((sum, offer) => sum + offer.totalBids, 0)}
-            </div>
-            <div className="text-sm text-neutral-600">Total Bids</div>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="card p-6 text-center">
-            <div className="w-12 h-12 bg-error/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-6 h-6 text-error" />
-            </div>
-            <div className="text-2xl font-bold text-neutral-800 mb-1">
-              {pendingOffers.filter(o => o.status === 'urgent').length}
-            </div>
-            <div className="text-sm text-neutral-600">Urgent Offers</div>
-          </motion.div>
-        </motion.div>
 
         {/* Search Indicator */}
         {searchQuery && (

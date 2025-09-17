@@ -5,10 +5,12 @@ import { formatCurrency, formatTimeRemaining } from '../lib/utils';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   fetchLiveAuctions, 
+  fetchDashboardSummary,
   acceptBid, 
   rejectBid, 
   clearBidOperationStates,
   selectLiveAuctions, 
+  selectDashboardSummary,
   selectOffersLoading, 
   selectOffersError, 
   selectHasAuctions,
@@ -23,10 +25,12 @@ import LoadMore from '../components/ui/load-more';
 import useLoadMore from '../hooks/useLoadMore';
 import BidConfirmationModal from '../components/ui/BidConfirmationModal';
 import BidsModal from '../components/ui/BidsModal';
+import StatsCards from '../components/ui/StatsCards';
 
 const LiveAuctionsPage = () => {
   const dispatch = useDispatch();
   const liveAuctionsData = useSelector(selectLiveAuctions);
+  const dashboardSummary = useSelector(selectDashboardSummary);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
   const hasAuctions = useSelector(selectHasAuctions);
@@ -107,6 +111,7 @@ const LiveAuctionsPage = () => {
   const auctions = allAuctions.filter(auction => !auction.hasAcceptedBid);
 
   useEffect(() => {
+    dispatch(fetchDashboardSummary());
     dispatch(fetchLiveAuctions());
   }, [dispatch]);
 
@@ -457,51 +462,18 @@ const LiveAuctionsPage = () => {
           </div>
         </motion.div>
 
-        {/* Stats Overview */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
-        >
-          <motion.div variants={itemVariants} className="card p-6 text-center">
-            <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Car className="w-6 h-6 text-primary-600" />
-            </div>
-            <div className="text-2xl font-bold text-neutral-800 mb-1">{auctions.length}</div>
-            <div className="text-sm text-neutral-600">Active Auctions</div>
-          </motion.div>
 
-          <motion.div variants={itemVariants} className="card p-6 text-center">
-            <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <DollarSign className="w-6 h-6 text-success" />
-            </div>
-            <div className="text-2xl font-bold text-neutral-800 mb-1">
-              {formatCurrency(auctions.reduce((sum, auction) => sum + auction.currentBid, 0))}
-            </div>
-            <div className="text-sm text-neutral-600">Total Current Bids</div>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="card p-6 text-center">
-            <div className="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Users className="w-6 h-6 text-warning" />
-            </div>
-            <div className="text-2xl font-bold text-neutral-800 mb-1">
-              {auctions.reduce((sum, auction) => sum + auction.totalBids, 0)}
-            </div>
-            <div className="text-sm text-neutral-600">Total Bids</div>
-          </motion.div>
-
-          <motion.div variants={itemVariants} className="card p-6 text-center">
-            <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-6 h-6 text-primary-600" />
-            </div>
-            <div className="text-2xl font-bold text-neutral-800 mb-1">
-              {auctions.length > 0 ? Math.min(...auctions.map(a => Math.floor((a.timeRemaining - new Date()) / (1000 * 60 * 60)))) : 0}h
-            </div>
-            <div className="text-sm text-neutral-600">Shortest Time Left</div>
-          </motion.div>
-        </motion.div>
+        {/* Stats Cards */}
+        <StatsCards 
+          data={dashboardSummary}
+          loading={loading}
+          className="mb-8"
+          showAcceptedOffers={true}
+          showActiveAuctions={true}
+          showTotalVehicles={true}
+          showUpcomingAppointments={true}
+          showTotalBidValue={true}
+        />
 
         {/* Search Indicator */}
         {searchQuery && (

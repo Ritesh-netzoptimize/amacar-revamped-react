@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Car, DollarSign, Calendar, TrendingUp, Clock, Users, Bell, ArrowRight, Eye, CheckCircle, Gavel, Car as CarIcon, Calendar as CalendarIcon, DollarSign as DollarIcon } from 'lucide-react';
-import CountUp from 'react-countup';
+import { Car, DollarSign, Calendar, TrendingUp, Clock, Users, Bell, ArrowRight, Eye } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
+import StatsCards from '../components/ui/StatsCards';
 import { 
   fetchLiveAuctions, 
   fetchAcceptedOffers, 
@@ -131,107 +131,11 @@ const Dashboard = () => {
           </motion.div>
 
           {/* Stats Cards */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8"
-          >
-            {/* Accepted Offers */}
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-neutral-800">
-                    <CountUp end={stats.acceptedOffers} duration={1} />
-                  </div>
-                  <div className="text-sm text-neutral-600">Accepted Offers</div>
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-green-600">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                <span>Offers accepted</span>
-              </div>
-            </motion.div>
-
-            {/* Active Auctions */}
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                  <Gavel className="w-6 h-6 text-orange-600" />
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-neutral-800">
-                    <CountUp end={stats.activeAuctions} duration={1} />
-                  </div>
-                  <div className="text-sm text-neutral-600">Active Auctions</div>
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-orange-600">
-                <Clock className="w-4 h-4 mr-1" />
-                <span>Currently live</span>
-              </div>
-            </motion.div>
-
-            {/* Total Vehicles */}
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <CarIcon className="w-6 h-6 text-blue-600" />
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-neutral-800">
-                    <CountUp end={stats.totalVehicles} duration={1} />
-                  </div>
-                  <div className="text-sm text-neutral-600">Total Vehicles</div>
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-blue-600">
-                <Car className="w-4 h-4 mr-1" />
-                <span>In your fleet</span>
-              </div>
-            </motion.div>
-
-            {/* Upcoming Appointments */}
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <CalendarIcon className="w-6 h-6 text-purple-600" />
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-neutral-800">
-                    <CountUp end={stats.upcomingAppointments} duration={1} />
-                  </div>
-                  <div className="text-sm text-neutral-600">Upcoming Appointments</div>
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-purple-600">
-                <Calendar className="w-4 h-4 mr-1" />
-                <span>Scheduled meetings</span>
-              </div>
-            </motion.div>
-
-            {/* Total Bid Value */}
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                  <DollarIcon className="w-6 h-6 text-emerald-600" />
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-neutral-800">
-                    <CountUp end={stats.totalBidValue} duration={1} prefix="$" separator="," />
-                  </div>
-                  <div className="text-sm text-neutral-600">Total Bid Value</div>
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-emerald-600">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                <span>All time bids</span>
-              </div>
-            </motion.div>
-          </motion.div>
+          <StatsCards 
+            data={dashboardSummary}
+            loading={loading}
+            className="mb-8"
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Live Auctions */}
