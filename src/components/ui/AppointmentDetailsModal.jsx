@@ -27,6 +27,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import CancelAppointmentModal from "./CancelAppointmentModal";
+import AppointmentModal from "./AppointmentModal";
 
 export default function AppointmentDetailsModal({
   isOpen,
@@ -42,6 +43,7 @@ export default function AppointmentDetailsModal({
   const [showActions, setShowActions] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelProcessing, setIsCancelProcessing] = useState(false);
+  const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
 
   // Handle modal close
   const handleClose = (open) => {
@@ -59,6 +61,16 @@ export default function AppointmentDetailsModal({
   const handleCancelModalClose = () => {
     setIsCancelModalOpen(false);
     setIsCancelProcessing(false);
+  };
+
+  // Handle reschedule button click
+  const handleRescheduleClick = () => {
+    setIsRescheduleModalOpen(true);
+  };
+
+  // Handle reschedule modal close
+  const handleRescheduleModalClose = () => {
+    setIsRescheduleModalOpen(false);
   };
 
   // Handle confirm cancellation
@@ -306,16 +318,21 @@ export default function AppointmentDetailsModal({
                         {appointment.status !== 'cancelled' && (
                           <div className="grid grid-cols-1 gap-2">
                             <button
-                              onClick={() => onReschedule && onReschedule(appointment)}
-                              // disabled={isProcessing || !appointment.can_reschedule}
-                              disabled={isProcessing}
+                              onClick={handleRescheduleClick}
+                              disabled={isProcessing || (appointment.can_reschedule === false)}
                               className="cursor-pointer flex items-center justify-center gap-2 h-10 bg-orange-50 text-orange-700 rounded-lg border border-orange-200 hover:bg-orange-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <Edit3 className="w-4 h-4" />
                               <span className="text-sm font-medium">
-                                {isProcessing && processingAction === 'reschedule' ? 'Processing...' : 'Reschedule'}
+                                {isProcessing && processingAction === 'reschedule' ? 'Processing...' : 
+                                 appointment.can_reschedule === false ? 'Cannot Reschedule' : 'Reschedule'}
                               </span>
                             </button>
+                            {appointment.can_reschedule === false && (
+                              <p className="text-xs text-slate-500 text-center">
+                                Rescheduling not available for this appointment
+                              </p>
+                            )}
                           </div>
                         )}
                         {/* Communication Actions */}
@@ -374,15 +391,7 @@ export default function AppointmentDetailsModal({
                   >
                     Close
                   </button>
-                  {appointment.status !== 'cancelled' && (
-                    <button
-                      onClick={() => onReschedule && onReschedule(appointment)}
-                      disabled={isProcessing}
-                      className="flex-1 h-12 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md shadow-orange-500/25 transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Reschedule
-                    </button>
-                  )}
+                  
                 </div>
               </motion.div>
             ) : (
@@ -413,6 +422,25 @@ export default function AppointmentDetailsModal({
         appointment={appointment}
         onConfirmCancel={handleConfirmCancel}
         isProcessing={isCancelProcessing}
+      />
+
+      {/* Reschedule Appointment Modal */}
+      <AppointmentModal
+        isOpen={isRescheduleModalOpen}
+        onClose={handleRescheduleModalClose}
+        dealerName={appointment?.dealer_name}
+        dealerId={appointment?.dealer_id || appointment?.dealerId}
+        dealerEmail={appointment?.dealer_email}
+        vehicleInfo={appointment?.vehicle_info || "Vehicle Information"}
+        isReschedule={true}
+        appointmentToReschedule={appointment}
+        onRescheduleSubmit={() => {
+          // Close the reschedule modal and refresh appointments
+          handleRescheduleModalClose();
+          if (onReschedule) {
+            onReschedule(appointment);
+          }
+        }}
       />
     </Dialog>
   );

@@ -155,6 +155,31 @@ export const cancelAppointment = createAsyncThunk(
   }
 );
 
+// Async thunk to reschedule appointments
+export const rescheduleAppointment = createAsyncThunk(
+  'offers/rescheduleAppointment',
+  async (rescheduleData, { rejectWithValue }) => {
+    try {
+      console.log("Rescheduling appointment:", rescheduleData.appointmentId, "to:", rescheduleData.start_time);
+      const response = await api.post('/appointment/reschedule', {
+        appointment_id: rescheduleData.appointmentId,
+        new_start_time: rescheduleData.start_time,
+        notes: rescheduleData.notes
+      });
+      console.log('Reschedule appointment response:', response);
+      console.log('Reschedule appointment response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to reschedule appointment');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to reschedule appointment');
+    }
+  }
+);
+
 // Async thunk to accept a bid
 export const acceptBid = createAsyncThunk(
   'offers/acceptBid',
@@ -526,6 +551,30 @@ const offersSlice = createSlice({
       .addCase(cancelAppointment.rejected, (state, action) => {
         state.appointmentOperationLoading = false;
         state.appointmentOperationError = action.payload || 'Failed to cancel appointment';
+        state.appointmentOperationSuccess = false;
+      })
+      // Reschedule appointment
+      .addCase(rescheduleAppointment.pending, (state) => {
+        state.appointmentOperationLoading = true;
+        state.appointmentOperationError = null;
+        state.appointmentOperationSuccess = false;
+      })
+      .addCase(rescheduleAppointment.fulfilled, (state, action) => {
+        state.appointmentOperationLoading = false;
+        state.appointmentOperationError = null;
+        state.appointmentOperationSuccess = true;
+        // Update the appointment in the appointments list
+        const rescheduledAppointment = action.payload.appointment;
+        if (rescheduledAppointment) {
+          const index = state.appointments.findIndex(apt => apt.id === rescheduledAppointment.id);
+          if (index !== -1) {
+            state.appointments[index] = rescheduledAppointment;
+          }
+        }
+      })
+      .addCase(rescheduleAppointment.rejected, (state, action) => {
+        state.appointmentOperationLoading = false;
+        state.appointmentOperationError = action.payload || 'Failed to reschedule appointment';
         state.appointmentOperationSuccess = false;
       })
       // Accept bid

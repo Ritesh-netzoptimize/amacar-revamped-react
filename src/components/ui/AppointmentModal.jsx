@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { useSelector, useDispatch } from "react-redux";
-import { createAppointments } from "@/redux/slices/offersSlice";
+import { createAppointments, rescheduleAppointment } from "@/redux/slices/offersSlice";
 
 export default function AppointmentModal({
   isOpen,
@@ -33,7 +33,11 @@ export default function AppointmentModal({
   vehicleInfo = "2024 Tesla Model S",
   onAppointmentSubmit,
   title = "Schedule Appointment",
-  description = "Choose your preferred date and time"
+  description = "Choose your preferred date and time",
+  // Reschedule mode props
+  isReschedule = false,
+  appointmentToReschedule = null,
+  onRescheduleSubmit
 }) {
   const [phase, setPhase] = useState("form");
   const [selectedDate, setSelectedDate] = useState();
@@ -97,6 +101,27 @@ export default function AppointmentModal({
     setShowCalendar(false);
     setErrorMessage("");
     setAppointmentData(null);
+    
+    // Pre-populate form for reschedule mode
+    if (isReschedule && appointmentToReschedule) {
+      // Parse the existing appointment date and time
+      if (appointmentToReschedule.start_time && appointmentToReschedule.start_time !== "0000-00-00 00:00:00") {
+        const appointmentDate = new Date(appointmentToReschedule.start_time);
+        setSelectedDate(appointmentDate);
+        
+        // Extract time from start_time
+        const timeString = appointmentToReschedule.start_time.split(' ')[1];
+        if (timeString) {
+          const [hours, minutes] = timeString.split(':');
+          setSelectedTime(`${hours}:${minutes}`);
+        }
+      }
+      
+      // Pre-populate notes if available
+      if (appointmentToReschedule.notes) {
+        setNotes(appointmentToReschedule.notes);
+      }
+    }
   };
 
   // Validation
@@ -109,6 +134,21 @@ export default function AppointmentModal({
     
     if (!selectedTime) {
       newErrors.time = "Please select a time";
+    }
+    
+    // For reschedule mode, check if the new time is at least 2 hours from now
+    if (isReschedule && selectedDate && selectedTime) {
+      const now = new Date();
+      const selectedDateTime = new Date(selectedDate);
+      const [hours, minutes] = selectedTime.split(':');
+      selectedDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      
+      const timeDifference = selectedDateTime.getTime() - now.getTime();
+      const hoursDifference = timeDifference / (1000 * 60 * 60);
+      
+      if (hoursDifference < 2 && hoursDifference > 0) {
+        newErrors.time = "Appointment must be scheduled at least 2 hours from now";
+      }
     }
     
     setErrors(newErrors);
@@ -132,16 +172,31 @@ export default function AppointmentModal({
       
       // Merge into one string
       const start_time = `${formattedDate} ${formattedTime}:00`;
-      const appointmentPayload = {
-        dealerId,
-        userId: user.id,
-        start_time: start_time,
-        notes: notes.trim()
-      };
       
-      // Make API call
-      const response = await dispatch(createAppointments(appointmentPayload));
-      console.log("response", response);
+      let response;
+      
+      if (isReschedule && appointmentToReschedule) {
+        // Reschedule existing appointment
+        const reschedulePayload = {
+          appointmentId: appointmentToReschedule.id,
+          start_time: start_time,
+          notes: notes.trim()
+        };
+        
+        response = await dispatch(rescheduleAppointment(reschedulePayload));
+        console.log("reschedule response", response);
+      } else {
+        // Create new appointment
+        const appointmentPayload = {
+          dealerId,
+          userId: user.id,
+          start_time: start_time,
+          notes: notes.trim()
+        };
+        
+        response = await dispatch(createAppointments(appointmentPayload));
+        console.log("create response", response);
+      }
       
       if (response.payload && response.payload.success) {
         // Success case (201) - Handle invalid date formatting
@@ -164,16 +219,25 @@ export default function AppointmentModal({
         }
         setPhase("success");
       } else if (response.payload && !response.payload.success) {
-        // Error cases (400)
-        if (response.payload.errors) {
-          // Validation error
-          setErrorMessage(response.payload.message || "Validation failed. Please check your input.");
-          setPhase("failed");
+        // Error cases (400, 403)
+        const errorMessage = response.payload.message || "Something went wrong. Please try again.";
+        
+        // Handle specific error cases
+        if (errorMessage.includes("Cannot reschedule appointment") && errorMessage.includes("hours")) {
+          // Too late to reschedule error
+          setErrorMessage(errorMessage);
+        } else if (errorMessage.includes("already have an appointment scheduled")) {
+          // Duplicate appointment error
+          setErrorMessage(errorMessage);
+        } else if (errorMessage.includes("not authorized")) {
+          // Authorization error
+          setErrorMessage("You are not authorized to reschedule this appointment.");
         } else {
-          // Duplicate appointment or other error
-          setErrorMessage(response.payload.message || "Something went wrong. Please try again.");
-          setPhase("failed");
+          // Generic error
+          setErrorMessage(errorMessage);
         }
+        
+        setPhase("failed");
       } else {
         // Unexpected response format
         setErrorMessage("Something went wrong. Please try again.");
@@ -181,7 +245,7 @@ export default function AppointmentModal({
       }
       
     } catch (error) {
-      console.error("Appointment creation error:", error);
+      console.error("Appointment operation error:", error);
       setErrorMessage("Network error. Please check your connection and try again.");
       setPhase("failed");
     }
@@ -225,10 +289,10 @@ export default function AppointmentModal({
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent"></div>
             <div className="relative z-10">
               <DialogTitle className="text-lg font-bold mb-1">
-                {title}
+                {isReschedule ? "Reschedule Appointment" : title}
               </DialogTitle>
               <DialogDescription className="text-white text-sm">
-                {description}
+                {isReschedule ? "Choose a new date and time for your appointment" : description}
               </DialogDescription>
             </div>
             {/* Decorative elements */}
@@ -434,10 +498,10 @@ export default function AppointmentModal({
                       {appointmentOperationLoading ? (
                         <div className="flex items-center justify-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Scheduling...
+                          {isReschedule ? "Rescheduling..." : "Scheduling..."}
                         </div>
                       ) : (
-                        "Schedule Appointment"
+                        isReschedule ? "Reschedule Appointment" : "Schedule Appointment"
                       )}
                     </button>
                   </div>
@@ -460,10 +524,10 @@ export default function AppointmentModal({
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                      Scheduling Appointment
+                      {isReschedule ? "Rescheduling Appointment" : "Scheduling Appointment"}
                     </h3>
                     <p className="text-sm text-slate-600">
-                      Please wait while we confirm your booking...
+                      {isReschedule ? "Please wait while we update your appointment..." : "Please wait while we confirm your booking..."}
                     </p>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2">
@@ -506,10 +570,10 @@ export default function AppointmentModal({
                   </motion.div>
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-2">
-                      All Set!
+                      {isReschedule ? "Rescheduled!" : "All Set!"}
                     </h3>
                     <p className="text-sm text-slate-600 mb-3">
-                      Your appointment has been scheduled successfully.
+                      {isReschedule ? "Your appointment has been rescheduled successfully." : "Your appointment has been scheduled successfully."}
                     </p>
                     {appointmentData ? (
                       <div className="bg-slate-50 rounded-lg p-2.5 text-sm space-y-1">
@@ -557,15 +621,22 @@ export default function AppointmentModal({
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-2">
-                      Scheduling Failed
+                      {isReschedule ? "Rescheduling Failed" : "Scheduling Failed"}
                     </h3>
                     <p className="text-sm text-slate-600 mb-3">
                       {errorMessage || "Something went wrong. Please try again."}
                     </p>
-                    {errorMessage && errorMessage.includes("already have an appointment") && (
+                    {errorMessage && (
                       <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm">
                         <p className="text-orange-800 font-medium">
-                          💡 Tip: Try selecting a different date or contact the dealer directly.
+                          {errorMessage.includes("Cannot reschedule appointment") && errorMessage.includes("hours") ? 
+                            "⏰ Tip: You can only reschedule appointments at least 2 hours before the scheduled time." :
+                            errorMessage.includes("already have an appointment scheduled") ?
+                            "💡 Tip: Try selecting a different date or contact the dealer directly." :
+                            errorMessage.includes("not authorized") ?
+                            "🔒 Tip: You don't have permission to reschedule this appointment. Contact support if this is an error." :
+                            "💡 Tip: Please check your input and try again, or contact support if the issue persists."
+                          }
                         </p>
                       </div>
                     )}
