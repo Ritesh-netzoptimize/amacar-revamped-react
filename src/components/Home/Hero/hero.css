@@ -1,13 +1,13 @@
 .hero-section {
     position: relative;
-    height: 90vh; /* full screen */
+    height: 75vh; /* full screen */
     min-height: 600px;
     background-size: cover;
     background-position: center;
     display: flex;
     align-items: center;
-    justify-content: center;
-    text-align: center;
+    /* justify-content: center; */
+    /* text-align: center; */
     color: white;
     background: url("../../../assets/home_Page_first_hero(12).jpg") no-repeat center center/cover;
 }
@@ -15,15 +15,17 @@
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(27, 27, 27, 0.25); /* very subtle overlay */
+    background: rgba(27, 27, 27, 0.12); /* extra subtle overlay */
     z-index: 1;
 }
 
 
 .hero-content {
+    margin-top: 5%;
+    margin-left: 7.5%;
     position: relative;
     z-index: 2;
-    max-width: 800px;
+    max-width: 1000px;
     padding: 0 20px;
 }
 
@@ -45,7 +47,7 @@
 .hero-ctas {
     display: flex;
     gap: 16px;
-    justify-content: center;
+    /* justify-content: center; */
     flex-wrap: wrap;
 }
 
