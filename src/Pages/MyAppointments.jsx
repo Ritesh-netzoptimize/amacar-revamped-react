@@ -8,6 +8,7 @@ import MyAppointmentsSkeleton from '../components/skeletons/MyAppointmentsSkelet
 import MyAppointmentsSortingSkeleton from '../components/skeletons/MyAppointmentsSortingSkeleton';
 import LoadMore from '../components/ui/load-more';
 import useLoadMore from '../hooks/useLoadMore';
+import AppointmentDetailsModal from '../components/ui/AppointmentDetailsModal';
 
 const MyAppointments = () => {
   const dispatch = useDispatch();
@@ -20,6 +21,12 @@ const MyAppointments = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
+
+  // Modal state
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingAction, setProcessingAction] = useState('');
 
   // Load more configuration
   const itemsPerPage = 1;
@@ -92,6 +99,57 @@ const MyAppointments = () => {
 
   // Get current selected option
   const selectedOption = sortOptions.find(option => option.value === sortBy) || sortOptions[0];
+
+  // Modal handlers
+  const handleViewDetails = (appointment) => {
+    setSelectedAppointment(appointment);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedAppointment(null);
+    setIsProcessing(false);
+    setProcessingAction('');
+  };
+
+  const handleCall = (appointment) => {
+    // Implement call functionality
+    console.log('Calling dealer:', appointment.dealer_name);
+    // You can integrate with a calling service here
+  };
+
+  const handleJoin = (appointment) => {
+    // Implement join meeting functionality
+    console.log('Joining meeting for appointment:', appointment.id);
+    // You can integrate with video calling service here
+  };
+
+  const handleReschedule = async (appointment) => {
+    setIsProcessing(true);
+    setProcessingAction('reschedule');
+    
+    // Simulate API call
+    setTimeout(() => {
+      console.log('Rescheduling appointment:', appointment.id);
+      setIsProcessing(false);
+      setProcessingAction('');
+      // You can implement actual reschedule logic here
+    }, 2000);
+  };
+
+  const handleCancel = async (appointment) => {
+    setIsProcessing(true);
+    setProcessingAction('cancel');
+    
+    // Simulate API call
+    setTimeout(() => {
+      console.log('Cancelling appointment:', appointment.id);
+      setIsProcessing(false);
+      setProcessingAction('');
+      // You can implement actual cancel logic here
+    }, 2000);
+  };
 
   // Handle sort selection with loading animation
   const handleSortSelect = (value) => {
@@ -177,6 +235,7 @@ const MyAppointments = () => {
 
   // Get sorted upcoming appointments
   const getSortedUpcomingAppointments = () => {
+    console.log("paginatedAppointments", paginatedAppointments)
     return paginatedAppointments.filter(apt => new Date(apt.start_time) > new Date());
   };
 
@@ -423,13 +482,12 @@ const MyAppointments = () => {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <button className="btn-ghost flex items-center space-x-2">
-                        <Phone className="w-4 h-4" />
-                        <span>Call</span>
-                      </button>
-                      <button className="btn-primary flex items-center space-x-2">
-                        <Video className="w-4 h-4" />
-                        <span>Join</span>
+                      <button 
+                        onClick={() => handleViewDetails(appointment)}
+                        className="btn-primary flex items-center space-x-2"
+                      >
+                        <Calendar className="w-4 h-4" />
+                        <span>View Details</span>
                       </button>
                     </div>
                   </div>
@@ -473,18 +531,12 @@ const MyAppointments = () => {
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <button className="btn-ghost flex items-center space-x-2">
-                      <Phone className="w-4 h-4" />
-                      <span>Call</span>
-                    </button>
                     <button 
-                      className="btn-secondary"
-                      onClick={() => window.open(appointment.reschedule_url, '_blank')}
+                      onClick={() => handleViewDetails(appointment)}
+                      className="btn-primary flex items-center space-x-2"
                     >
-                      Reschedule
-                    </button>
-                    <button className="btn-primary">
-                      View Details
+                      <Calendar className="w-4 h-4" />
+                      <span>View Details</span>
                     </button>
                   </div>
                 </div>
@@ -530,6 +582,19 @@ const MyAppointments = () => {
           </motion.div>
         )}
       </div>
+
+      {/* Appointment Details Modal */}
+      <AppointmentDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        appointment={selectedAppointment}
+        onCancel={handleCancel}
+        onReschedule={handleReschedule}
+        onCall={handleCall}
+        onJoin={handleJoin}
+        isProcessing={isProcessing}
+        processingAction={processingAction}
+      />
     </div>
   );
 };
