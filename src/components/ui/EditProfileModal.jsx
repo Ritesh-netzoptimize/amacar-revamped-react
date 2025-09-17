@@ -188,15 +188,16 @@ export default function EditProfileModal({
                     </label>
                     <div className="relative">
                       <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                        <User className="h-4 w-4" />
+                        <User className="text-[#f6851f] h-4 w-4" />
                       </div>
                       <input
+                        disabled
                         id="firstName"
                         type="text"
                         value={formData.firstName}
                         onChange={(e) => handleInputChange('firstName', e.target.value)}
                         placeholder="First name"
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                        className="text-[#f6851f] cursor-not-allowed h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
                       />
                     </div>
                     {errors.firstName && (
@@ -217,15 +218,16 @@ export default function EditProfileModal({
                     </label>
                     <div className="relative">
                       <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                        <User className="h-4 w-4" />
+                        <User className="text-[#f6851f] h-4 w-4" />
                       </div>
                       <input
+                        disabled
                         id="lastName"
                         type="text"
                         value={formData.lastName}
                         onChange={(e) => handleInputChange('lastName', e.target.value)}
                         placeholder="Last name"
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                        className="cursor-not-allowed text-[#f6851f] h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
                       />
                     </div>
                     {errors.lastName && (
@@ -247,15 +249,16 @@ export default function EditProfileModal({
                   </label>
                   <div className="relative">
                     <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                      <Mail className="h-4 w-4" />
+                      <Mail className="text-[#f6851f] h-4 w-4" />
                     </div>
                     <input
+                      disabled
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       placeholder="user@example.com"
-                      className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                      className="cursor-not-allowed text-[#f6851f] h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
                     />
                   </div>
                   {errors.email && (
