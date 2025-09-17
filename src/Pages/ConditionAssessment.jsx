@@ -6,12 +6,14 @@ import AuctionSelectionModal from "@/components/ui/auction-selection-modal";
 import { useDispatch, useSelector } from "react-redux";
 import LoginModal from "@/components/ui/LoginModal";
 import { setLoginRedirect } from "@/redux/slices/userSlice"; // Adjust import path
-import { updateQuestion, resetQuestions } from "@/redux/slices/carDetailsAndQuestionsSlice"; // Adjust import path
+import { updateQuestion, resetQuestions, fetchCityStateByZip } from "@/redux/slices/carDetailsAndQuestionsSlice"; // Adjust import path
 
 export default function ConditionAssessment() {
   const dispatch = useDispatch();
   const { questions, vehicleDetails, stateZip, stateVin, location } = useSelector((state) => state.carDetailsAndQuestions);
   const userState = useSelector((state) => state.user.user);
+  const [localCity, setLocalCity] = useState("");
+  const [localState, setLocalState] = useState("");
 
   // Initialize questions if invalid
 
@@ -22,6 +24,15 @@ export default function ConditionAssessment() {
     }
   }, [dispatch, questions]);
 
+  useEffect(() => {
+    console.log("vehicleDetails", vehicleDetails)
+  }, [vehicleDetails]);
+  useEffect(() => {
+    const result = dispatch(fetchCityStateByZip(stateZip))
+    setLocalCity(result.city)
+    setLocalState(result.state)
+  }, [stateZip]);
+  
   // Group questions into sections for rendering
   const sections = useMemo(() => {
     if (!questions || questions.length < 8) {
@@ -466,12 +477,12 @@ export default function ConditionAssessment() {
                         location.state ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
-                        value={user.state || location.state || ""}
+                        value={user.state || location.state || localState || ""}
                         onChange={(e) => setUser({ ...user, state: e.target.value })}
                         placeholder="State"
-                        disabled={!!location.state}
+                        disabled={!!location.state || !!localState}
                         className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
-                          location.state 
+                          location.state || localState 
                             ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
                             : userErrors.state 
                               ? "border-red-300" 
@@ -492,26 +503,27 @@ export default function ConditionAssessment() {
                     </label>
                     <div className="relative">
                       <Building className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        location.city ? "text-orange-500" : "text-slate-400"
+                        location.city || localCity ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
-                        value={user.city || location.city || ""}
+                        value={user.city || location.city || localCity || ""}
                         onChange={(e) => setUser({ ...user, city: e.target.value })}
                         placeholder="City"
-                        disabled={!!location.city}
+                        disabled={!!location.city || !!localCity}
                         className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
-                          location.city 
+                          location.city || localCity 
                             ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
                             : userErrors.city 
                               ? "border-red-300" 
                               : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
                         }`}
                       />
-                      {location.city && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
-                        </div>
-                      )}
+                     {(location.city || localCity) && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
+                      </div>
+                    )}
+
                     </div>
                   </div>
                 </div>
@@ -547,8 +559,8 @@ export default function ConditionAssessment() {
                           email: user.email || userState?.email || "",
                           phone: user.phone || userState?.meta?.phone || "",
                           zipcode: user.zipcode || stateZip || "",
-                          state: user.state || location.state || "",
-                          city: user.city || location.city || "",
+                          state: user.state || location.state || localState || "",
+                          city: user.city || location.city || localCity || "",
                         };
 
                         const errs = {};
@@ -676,7 +688,7 @@ export default function ConditionAssessment() {
                         </div>
                         <div className="flex justify-between">
                           <span>Location:</span>
-                          <span className="font-medium">{location?.city || 'N/A'}, {location?.state || 'N/A'}</span>
+                          <span className="font-medium">{location?.city || localCity || 'N/A'}, {location?.state || localState || 'N/A'}</span>
                         </div>
                       </div>
                     </div>
