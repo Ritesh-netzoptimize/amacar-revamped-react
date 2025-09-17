@@ -106,6 +106,31 @@ export const fetchAppointments = createAsyncThunk(
   }
 );
 
+// Async thunk to create appointments
+export const createAppointments = createAsyncThunk(
+  'offers/createAppointments',
+  async (appointmentData, { rejectWithValue }) => {
+    try {
+      // Use the axios instance which already handles auth headers
+      console.log("start_time", appointmentData.start_time);
+      console.log("notes", appointmentData.notes);
+      console.log("dealer_id", appointmentData.dealerId);
+      console.log("user_id", appointmentData.userId);
+      const response = await api.post('/appointment/create', {dealer_id: appointmentData.dealerId, start_time: appointmentData.start_time, notes: appointmentData.notes});
+      console.log('Appointments create response:', response);
+      console.log('Appointments create response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to create appointments');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to create appointments');
+    }
+  }
+);
+
 // Async thunk to accept a bid
 export const acceptBid = createAsyncThunk(
   'offers/acceptBid',
@@ -245,6 +270,10 @@ const initialState = {
   reAuctionLoading: false,
   reAuctionError: null,
   reAuctionSuccess: false,
+  // Appointment operation states
+  appointmentOperationLoading: false,
+  appointmentOperationError: null,
+  appointmentOperationSuccess: false,
 };
 
 const offersSlice = createSlice({
@@ -264,6 +293,8 @@ const offersSlice = createSlice({
       state.hasOffers = false;
       state.hasAuctions = false;
       state.hasAppointments = false;
+      state.appointments = [];
+      state.totalCount = 0;
     },
     
     // Add offer to accepted offers
@@ -315,6 +346,13 @@ const offersSlice = createSlice({
       state.reAuctionLoading = false;
       state.reAuctionError = null;
       state.reAuctionSuccess = false;
+    },
+    
+    // Clear appointment operation states
+    clearAppointmentOperationStates: (state) => {
+      state.appointmentOperationLoading = false;
+      state.appointmentOperationError = null;
+      state.appointmentOperationSuccess = false;
     },
     
     // Move vehicle from previous offers to live auctions
@@ -421,6 +459,27 @@ const offersSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'Failed to fetch appointments';
       })
+      // Create appointments
+      .addCase(createAppointments.pending, (state) => {
+        state.appointmentOperationLoading = true;
+        state.appointmentOperationError = null;
+        state.appointmentOperationSuccess = false;
+      })
+      .addCase(createAppointments.fulfilled, (state, action) => {
+        state.appointmentOperationLoading = false;
+        state.appointmentOperationError = null;
+        state.appointmentOperationSuccess = true;
+        // Add new appointment to the list if it exists
+        if (action.payload.appointment) {
+          state.appointments.push(action.payload.appointment);
+        }
+        state.hasAppointments = true;
+      })
+      .addCase(createAppointments.rejected, (state, action) => {
+        state.appointmentOperationLoading = false;
+        state.appointmentOperationError = action.payload || 'Failed to create appointments';
+        state.appointmentOperationSuccess = false;
+      })
       // Accept bid
       .addCase(acceptBid.pending, (state) => {
         state.bidOperationLoading = true;
@@ -513,9 +572,13 @@ export const {
   clearError,
   clearBidOperationStates,
   clearReAuctionStates,
+  clearAppointmentOperationStates,
   moveToLiveAuctions,
   updateBidStatus,
 } = offersSlice.actions;
+
+// Export createAppointments async thunk
+// export { createAppointments }; // Already exported above as const
 
 // Export reducer
 export default offersSlice.reducer;
@@ -541,3 +604,7 @@ export const selectBidOperationSuccess = (state) => state.offers.bidOperationSuc
 export const selectReAuctionLoading = (state) => state.offers.reAuctionLoading;
 export const selectReAuctionError = (state) => state.offers.reAuctionError;
 export const selectReAuctionSuccess = (state) => state.offers.reAuctionSuccess;
+// Appointment operation selectors
+export const selectAppointmentOperationLoading = (state) => state.offers.appointmentOperationLoading;
+export const selectAppointmentOperationError = (state) => state.offers.appointmentOperationError;
+export const selectAppointmentOperationSuccess = (state) => state.offers.appointmentOperationSuccess;

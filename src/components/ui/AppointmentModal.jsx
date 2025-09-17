@@ -21,7 +21,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { createAppointments } from "@/redux/slices/offersSlice";
 
 export default function AppointmentModal({
   isOpen,
@@ -39,10 +40,12 @@ export default function AppointmentModal({
   const [selectedTime, setSelectedTime] = useState("");
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [appointmentData, setAppointmentData] = useState(null);
   const calendarRef = useRef(null);
-  const {acceptedOffers} = useSelector(state => state.offers);
+  const dispatch = useDispatch();
+  const {acceptedOffers, appointmentOperationLoading} = useSelector(state => state.offers);
   const {user} = useSelector(state => state.user);
 
   useEffect(() => {
@@ -59,12 +62,7 @@ export default function AppointmentModal({
   // Reset form when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setPhase("form");
-      setSelectedDate(undefined);
-      setSelectedTime("");
-      setNotes("");
-      setErrors({});
-      setShowCalendar(false);
+      resetFormState();
     }
   }, [isOpen]);
 
@@ -89,6 +87,18 @@ export default function AppointmentModal({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // Reset form state
+  const resetFormState = () => {
+    setPhase("form");
+    setSelectedDate(undefined);
+    setSelectedTime("");
+    setNotes("");
+    setErrors({});
+    setShowCalendar(false);
+    setErrorMessage("");
+    setAppointmentData(null);
+  };
+
   // Validation
   const validateForm = () => {
     const newErrors = {};
@@ -111,30 +121,69 @@ export default function AppointmentModal({
     
     if (!validateForm()) return;
     
-    setIsSubmitting(true);
     setPhase("loading");
+    setErrorMessage("");
     
     try {
-      const appointmentData = {
+      // Format date as YYYY-MM-DD
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+      // Format time as HH:mm
+      const formattedTime = selectedTime.padStart(5, '0');
+      
+      // Merge into one string
+      const start_time = `${formattedDate} ${formattedTime}:00`;
+      const appointmentPayload = {
         dealerId,
         userId: user.id,
-        date: selectedDate,
-        time: selectedTime,
+        start_time: start_time,
         notes: notes.trim()
       };
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Make API call
+      const response = await dispatch(createAppointments(appointmentPayload));
+      console.log("response", response);
       
-      if (onAppointmentSubmit) {
-        await onAppointmentSubmit(appointmentData);
+      if (response.payload && response.payload.success) {
+        // Success case (201) - Handle invalid date formatting
+        const appointment = response.payload.appointment;
+        if (appointment) {
+          // Create a copy of the appointment object to avoid read-only property error
+          const appointmentCopy = { ...appointment };
+          
+          // Fix invalid date formatting
+          if (appointmentCopy.start_time === "0000-00-00 00:00:00" || appointmentCopy.formatted_start_time?.includes("-0001")) {
+            // Use the selected date and time for display
+            const displayDate = new Date(selectedDate);
+            appointmentCopy.formatted_start_time = `${displayDate.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric'
+            })} at ${selectedTime}`;
+          }
+          setAppointmentData(appointmentCopy);
+        }
+        setPhase("success");
+      } else if (response.payload && !response.payload.success) {
+        // Error cases (400)
+        if (response.payload.errors) {
+          // Validation error
+          setErrorMessage(response.payload.message || "Validation failed. Please check your input.");
+          setPhase("failed");
+        } else {
+          // Duplicate appointment or other error
+          setErrorMessage(response.payload.message || "Something went wrong. Please try again.");
+          setPhase("failed");
+        }
+      } else {
+        // Unexpected response format
+        setErrorMessage("Something went wrong. Please try again.");
+        setPhase("failed");
       }
       
-      setPhase("success");
     } catch (error) {
+      console.error("Appointment creation error:", error);
+      setErrorMessage("Network error. Please check your connection and try again.");
       setPhase("failed");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -162,7 +211,7 @@ export default function AppointmentModal({
     });
   };
 
-  const isCloseDisabled = phase === "loading";
+  const isCloseDisabled = phase === "loading" || appointmentOperationLoading;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -379,10 +428,10 @@ export default function AppointmentModal({
                   <div className="pt-2">
                     <button
                       type="submit"
-                      disabled={isSubmitting || !selectedDate || !selectedTime}
+                      disabled={appointmentOperationLoading || !selectedDate || !selectedTime}
                       className="cursor-pointer w-full h-12 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-md shadow-orange-500/25 transition-all duration-200 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                     >
-                      {isSubmitting ? (
+                      {appointmentOperationLoading ? (
                         <div className="flex items-center justify-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Scheduling...
@@ -395,7 +444,7 @@ export default function AppointmentModal({
                 </motion.form>
               )}
 
-              {phase === "loading" && (
+              {(phase === "loading" || appointmentOperationLoading) && (
                 <motion.div
                   key="loading"
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -462,7 +511,19 @@ export default function AppointmentModal({
                     <p className="text-sm text-slate-600 mb-3">
                       Your appointment has been scheduled successfully.
                     </p>
-                    {selectedDate && selectedTime && (
+                    {appointmentData ? (
+                      <div className="bg-slate-50 rounded-lg p-2.5 text-sm space-y-1">
+                        <p className="font-semibold text-slate-900">
+                          {appointmentData.formatted_start_time}
+                        </p>
+                        <p className="text-slate-600">
+                          Appointment ID: #{appointmentData.id}
+                        </p>
+                        <p className="text-slate-600">
+                          Status: <span className="capitalize text-orange-600">{appointmentData.status}</span>
+                        </p>
+                      </div>
+                    ) : selectedDate && selectedTime && (
                       <div className="bg-slate-50 rounded-lg p-2.5 text-sm">
                         <p className="font-semibold text-slate-900">
                           {formatFullDate(selectedDate)} at {selectedTime}
@@ -498,13 +559,20 @@ export default function AppointmentModal({
                     <h3 className="text-lg font-bold text-slate-900 mb-2">
                       Scheduling Failed
                     </h3>
-                    <p className="text-sm text-slate-600">
-                      Something went wrong. Please try again.
+                    <p className="text-sm text-slate-600 mb-3">
+                      {errorMessage || "Something went wrong. Please try again."}
                     </p>
+                    {errorMessage && errorMessage.includes("already have an appointment") && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm">
+                        <p className="text-orange-800 font-medium">
+                          💡 Tip: Try selecting a different date or contact the dealer directly.
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-3 w-full">
                     <button
-                      onClick={() => setPhase("form")}
+                      onClick={resetFormState}
                       className="flex-1 h-12 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold"
                     >
                       Try Again
