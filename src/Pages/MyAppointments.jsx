@@ -13,7 +13,7 @@ import AppointmentDetailsModal from '../components/ui/AppointmentDetailsModal';
 const MyAppointments = () => {
   const dispatch = useDispatch();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState('week'); // 'week' or 'month'
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'pending', 'confirmed', 'cancelled', 'completed'
 
   // Sorting state
   const [sortBy, setSortBy] = useState('date-asc');
@@ -21,6 +21,10 @@ const MyAppointments = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
+
+  // Status filtering state
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [filterProgress, setFilterProgress] = useState(0);
 
   // Modal state
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -86,6 +90,15 @@ const MyAppointments = () => {
       return appointmentDate.toDateString() === today.toDateString();
     });
   };
+
+  // Status filter options
+  const statusFilterOptions = [
+    { value: 'all', label: 'All Appointments', count: appointments.length, color: 'bg-slate-100 text-slate-700' },
+    { value: 'pending', label: 'Pending', count: appointments.filter(apt => apt.status === 'pending').length, color: 'bg-blue-100 text-blue-700' },
+    { value: 'confirmed', label: 'Confirmed', count: appointments.filter(apt => apt.status === 'confirmed').length, color: 'bg-green-100 text-green-700' },
+    { value: 'cancelled', label: 'Cancelled', count: appointments.filter(apt => apt.status === 'cancelled').length, color: 'bg-red-100 text-red-700' },
+    { value: 'completed', label: 'Completed', count: appointments.filter(apt => apt.status === 'completed').length, color: 'bg-emerald-100 text-emerald-700' },
+  ];
 
   // Sort options
   const sortOptions = [
@@ -157,6 +170,40 @@ const MyAppointments = () => {
     }
   };
 
+  // Handle status filter selection with loading animation
+  const handleStatusFilter = (value) => {
+    if (value === statusFilter) return;
+    
+    setIsFiltering(true);
+    setFilterProgress(0);
+    
+    // Simulate filtering process with random delay and progress
+    const randomDelay = Math.random() * 800 + 400; // 400-1200ms
+    const progressInterval = 50; // Update progress every 50ms
+    
+    const progressTimer = setInterval(() => {
+      setFilterProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(progressTimer);
+          return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, progressInterval);
+    
+    setTimeout(() => {
+      clearInterval(progressTimer);
+      setFilterProgress(100);
+      setStatusFilter(value);
+      
+      // Reset after a short delay
+      setTimeout(() => {
+        setIsFiltering(false);
+        setFilterProgress(0);
+      }, 200);
+    }, randomDelay);
+  };
+
   // Handle sort selection with loading animation
   const handleSortSelect = (value) => {
     if (value === sortBy) {
@@ -196,12 +243,18 @@ const MyAppointments = () => {
     }, randomDelay);
   };
 
-  // Sort appointments based on selected options
-  const sortedAppointments = useMemo(() => {
+  // Filter and sort appointments based on selected options
+  const filteredAndSortedAppointments = useMemo(() => {
     if (!appointments || appointments.length === 0) return [];
 
-    // Sort the appointments
-    return [...appointments].sort((a, b) => {
+    // First filter by status
+    let filteredAppointments = appointments;
+    if (statusFilter !== 'all') {
+      filteredAppointments = appointments.filter(apt => apt.status === statusFilter);
+    }
+
+    // Then sort the filtered appointments
+    return [...filteredAppointments].sort((a, b) => {
       switch (sortBy) {
         case 'date-asc':
           return new Date(a.start_time) - new Date(b.start_time);
@@ -219,7 +272,7 @@ const MyAppointments = () => {
           return 0;
       }
     });
-  }, [appointments, sortBy]);
+  }, [appointments, sortBy, statusFilter]);
 
   // Use load more hook
   const {
@@ -228,7 +281,7 @@ const MyAppointments = () => {
     remainingItems,
     isLoadingMore,
     handleLoadMore
-  } = useLoadMore(sortedAppointments, itemsPerPage);
+  } = useLoadMore(filteredAndSortedAppointments, itemsPerPage);
 
   // Get sorted today's appointments
   const getSortedTodaysAppointments = () => {
@@ -290,44 +343,44 @@ const MyAppointments = () => {
           </motion.p>
         </motion.div>
 
-        {/* View Mode Toggle */}
+        {/* Status Filter Tabs */}
         <motion.div
           variants={itemVariants}
-          className="flex items-center justify-between mb-8"
+          className="mb-8"
         >
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setViewMode('week')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                viewMode === 'week' 
-                  ? 'bg-primary-500 text-white' 
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-              }`}
-            >
-              Week View
-            </button>
-            <button
-              onClick={() => setViewMode('month')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                viewMode === 'month' 
-                  ? 'bg-primary-500 text-white' 
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-              }`}
-            >
-              Month View
-            </button>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <button className="p-2 hover:bg-neutral-100 rounded-lg">
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <span className="font-semibold text-neutral-800">
-              {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </span>
-            <button className="p-2 hover:bg-neutral-100 rounded-lg">
-              <ChevronRight className="w-5 h-5" />
-            </button>
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            {statusFilterOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => handleStatusFilter(option.value)}
+                disabled={isFiltering}
+                className={`relative px-4 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 ${
+                  statusFilter === option.value
+                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
+                    : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300'
+                } ${isFiltering ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                {isFiltering && statusFilter === option.value && (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                )}
+                <span>{option.label}</span>
+                <span className={`px-2 py-0.5 text-xs rounded-full ${
+                  statusFilter === option.value 
+                    ? 'bg-white/20 text-white' 
+                    : option.color
+                }`}>
+                  {option.count}
+                </span>
+                {isFiltering && statusFilter === option.value && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 rounded-b-xl overflow-hidden">
+                    <div 
+                      className="h-full bg-white/60 transition-all duration-100 ease-out"
+                      style={{ width: `${filterProgress}%` }}
+                    />
+                  </div>
+                )}
+              </button>
+            ))}
           </div>
         </motion.div>
 
@@ -341,8 +394,16 @@ const MyAppointments = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-neutral-800 mb-1">Appointments</h2>
-                <p className="text-sm text-neutral-600">{appointments.length} scheduled appointments</p>
+                <h2 className="text-lg font-semibold text-neutral-800 mb-1">
+                  {statusFilter === 'all' ? 'All Appointments' : 
+                   statusFilter === 'pending' ? 'Pending Appointments' :
+                   statusFilter === 'confirmed' ? 'Confirmed Appointments' :
+                   statusFilter === 'cancelled' ? 'Cancelled Appointments' :
+                   statusFilter === 'completed' ? 'Completed Appointments' : 'Appointments'}
+                </h2>
+                <p className="text-sm text-neutral-600">
+                  {filteredAndSortedAppointments.length} {statusFilter === 'all' ? 'scheduled' : statusFilter} appointments
+                </p>
               </div>
               
               {/* Modern Sort Dropdown */}
@@ -438,8 +499,8 @@ const MyAppointments = () => {
             animate="visible"
             className="space-y-6"
           >
-            {/* Sorting Loading State - Show skeleton for appointments */}
-            {isSorting && (
+            {/* Sorting/Filtering Loading State - Show skeleton for appointments */}
+            {(isSorting || isFiltering) && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -450,8 +511,8 @@ const MyAppointments = () => {
               </motion.div>
             )}
 
-            {/* Appointments - Hidden during sorting */}
-            {!isSorting && (
+            {/* Appointments - Hidden during sorting/filtering */}
+            {!isSorting && !isFiltering && (
               <>
                 {/* Today's Appointments */}
                 {getSortedTodaysAppointments().length > 0 && (
@@ -480,7 +541,13 @@ const MyAppointments = () => {
                             <span>{appointment.formatted_time} ({appointment.duration} min)</span>
                           </span>
                           <span className="flex items-center space-x-1">
-                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              appointment.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
+                              appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                              appointment.status === 'pending' ? 'bg-blue-100 text-blue-800' :
+                              appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                              'bg-slate-100 text-slate-800'
+                            }`}>
                               {appointment.formatted_status}
                             </span>
                           </span>
@@ -529,7 +596,13 @@ const MyAppointments = () => {
                           <span>{appointment.formatted_date} at {appointment.formatted_time}</span>
                         </span>
                         <span className="flex items-center space-x-1">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            appointment.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
+                            appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                            appointment.status === 'pending' ? 'bg-blue-100 text-blue-800' :
+                            appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            'bg-slate-100 text-slate-800'
+                          }`}>
                             {appointment.formatted_status}
                           </span>
                         </span>
@@ -558,21 +631,21 @@ const MyAppointments = () => {
         {/* Load More Component */}
         {!loading && !error && appointments.length > 0 && (
           <LoadMore
-            items={sortedAppointments}
+            items={filteredAndSortedAppointments}
             itemsPerPage={itemsPerPage}
             onLoadMore={handleLoadMore}
             isLoadingMore={isLoadingMore}
             hasMoreItems={hasMoreItems}
             remainingItems={remainingItems}
             SkeletonComponent={MyAppointmentsSortingSkeleton}
-            buttonText="Load More Appointments"
+            buttonText={`Load More ${statusFilter === 'all' ? 'Appointments' : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1) + ' Appointments'}`}
             loadingText="Loading appointments..."
             showRemainingCount={true}
           />
         )}
 
         {/* Empty State */}
-        {!loading && !error && appointments.length === 0 && (
+        {!loading && !error && filteredAndSortedAppointments.length === 0 && (
           <motion.div
             variants={itemVariants}
             className="text-center py-16"
@@ -580,11 +653,26 @@ const MyAppointments = () => {
             <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Calendar className="w-12 h-12 text-neutral-400" />
             </div>
-            <h3 className="text-xl font-semibold text-neutral-800 mb-2">No Appointments</h3>
-            <p className="text-neutral-600 mb-6">You don't have any scheduled appointments at the moment.</p>
-            <button className="btn-primary">
-              Schedule Appointment
-            </button>
+            <h3 className="text-xl font-semibold text-neutral-800 mb-2">
+              {statusFilter === 'all' ? 'No Appointments' : 
+               statusFilter === 'pending' ? 'No Pending Appointments' :
+               statusFilter === 'confirmed' ? 'No Confirmed Appointments' :
+               statusFilter === 'cancelled' ? 'No Cancelled Appointments' :
+               statusFilter === 'completed' ? 'No Completed Appointments' : 'No Appointments'}
+            </h3>
+            <p className="text-neutral-600 mb-6">
+              {statusFilter === 'all' ? 'You don\'t have any scheduled appointments at the moment.' :
+               statusFilter === 'pending' ? 'You don\'t have any pending appointments.' :
+               statusFilter === 'confirmed' ? 'You don\'t have any confirmed appointments.' :
+               statusFilter === 'cancelled' ? 'You don\'t have any cancelled appointments.' :
+               statusFilter === 'completed' ? 'You don\'t have any completed appointments.' : 
+               'You don\'t have any appointments in this category.'}
+            </p>
+            {statusFilter === 'all' && (
+              <button className="btn-primary">
+                Schedule Appointment
+              </button>
+            )}
           </motion.div>
         )}
       </div>
