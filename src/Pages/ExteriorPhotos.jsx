@@ -76,10 +76,6 @@ export default function VehiclePhotos() {
     navigate('/auction-page');
   };
 
-  useEffect(() => {
-    // console.log("questions", questions);
-  });
-
   // Check if accident is Minor or Major
   const hasAccident = questions.some(
     (q) => q.key === 'accident' && (q.answer === 'Minor' || q.answer === 'Major')
@@ -92,6 +88,54 @@ export default function VehiclePhotos() {
   const [dragActive, setDragActive] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+
+  useEffect(() => {
+    // console.log("questions", questions);
+  });
+
+  // Load persisted images from Redux state on component mount
+  useEffect(() => {
+    if (uploadedImages && uploadedImages.length > 0 && photos.length === 0 && accidentPhotos.length === 0) {
+      console.log('Loading persisted images:', uploadedImages);
+      
+      // Separate regular photos from accident photos
+      const regularPhotos = uploadedImages.filter(img => !img.metaKey?.includes('accident'));
+      const accidentPhotosFromRedux = uploadedImages.filter(img => img.metaKey?.includes('accident'));
+      
+      // Convert Redux images to component format
+      const convertedRegularPhotos = regularPhotos.map(img => ({
+        id: `${img.metaKey}_${img.attachmentId}`,
+        file: null, // File object not available after reload
+        url: img.imageUrl, // Use server URL for display
+        serverUrl: img.imageUrl,
+        requirement: img.metaKey?.replace('image_image_', '').replace('_view', ''),
+        timestamp: new Date(),
+        attachmentId: img.attachmentId,
+        metaKey: img.metaKey,
+        uploaded: true
+      }));
+      
+      const convertedAccidentPhotos = accidentPhotosFromRedux.map(img => ({
+        id: img.metaKey?.replace('image_image_', '').replace('_view', ''),
+        file: null, // File object not available after reload
+        url: img.imageUrl, // Use server URL for display
+        serverUrl: img.imageUrl,
+        requirement: img.metaKey?.replace('image_image_', '').replace('_view', ''),
+        timestamp: new Date(),
+        attachmentId: img.attachmentId,
+        metaKey: img.metaKey,
+        uploaded: true,
+        label: 'Accident Photo',
+        icon: '📸',
+        description: 'Photo of accident damage',
+        required: img.metaKey?.includes('accident_mandatory_'),
+        isAccident: true
+      }));
+      
+      setPhotos(convertedRegularPhotos);
+      setAccidentPhotos(convertedAccidentPhotos);
+    }
+  }, [uploadedImages, photos.length, accidentPhotos.length]);
 
   const photoRequirements = [
     { 
@@ -217,6 +261,15 @@ export default function VehiclePhotos() {
         uploaded: true
       };
 
+      // Add to Redux store for persistence
+      dispatch(addUploadedImage({
+        attachmentId: result.attachmentId,
+        imageUrl: result.imageUrl,
+        metaKey: result.metaKey,
+        imageName: result.imageName,
+        productId: result.productId
+      }));
+
       if (id.startsWith('accident_')) {
         setAccidentPhotos((prev) => {
           const updatedPhotos = prev.map(p => 
@@ -288,6 +341,9 @@ export default function VehiclePhotos() {
         console.log('Image delete successful:', result);
       }
 
+      // Remove from Redux store
+      dispatch(removeUploadedImage(photoToDelete.attachmentId));
+
       // Remove from local state regardless of API success
       if (isAccidentPhoto) {
         setAccidentPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
@@ -297,7 +353,10 @@ export default function VehiclePhotos() {
 
     } catch (error) {
       console.error('Image delete failed:', error);
-      // Still remove from local state even if API call failed
+      // Still remove from Redux store and local state even if API call failed
+      if (photoToDelete && photoToDelete.attachmentId) {
+        dispatch(removeUploadedImage(photoToDelete.attachmentId));
+      }
       if (isAccidentPhoto) {
         setAccidentPhotos((prev) => prev.filter((photo) => photo.id !== photoId));
       } else {
