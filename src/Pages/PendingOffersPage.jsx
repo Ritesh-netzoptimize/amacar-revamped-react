@@ -796,7 +796,7 @@ const PendingOffersPage = () => {
         )}
       </div>
 
-          {/* Bids Modal */}
+      {/* Bids Modal */}
       <BidsModal
         isOpen={isBidsModalOpen}
         onClose={handleCloseBidsModal}

@@ -4,11 +4,15 @@ import { User, Mail, Phone, MapPin, Edit3 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { loadUser } from '../redux/slices/userSlice';
 import EditProfileModal from '../components/ui/EditProfileModal';
+import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
 
 const ProfilePage = () => {
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.user);
   const [showEditModal, setShowEditModal] = useState(false);
+
+
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   
   // Default profile data structure
   const defaultProfile = {
@@ -26,6 +30,29 @@ const ProfilePage = () => {
 
   const [profile, setProfile] = useState(defaultProfile);
   const [editData, setEditData] = useState({ ...profile });
+
+
+  const handlePasswordChange = async ({ currentPassword, newPassword }) => {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Simulate success/failure based on current password
+      if (currentPassword === "wrongpassword") {
+        throw new Error("Invalid current password");
+      }
+      
+      // Here you would make the actual API call
+      console.log("Password changed successfully", { currentPassword, newPassword });
+      
+      // You might want to show a toast notification here
+      return true;
+    } catch (error) {
+      console.error("Password change failed:", error);
+      throw error;
+    }
+  };
+
 
   // Load user data from Redux state
   useEffect(() => {
@@ -257,6 +284,15 @@ const ProfilePage = () => {
                 </button>
               </div>
               
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-neutral-800">Change Password</h4>
+                  <p className="text-sm text-neutral-600">Set you new password here</p>
+                </div>
+                <button className="btn-secondary cursor-pointer " onClick={() => setIsChangePasswordModalOpen(true)}>
+                  Change Password
+                </button>
+              </div>
               <div className="flex items-center justify-between py-4">
                 <div>
                   <h4 className="font-semibold text-neutral-800">Two-Factor Authentication</h4>
@@ -270,6 +306,13 @@ const ProfilePage = () => {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+        onPasswordChange={handlePasswordChange}
+      />
 
       {/* Edit Profile Modal */}
       <EditProfileModal

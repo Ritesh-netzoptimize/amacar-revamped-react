@@ -122,6 +122,21 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const changePassword = createAsyncThunk(
+  'user/changePassword',
+  async (passwordData, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/user/change-password', { current_password: passwordData.currentPassword, new_password: passwordData.newPassword, confirm_password: passwordData.confirmPassword });
+      if (response.data.success) {
+        return response.data.user;
+      }
+      return rejectWithValue(response.data.message || 'password update failed');
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'password update failed');
+    }
+  }
+);
+
 export const updateProfile = createAsyncThunk(
   'user/updateProfile',
   async (profileData, { rejectWithValue }) => {
