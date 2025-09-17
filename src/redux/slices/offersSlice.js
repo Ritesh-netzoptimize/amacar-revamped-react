@@ -131,6 +131,30 @@ export const createAppointments = createAsyncThunk(
   }
 );
 
+// Async thunk to cancel appointments
+export const cancelAppointment = createAsyncThunk(
+  'offers/cancelAppointment',
+  async (cancelData, { rejectWithValue }) => {
+    try {
+      console.log("Cancelling appointment:", cancelData.appointmentId, "with notes:", cancelData.notes);
+      const response = await api.post('/appointment/cancel', {
+        appointment_id: cancelData.appointmentId,
+        notes: cancelData.notes
+      });
+      console.log('Cancel appointment response:', response);
+      console.log('Cancel appointment response data:', response.data);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to cancel appointment');
+      }
+
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to cancel appointment');
+    }
+  }
+);
+
 // Async thunk to accept a bid
 export const acceptBid = createAsyncThunk(
   'offers/acceptBid',
@@ -480,6 +504,30 @@ const offersSlice = createSlice({
         state.appointmentOperationError = action.payload || 'Failed to create appointments';
         state.appointmentOperationSuccess = false;
       })
+      // Cancel appointment
+      .addCase(cancelAppointment.pending, (state) => {
+        state.appointmentOperationLoading = true;
+        state.appointmentOperationError = null;
+        state.appointmentOperationSuccess = false;
+      })
+      .addCase(cancelAppointment.fulfilled, (state, action) => {
+        state.appointmentOperationLoading = false;
+        state.appointmentOperationError = null;
+        state.appointmentOperationSuccess = true;
+        // Update the appointment status in the appointments list
+        const cancelledAppointment = action.payload.appointment;
+        if (cancelledAppointment) {
+          const index = state.appointments.findIndex(apt => apt.id === cancelledAppointment.id);
+          if (index !== -1) {
+            state.appointments[index] = cancelledAppointment;
+          }
+        }
+      })
+      .addCase(cancelAppointment.rejected, (state, action) => {
+        state.appointmentOperationLoading = false;
+        state.appointmentOperationError = action.payload || 'Failed to cancel appointment';
+        state.appointmentOperationSuccess = false;
+      })
       // Accept bid
       .addCase(acceptBid.pending, (state) => {
         state.bidOperationLoading = true;
@@ -579,6 +627,8 @@ export const {
 
 // Export createAppointments async thunk
 // export { createAppointments }; // Already exported above as const
+
+// Export cancelAppointment async thunk
 
 // Export reducer
 export default offersSlice.reducer;

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, MapPin, Phone, Video, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, RefreshCw } from 'lucide-react';
 import { formatDate, formatTimeRemaining } from '../lib/utils';
-import { fetchAppointments, selectAppointments, selectOffersLoading, selectOffersError } from '../redux/slices/offersSlice';
+import { fetchAppointments, selectAppointments, selectOffersLoading, selectOffersError, cancelAppointment } from '../redux/slices/offersSlice';
 import MyAppointmentsSkeleton from '../components/skeletons/MyAppointmentsSkeleton';
 import MyAppointmentsSortingSkeleton from '../components/skeletons/MyAppointmentsSortingSkeleton';
 import LoadMore from '../components/ui/load-more';
@@ -139,16 +139,22 @@ const MyAppointments = () => {
   };
 
   const handleCancel = async (appointment, notes) => {
-    setIsProcessing(true);
-    setProcessingAction('cancel');
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Cancelling appointment:', appointment.id, 'with notes:', notes);
-      setIsProcessing(false);
-      setProcessingAction('');
-      // You can implement actual cancel logic here
-    }, 2000);
+    try {
+      const response = await dispatch(cancelAppointment({
+        appointmentId: appointment.id,
+        notes: notes
+      }));
+      
+      if (response.payload && response.payload.success) {
+        console.log('Appointment cancelled successfully:', response.payload);
+        // Refresh appointments list
+        dispatch(fetchAppointments());
+      } else {
+        console.error('Failed to cancel appointment:', response.payload?.message);
+      }
+    } catch (error) {
+      console.error('Error cancelling appointment:', error);
+    }
   };
 
   // Handle sort selection with loading animation
