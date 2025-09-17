@@ -26,7 +26,9 @@ export default function EditProfileModal({
     lastName: '',
     email: '',
     phone: '',
-    address: '',
+    zipcode: '',
+    state: '',
+    city: '',
   });
   const [errors, setErrors] = useState({});
   const [phase, setPhase] = useState('form'); // form | loading | success | failed
@@ -39,7 +41,9 @@ export default function EditProfileModal({
         lastName: initialData.lastName || '',
         email: initialData.email || '',
         phone: initialData.phone || '',
-        address: initialData.address || '',
+        zipcode: initialData.zipcode || '',
+        state: initialData.state || '',
+        city: initialData.city || '',
       });
       setErrors({});
       setPhase('form');
@@ -78,9 +82,25 @@ export default function EditProfileModal({
       newErrors.phone = 'Please enter a valid phone number';
     }
 
-    // Address validation (optional but if provided, should be meaningful)
-    if (formData.address.trim() && formData.address.trim().length < 5) {
-      newErrors.address = 'Address must be at least 5 characters if provided';
+    // Zipcode validation
+    if (!formData.zipcode.trim()) {
+      newErrors.zipcode = 'Zipcode is required';
+    } else if (!/^\d{5}(-\d{4})?$/.test(formData.zipcode.trim())) {
+      newErrors.zipcode = 'Please enter a valid zipcode (e.g., 12345 or 12345-6789)';
+    }
+
+    // State validation
+    if (!formData.state.trim()) {
+      newErrors.state = 'State is required';
+    } else if (formData.state.trim().length < 2) {
+      newErrors.state = 'State must be at least 2 characters';
+    }
+
+    // City validation
+    if (!formData.city.trim()) {
+      newErrors.city = 'City is required';
+    } else if (formData.city.trim().length < 2) {
+      newErrors.city = 'City must be at least 2 characters';
     }
 
     setErrors(newErrors);
@@ -153,7 +173,7 @@ export default function EditProfileModal({
   return (
     <Dialog open={isOpen} onOpenChange={isCloseDisabled ? undefined : handleModalClose}>
       <DialogContent
-        className="sm:max-w-lg rounded-2xl shadow-xl p-0 overflow-hidden bg-white"
+        className="sm:max-w-xl rounded-2xl shadow-xl p-0 overflow-hidden bg-white"
         showCloseButton={!isCloseDisabled}
       >
         <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6">
@@ -301,33 +321,94 @@ export default function EditProfileModal({
                   )}
                 </div>
 
-                {/* Address Field */}
-                <div className="grid gap-2">
-                  <label htmlFor="address" className="text-sm font-medium text-slate-800">
-                    Address (Optional)
-                  </label>
-                  <div className="relative">
-                    <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                      <MapPin className="h-4 w-4" />
+                {/* Location Fields */}
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Zipcode Field */}
+                  <div className="grid gap-2">
+                    <label htmlFor="zipcode" className="text-sm font-medium text-slate-800">
+                      Zipcode
+                    </label>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <input
+                        id="zipcode"
+                        type="text"
+                        value={formData.zipcode}
+                        onChange={(e) => handleInputChange('zipcode', e.target.value)}
+                        placeholder="12345"
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                      />
                     </div>
-                    <input
-                      id="address"
-                      type="text"
-                      value={formData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                      placeholder="123 Main Street, City, State 12345"
-                      className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
-                    />
+                    {errors.zipcode && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-xs text-red-600"
+                      >
+                        {errors.zipcode}
+                      </motion.p>
+                    )}
                   </div>
-                  {errors.address && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-xs text-red-600"
-                    >
-                      {errors.address}
-                    </motion.p>
-                  )}
+
+                  {/* State Field */}
+                  <div className="grid gap-2">
+                    <label htmlFor="state" className="text-sm font-medium text-slate-800">
+                      State
+                    </label>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <input
+                        id="state"
+                        type="text"
+                        value={formData.state}
+                        onChange={(e) => handleInputChange('state', e.target.value)}
+                        placeholder="CA"
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                      />
+                    </div>
+                    {errors.state && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-xs text-red-600"
+                      >
+                        {errors.state}
+                      </motion.p>
+                    )}
+                  </div>
+
+                  {/* City Field */}
+                  <div className="grid gap-2">
+                    <label htmlFor="city" className="text-sm font-medium text-slate-800">
+                      City
+                    </label>
+                    <div className="relative">
+                      <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <input
+                        id="city"
+                        type="text"
+                        value={formData.city}
+                        onChange={(e) => handleInputChange('city', e.target.value)}
+                        placeholder="Los Angeles"
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                      />
+                    </div>
+                    {errors.city && (
+                      <motion.p
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-xs text-red-600"
+                      >
+                        {errors.city}
+                      </motion.p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Submit Button */}

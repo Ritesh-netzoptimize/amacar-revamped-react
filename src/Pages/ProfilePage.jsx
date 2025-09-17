@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Edit3 } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Edit3, Key } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { loadUser } from '../redux/slices/userSlice';
 import EditProfileModal from '../components/ui/EditProfileModal';
-import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
+import ChangePasswordModal from '../components/ui/ChangePasswordModal';
 
 const ProfilePage = () => {
   const dispatch = useDispatch();
   const { user, loading } = useSelector((state) => state.user);
   const [showEditModal, setShowEditModal] = useState(false);
-
-
-  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   
   // Default profile data structure
   const defaultProfile = {
@@ -20,7 +18,9 @@ const ProfilePage = () => {
     lastName: '',
     email: '',
     phone: '',
-    address: '',
+    zipcode: '',
+    state: '',
+    city: '',
     bio: 'Car enthusiast and frequent seller on Amacar platform.',
     joinDate: '',
     totalAuctions: 0,
@@ -62,7 +62,9 @@ const ProfilePage = () => {
         lastName: user.lastName || user.last_name || '',
         email: user.email || '',
         phone: user.phone || '',
-        address: user.address || '',
+        zipcode: user.zipcode || '',
+        state: user.state || '',
+        city: user.city || '',
         bio: user.bio || defaultProfile.bio,
         joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
         totalAuctions: user.totalAuctions || user.total_auctions || 0,
@@ -198,7 +200,7 @@ const ProfilePage = () => {
           <motion.div variants={itemVariants} className="card p-8 mb-8">
             <h3 className="text-xl font-bold text-neutral-800 mb-6">Personal Information</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-neutral-700 mb-2">
                   Email Address
@@ -219,13 +221,33 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              <div className="md:col-span-2">
+              <div>
                 <label className="block text-sm font-semibold text-neutral-700 mb-2">
-                  Address
+                  City
                 </label>
                 <div className="flex items-center space-x-2 text-neutral-600">
                   <MapPin className="w-5 h-5" />
-                  <span>{profile.address || 'Not provided'}</span>
+                  <span>{profile.city || 'Not provided'}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-neutral-700 mb-2">
+                  State
+                </label>
+                <div className="flex items-center space-x-2 text-neutral-600">
+                  <MapPin className="w-5 h-5" />
+                  <span>{profile.state || 'Not provided'}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-neutral-700 mb-2">
+                  Zipcode
+                </label>
+                <div className="flex items-center space-x-2 text-neutral-600">
+                  <MapPin className="w-5 h-5" />
+                  <span>{profile.zipcode || 'Not provided'}</span>
                 </div>
               </div>
             </div>
@@ -284,15 +306,20 @@ const ProfilePage = () => {
                 </button>
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between py-4 border-b border-neutral-200">
                 <div>
                   <h4 className="font-semibold text-neutral-800">Change Password</h4>
-                  <p className="text-sm text-neutral-600">Set you new password here</p>
+                  <p className="text-sm text-neutral-600">Update your password to keep your account secure</p>
                 </div>
-                <button className="btn-secondary cursor-pointer " onClick={() => setIsChangePasswordModalOpen(true)}>
-                  Change Password
+                <button 
+                  onClick={() => setShowChangePasswordModal(true)}
+                  className="btn-secondary flex items-center space-x-2"
+                >
+                  <Key className="w-4 h-4" />
+                  <span>Change</span>
                 </button>
               </div>
+              
               <div className="flex items-center justify-between py-4">
                 <div>
                   <h4 className="font-semibold text-neutral-800">Two-Factor Authentication</h4>
@@ -309,9 +336,8 @@ const ProfilePage = () => {
 
       {/* Change Password Modal */}
       <ChangePasswordModal
-        isOpen={isChangePasswordModalOpen}
-        onClose={() => setIsChangePasswordModalOpen(false)}
-        onPasswordChange={handlePasswordChange}
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
       />
 
       {/* Edit Profile Modal */}
