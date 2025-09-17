@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react"
 import { motion } from "framer-motion"
 import "./hero.css"
-import bgImg from "../../../assets/home_Page_first_hero(10).jpg"
+import bgImg from "../../../assets/home_page_first_hero(12).jpg"
 
 // ⬇️ shadcn components
 import Modal from "@/components/ui/modal.jsx"

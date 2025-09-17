@@ -240,7 +240,6 @@ export default function AppointmentModal({
                       <div className="text-sm text-orange-700 space-y-1">
                         <p><strong>Date:</strong> {formatFullDate(selectedDate)}</p>
                         <p><strong>Time:</strong> {selectedTime}</p>
-                        <p><strong>Dealer:</strong> {dealerName}</p>
                         {notes && (
                           <p><strong>Notes:</strong> {notes}</p>
                         )}
