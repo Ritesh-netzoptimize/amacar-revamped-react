@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, ChevronLeft, X, AlertCircle, Rocket } from 'lucide-react';
+import { ChevronRight, ChevronLeft, X, AlertCircle, Rocket, Car, CarFront, Gauge, Hash, Armchair, Camera, ArrowRight, ArrowLeft, LifeBuoy, CircleGauge } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { uploadVehicleImage, deleteVehicleImage, addUploadedImage, removeUploadedImage, clearImageUploadError, clearImageDeleteError, startAuction, clearAuctionStartError } from '@/redux/slices/carDetailsAndQuestionsSlice';
@@ -13,7 +13,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { CheckCircle, FileText, Shield, Clock, Loader2 } from 'lucide-react';
-
 export default function VehiclePhotos() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -141,7 +140,7 @@ export default function VehiclePhotos() {
     { 
       id: 'front', 
       label: 'Front View', 
-      icon: '🚗', 
+      icon: CarFront, 
       description: 'Full front view of the vehicle', 
       required: true,
       tip: 'Take the photo in daylight with the whole front clearly visible.'
@@ -149,7 +148,7 @@ export default function VehiclePhotos() {
     { 
       id: 'rear', 
       label: 'Rear View', 
-      icon: '🚙', 
+      icon: Car, 
       description: 'Full rear view of the vehicle', 
       required: false,
       tip: 'Ensure the entire rear is visible and avoid dark shadows.'
@@ -157,7 +156,7 @@ export default function VehiclePhotos() {
     { 
       id: 'side_driver', 
       label: 'Driver Side', 
-      icon: '🚘', 
+      icon: ArrowRight, 
       description: 'Complete driver side profile', 
       required: false,
       tip: 'Stand far enough so the whole side fits clearly in the frame.'
@@ -165,7 +164,7 @@ export default function VehiclePhotos() {
     { 
       id: 'dashboard', 
       label: 'Dashboard', 
-      icon: '📊', 
+      icon: Gauge, 
       description: 'Front dashboard and controls', 
       required: false,
       tip: 'Switch on ignition so dashboard details are clearly lit.'
@@ -173,7 +172,7 @@ export default function VehiclePhotos() {
     { 
       id: 'side_passenger', 
       label: 'Passenger Side', 
-      icon: '🚘', 
+      icon: ArrowLeft, 
       description: 'Complete passenger side profile', 
       required: false,
       tip: 'Capture the full side without cutting off wheels or mirrors.'
@@ -181,7 +180,7 @@ export default function VehiclePhotos() {
     { 
       id: 'odometer', 
       label: 'Odometer', 
-      icon: '🔢', 
+      icon: CircleGauge, 
       description: 'Mileage reading clearly visible', 
       required: false,
       tip: 'Focus closely so the numbers are sharp and readable.'
@@ -189,7 +188,7 @@ export default function VehiclePhotos() {
     { 
       id: 'wheels', 
       label: 'Wheels & Tires', 
-      icon: '🛞', 
+      icon: LifeBuoy, 
       description: 'Close-up of wheels and tires', 
       required: false,
       tip: 'Make sure tread patterns and rims are in clear focus.'
@@ -197,7 +196,7 @@ export default function VehiclePhotos() {
     { 
       id: 'front_seats', 
       label: 'Front Seats', 
-      icon: '🪑', 
+      icon: Armchair, 
       description: 'Front seats condition', 
       required: false,
       tip: 'Adjust lighting to avoid shadows on seat fabric.'
@@ -211,7 +210,7 @@ export default function VehiclePhotos() {
       setAccidentPhotos([{
         id: `accident_mandatory_${Date.now()}`,
         label: 'Accident Photo (Required)',
-        icon: '📸',
+        icon: Camera,
         description: 'Photo of accident damage',
         required: true,
         isAccident: true
@@ -371,7 +370,7 @@ export default function VehiclePhotos() {
     const newId = `accident_${Date.now()}`;
     setAccidentPhotos((prev) => [
       ...prev,
-      { id: newId, label: 'Accident Photo', icon: '📸', description: 'Photo of accident damage', required: false, isAccident: true },
+      { id: newId, label: 'Accident Photo', icon: Camera, description: 'Photo of accident damage', required: false, isAccident: true },
     ]);
   };
 
@@ -564,25 +563,25 @@ export default function VehiclePhotos() {
                         </div>
                       </div>
                     </div>
-                  ) : (
-                    <div className="aspect-square flex flex-col items-center justify-center p-5 text-center group">
-                      <div className="text-4xl mb-3 text-slate-400 group-hover:text-[#f6851f] transition-colors">
-                        {photo.icon}
-                      </div>
-                      <p className="text-sm font-semibold text-slate-800 mb-2">{photo.label}</p>
-                      <div className='border-2 border-slate-300 p-2 rounded-md'>
-                        <button
-                          onClick={() => {
-                            document.getElementById(`photo-upload-${photo.id}`).click();
-                          }}
-                          className="cursor-pointer w-full inline-flex items-center justify-center h-8 px-3 rounded-md text-black border-slate-200 border-2 text-sm font-medium transition-colors duration-200 "
-                        >
-                          Upload
-                        </button>
-                        <p className='text-xs mt-4 text-slate-500'>{photo.tip}</p>
-                      </div>
-                    </div>
-                  )}
+                   ) : (
+                     <div className="aspect-square flex flex-col items-center justify-center p-5 text-center group">
+                       <div className="w-12 h-12 mb-3 text-slate-400 group-hover:text-[#f6851f] transition-colors flex items-center justify-center">
+                         <photo.icon className="w-8 h-8" />
+                       </div>
+                       <p className="text-sm font-semibold text-slate-800 mb-2">{photo.label}</p>
+                       <div className='border-2 border-slate-300 p-2 rounded-md'>
+                         <button
+                           onClick={() => {
+                             document.getElementById(`photo-upload-${photo.id}`).click();
+                           }}
+                           className="cursor-pointer w-full inline-flex items-center justify-center h-8 px-3 rounded-md text-black border-slate-200 border-2 text-sm font-medium transition-colors duration-200 "
+                         >
+                           Upload
+                         </button>
+                         <p className='text-xs mt-4 text-slate-500'>{photo.tip}</p>
+                       </div>
+                     </div>
+                   )}
                   <input
                     type="file"
                     accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -710,17 +709,17 @@ export default function VehiclePhotos() {
                           </div>
                         </div>
                       </div>
-                    ) : (
-                      <div className="aspect-square flex flex-col items-center justify-center p-5 text-center group">
-                        <div className="text-4xl mb-3 text-slate-400 group-hover:text-[#f6851f] transition-colors">
-                          {photo.icon}
-                        </div>
-                        <p className="text-sm font-semibold text-slate-800 mb-2">{photo.label}</p>
-                        <div className="w-9 h-9 rounded-full border-2 border-dashed border-slate-300 group-hover:border-[#f6851f] group-hover:bg-orange-50/20 flex items-center justify-center transition-all">
-                          <span className="text-slate-400 group-hover:text-[#f6851f] text-xl">+</span>
-                        </div>
-                      </div>
-                    )}
+                     ) : (
+                       <div className="aspect-square flex flex-col items-center justify-center p-5 text-center group">
+                         <div className="w-12 h-12 mb-3 text-slate-400 group-hover:text-[#f6851f] transition-colors flex items-center justify-center">
+                           <photo.icon className="w-8 h-8" />
+                         </div>
+                         <p className="text-sm font-semibold text-slate-800 mb-2">{photo.label}</p>
+                         <div className="w-9 h-9 rounded-full border-2 border-dashed border-slate-300 group-hover:border-[#f6851f] group-hover:bg-orange-50/20 flex items-center justify-center transition-all">
+                           <span className="text-slate-400 group-hover:text-[#f6851f] text-xl">+</span>
+                         </div>
+                       </div>
+                     )}
                     <input
                       type="file"
                       accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
