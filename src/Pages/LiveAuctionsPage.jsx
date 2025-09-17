@@ -317,19 +317,35 @@ const LiveAuctionsPage = () => {
     setIsBidsModalOpen(true);
   };
 
-  const handleAcceptBid = (bidId) => {
-    const bid = selectedAuctionBids?.bids?.find(b => b.id === bidId);
-    if (bid) {
-      setConfirmationData({ bid, action: 'accept' });
-      setIsConfirmationModalOpen(true);
+  const handleAcceptBid = async (bid) => {
+    const bidData = {
+      bidId: bid.id,
+      productId: selectedAuctionBids?.id,
+      bidderId: bid.bidder_id
+    };
+    
+    try {
+      await dispatch(acceptBid(bidData)).unwrap();
+      // Refresh the bids data after successful action
+      dispatch(fetchLiveAuctions());
+    } catch (error) {
+      console.error('Error accepting bid:', error);
     }
   };
 
-  const handleRejectBid = (bidId) => {
-    const bid = selectedAuctionBids?.bids?.find(b => b.id === bidId);
-    if (bid) {
-      setConfirmationData({ bid, action: 'reject' });
-      setIsConfirmationModalOpen(true);
+  const handleRejectBid = async (bid) => {
+    const bidData = {
+      bidId: bid.id,
+      productId: selectedAuctionBids?.id,
+      bidderId: bid.bidder_id
+    };
+    
+    try {
+      await dispatch(rejectBid(bidData)).unwrap();
+      // Refresh the bids data after successful action
+      dispatch(fetchLiveAuctions());
+    } catch (error) {
+      console.error('Error rejecting bid:', error);
     }
   };
 
@@ -887,8 +903,13 @@ const LiveAuctionsPage = () => {
         isOpen={isBidsModalOpen}
         onClose={() => setIsBidsModalOpen(false)}
         auctionData={selectedAuctionBids}
-        isLoading={bidOperationLoading}
-        error={bidOperationError}
+        isLoading={loading}
+        error={error}
+        onAcceptBid={handleAcceptBid}
+        onRejectBid={handleRejectBid}
+        bidOperationLoading={bidOperationLoading}
+        bidOperationError={bidOperationError}
+        bidOperationSuccess={bidOperationSuccess}
       />
 
       {/* Bid Confirmation Modal */}

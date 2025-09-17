@@ -1,15 +1,52 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, DollarSign } from 'lucide-react';
+import { X, DollarSign, CheckCircle, XCircle } from 'lucide-react';
 import { formatCurrency } from '../../lib/utils';
+import BidConfirmationModal from './BidConfirmationModal';
 
 const BidsModal = ({ 
   isOpen, 
   onClose, 
   auctionData, 
   isLoading = false,
-  error = null
+  error = null,
+  onAcceptBid = null,
+  onRejectBid = null,
+  bidOperationLoading = false,
+  bidOperationError = null,
+  bidOperationSuccess = false
 }) => {
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [selectedBid, setSelectedBid] = useState(null);
+  const [actionType, setActionType] = useState(null);
+
   if (!isOpen || !auctionData) return null;
+
+  const handleAcceptBid = (bid) => {
+    setSelectedBid(bid);
+    setActionType('accept');
+    setIsConfirmationModalOpen(true);
+  };
+
+  const handleRejectBid = (bid) => {
+    setSelectedBid(bid);
+    setActionType('reject');
+    setIsConfirmationModalOpen(true);
+  };
+
+  const handleConfirmAction = () => {
+    if (actionType === 'accept' && onAcceptBid) {
+      onAcceptBid(selectedBid);
+    } else if (actionType === 'reject' && onRejectBid) {
+      onRejectBid(selectedBid);
+    }
+  };
+
+  const handleCloseConfirmationModal = () => {
+    setIsConfirmationModalOpen(false);
+    setSelectedBid(null);
+    setActionType(null);
+  };
 
   return (
     <AnimatePresence>
@@ -137,6 +174,32 @@ const BidsModal = ({
                           <p className="text-neutral-800 text-sm mt-1">{bid.notes}</p>
                         </div>
                       )}
+
+                      {/* Action Buttons for Pending Bids */}
+                      {!bid.is_accepted && !bid.is_expired && bid.status !== 'rejected' && (onAcceptBid || onRejectBid) && (
+                        <div className="mt-4 flex items-center justify-end gap-2">
+                          {onRejectBid && (
+                            <button
+                              onClick={() => handleRejectBid(bid)}
+                              disabled={bidOperationLoading}
+                              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <XCircle className="w-4 h-4" />
+                              Reject
+                            </button>
+                          )}
+                          {onAcceptBid && (
+                            <button
+                              onClick={() => handleAcceptBid(bid)}
+                              disabled={bidOperationLoading}
+                              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-success bg-success/10 hover:bg-success/20 border border-success/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                              Accept
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </motion.div>
                   ))}
                 </div>
@@ -162,6 +225,18 @@ const BidsModal = ({
           </motion.div>
         </motion.div>
       )}
+
+      {/* Bid Confirmation Modal */}
+      <BidConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={handleCloseConfirmationModal}
+        onConfirm={handleConfirmAction}
+        action={actionType}
+        bidData={selectedBid}
+        isLoading={bidOperationLoading}
+        error={bidOperationError}
+        success={bidOperationSuccess}
+      />
     </AnimatePresence>
   );
 };

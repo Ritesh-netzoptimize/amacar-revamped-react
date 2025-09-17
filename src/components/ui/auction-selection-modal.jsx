@@ -101,7 +101,7 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
         state: location.state || "",
         zip_code: stateZip || ""
       },
-      _dealers_to_send_details: shareInfoWith,
+      dealers_to_send_details: shareInfoWith,
       offer_terms: selectedOption ? "accepted" : "not_accepted"
     };
   }
