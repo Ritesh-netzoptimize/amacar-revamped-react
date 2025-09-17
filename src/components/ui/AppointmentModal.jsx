@@ -280,7 +280,7 @@ export default function AppointmentModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="sm:max-w-[800px] w-full max-h-[85vh] rounded-2xl shadow-2xl p-0 overflow-hidden bg-white border-0"
+        className="sm:max-w-[800px] w-full max-h-[85vh] rounded-2xl shadow-2xl p-0 overflow-y-auto overflow-x-hidden bg-white border-0"
         showCloseButton={!isCloseDisabled}
       >
         <div className="flex flex-col h-full">

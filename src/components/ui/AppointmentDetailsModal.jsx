@@ -169,7 +169,7 @@ export default function AppointmentDetailsModal({
         showCloseButton={!isCloseDisabled}
       >
         {/* Header - Fixed */}
-        <div className="relative bg-[#f6851f] p-6 text-white flex-shrink-0">
+        <div className="relative bg-[#f6851f] p-6 text-white flex-shrink-0 rounded-t-2xl">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent"></div>
           <div className="relative z-10">
             <DialogTitle className="text-lg font-bold mb-1">
@@ -185,7 +185,7 @@ export default function AppointmentDetailsModal({
         </div>
 
         {/* Content Area - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-6 min-h-0 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 hover:scrollbar-thumb-slate-400 scroll-smooth">
+        <div className="flex-1 overflow-y-auto p-6 min-h-0 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 hover:scrollbar-thumb-slate-400 scroll-smooth rounded-b-2xl">
             {appointment ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
