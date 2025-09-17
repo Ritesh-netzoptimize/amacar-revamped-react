@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Menu, X, User, Search, LogOut, Settings, ChevronDown, X as XIcon } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { Bell, Menu, X, User, Search, LogOut, Settings, ChevronDown, X as XIcon, Calendar, DollarSign, Gavel } from 'lucide-react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchDashboardSummary, selectDashboardSummary } from '../../../redux/slices/offersSlice';
 import Sidebar from '../Sidebar/Sidebar';
 import { useSearch } from '../../../context/SearchContext';
 import BackToTop from '../../ui/back-to-top';
 import { Link } from 'react-router-dom';
 
 const DashboardLayout = ({ children }) => {
+  const dispatch = useDispatch();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -27,6 +29,7 @@ const DashboardLayout = ({ children }) => {
 
   // Get user data from Redux store
   const { user } = useSelector((state) => state.user);
+  const dashboardSummary = useSelector(selectDashboardSummary);
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -46,6 +49,11 @@ const DashboardLayout = ({ children }) => {
     setIsProfileOpen(false); // Close profile if notifications is opened
   };
 
+  // Fetch dashboard summary on component mount
+  useEffect(() => {
+    dispatch(fetchDashboardSummary());
+  }, [dispatch]);
+
   // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -64,12 +72,41 @@ const DashboardLayout = ({ children }) => {
     };
   }, []);
 
-  // Dummy notifications data
-  const notifications = [
-    { id: 1, message: "New bid received on your vehicle!", time: "10 min ago" },
-    { id: 2, message: "Your auction is ending soon.", time: "1 hr ago" },
-    { id: 3, message: "Profile updated successfully.", time: "2 hrs ago" },
-  ];
+  // Get notifications from dashboard summary or fallback to dummy data
+  const getNotifications = () => {
+    if (dashboardSummary?.recent_activity && dashboardSummary.recent_activity.length > 0) {
+      return dashboardSummary.recent_activity.slice(0, 5).map((activity, index) => ({
+        id: index + 1,
+        message: activity.message,
+        time: `${activity.formatted_date?.date} at ${activity.formatted_date?.time}`,
+        type: activity.type,
+        icon: getActivityIcon(activity.type)
+      }));
+    }
+    
+    // Fallback dummy data
+    return [
+      { id: 1, message: "New bid received on your vehicle!", time: "10 min ago", type: "bid", icon: DollarSign },
+      { id: 2, message: "Your auction is ending soon.", time: "1 hr ago", type: "auction", icon: Gavel },
+      { id: 3, message: "Profile updated successfully.", time: "2 hrs ago", type: "appointment", icon: Calendar },
+    ];
+  };
+
+  // Get appropriate icon for activity type
+  const getActivityIcon = (type) => {
+    switch (type) {
+      case 'bid':
+        return DollarSign;
+      case 'auction':
+        return Gavel;
+      case 'appointment':
+        return Calendar;
+      default:
+        return Bell;
+    }
+  };
+
+  const notifications = getNotifications();
 
   // Get real user profile data
   const profileData = {
@@ -91,9 +128,14 @@ const DashboardLayout = ({ children }) => {
           
           <h1 className="text-lg font-semibold text-neutral-800">Dashboard</h1>
           
-          <button className="relative p-2 hover:bg-neutral-100 rounded-lg transition-colors duration-200">
+          <button 
+            onClick={toggleNotificationsDropdown}
+            className="relative p-2 hover:bg-neutral-100 rounded-lg transition-colors duration-200"
+          >
             <Bell className="w-5 h-5 text-neutral-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+            {notifications.length > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+            )}
           </button>
         </div>
       </div>
@@ -183,7 +225,9 @@ const DashboardLayout = ({ children }) => {
                   className="cursor-pointer relative p-2.5 bg-neutral-50 rounded-full hover:bg-primary-50 hover:scale-105 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
                   <Bell className="w-5 h-5 text-neutral-600" />
-                  <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-error rounded-full border border-white"></span>
+                  {notifications.length > 0 && (
+                    <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-error rounded-full border border-white"></span>
+                  )}
                 </button>
                 <AnimatePresence>
                   {isNotificationsOpen && (
@@ -198,15 +242,42 @@ const DashboardLayout = ({ children }) => {
                         <h3 className="text-sm font-semibold text-neutral-800">Notifications</h3>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
-                        {notifications.map((notification) => (
-                          <div
-                            key={notification.id}
-                            className="px-4 py-3 hover:bg-primary-50 transition-colors duration-200 border-b border-neutral-100 last:border-b-0"
-                          >
-                            <p className="text-sm text-neutral-800">{notification.message}</p>
-                            <p className="text-xs text-neutral-500 mt-1">{notification.time}</p>
+                        {notifications.length > 0 ? (
+                          notifications.map((notification) => {
+                            const IconComponent = notification.icon;
+                            return (
+                              <div
+                                key={notification.id}
+                                className="px-4 py-3 hover:bg-primary-50 transition-colors duration-200 border-b border-neutral-100 last:border-b-0"
+                              >
+                                <div className="flex items-start space-x-3">
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                    notification.type === 'bid' ? 'bg-emerald-100' :
+                                    notification.type === 'auction' ? 'bg-orange-100' :
+                                    notification.type === 'appointment' ? 'bg-purple-100' :
+                                    'bg-blue-100'
+                                  }`}>
+                                    <IconComponent className={`w-4 h-4 ${
+                                      notification.type === 'bid' ? 'text-emerald-600' :
+                                      notification.type === 'auction' ? 'text-orange-600' :
+                                      notification.type === 'appointment' ? 'text-purple-600' :
+                                      'text-blue-600'
+                                    }`} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-neutral-800">{notification.message}</p>
+                                    <p className="text-xs text-neutral-500 mt-1">{notification.time}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="px-4 py-8 text-center">
+                            <Bell className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
+                            <p className="text-sm text-neutral-500">No recent activity</p>
                           </div>
-                        ))}
+                        )}
                       </div>
                       <div className="px-4 py-2 bg-neutral-50">
                         <button className="w-full text-sm text-primary-600 hover:text-primary-700 font-medium text-left">
