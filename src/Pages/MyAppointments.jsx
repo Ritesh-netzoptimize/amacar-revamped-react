@@ -138,13 +138,13 @@ const MyAppointments = () => {
     }, 2000);
   };
 
-  const handleCancel = async (appointment) => {
+  const handleCancel = async (appointment, notes) => {
     setIsProcessing(true);
     setProcessingAction('cancel');
     
     // Simulate API call
     setTimeout(() => {
-      console.log('Cancelling appointment:', appointment.id);
+      console.log('Cancelling appointment:', appointment.id, 'with notes:', notes);
       setIsProcessing(false);
       setProcessingAction('');
       // You can implement actual cancel logic here

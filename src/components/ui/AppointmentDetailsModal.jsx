@@ -26,6 +26,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import CancelAppointmentModal from "./CancelAppointmentModal";
 
 export default function AppointmentDetailsModal({
   isOpen,
@@ -39,11 +40,42 @@ export default function AppointmentDetailsModal({
   processingAction = ""
 }) {
   const [showActions, setShowActions] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelProcessing, setIsCancelProcessing] = useState(false);
 
   // Handle modal close
   const handleClose = (open) => {
-    if (!open && !isProcessing) {
+    if (!open && !isProcessing && !isCancelProcessing) {
       onClose(false);
+    }
+  };
+
+  // Handle cancel button click
+  const handleCancelClick = () => {
+    setIsCancelModalOpen(true);
+  };
+
+  // Handle cancel modal close
+  const handleCancelModalClose = () => {
+    setIsCancelModalOpen(false);
+    setIsCancelProcessing(false);
+  };
+
+  // Handle confirm cancellation
+  const handleConfirmCancel = async (appointment, notes) => {
+    setIsCancelProcessing(true);
+    
+    try {
+      if (onCancel) {
+        await onCancel(appointment, notes);
+      }
+      // Close both modals after successful cancellation
+      setIsCancelModalOpen(false);
+      onClose(false);
+    } catch (error) {
+      console.error("Error cancelling appointment:", error);
+    } finally {
+      setIsCancelProcessing(false);
     }
   };
 
@@ -116,7 +148,7 @@ export default function AppointmentDetailsModal({
 
   const statusStyle = getStatusStyle(appointment?.status);
 
-  const isCloseDisabled = isProcessing;
+  const isCloseDisabled = isProcessing || isCancelProcessing;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -283,15 +315,12 @@ export default function AppointmentDetailsModal({
                           </button>
                           
                           <button
-                            onClick={() => onCancel && onCancel(appointment)}
-                            // disabled={isProcessing || !appointment.can_cancel}
-                            disabled={isProcessing}
+                            onClick={handleCancelClick}
+                            disabled={isProcessing || isCancelProcessing}
                             className="cursor-pointer flex items-center justify-center gap-2 h-10 bg-red-50 text-red-700 rounded-lg border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Trash2 className="w-4 h-4" />
-                            <span className="text-sm font-medium">
-                              {isProcessing && processingAction === 'cancel' ? 'Processing...' : 'Cancel'}
-                            </span>
+                            <span className="text-sm font-medium">Cancel</span>
                           </button>
                         </div>
 
@@ -301,7 +330,7 @@ export default function AppointmentDetailsModal({
                 </div>
 
                 {/* Processing State */}
-                {isProcessing && (
+                {(isProcessing || isCancelProcessing) && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -311,7 +340,7 @@ export default function AppointmentDetailsModal({
                       <Loader2 className="w-5 h-5 text-orange-600 animate-spin" />
                       <div>
                         <p className="text-sm font-medium text-orange-800">
-                          {processingAction === 'cancel' ? 'Cancelling appointment...' : 
+                          {isCancelProcessing ? 'Cancelling appointment...' :
                            processingAction === 'reschedule' ? 'Processing reschedule...' : 
                            'Processing...'}
                         </p>
@@ -360,6 +389,15 @@ export default function AppointmentDetailsModal({
           </div>
         </div>
       </DialogContent>
+
+      {/* Cancel Appointment Modal */}
+      <CancelAppointmentModal
+        isOpen={isCancelModalOpen}
+        onClose={handleCancelModalClose}
+        appointment={appointment}
+        onConfirmCancel={handleConfirmCancel}
+        isProcessing={isCancelProcessing}
+      />
     </Dialog>
   );
 }
