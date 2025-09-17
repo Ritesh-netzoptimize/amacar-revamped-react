@@ -36,9 +36,9 @@ export default function VehiclePhotos() {
     try {
       // Clear any previous errors
       dispatch(clearAuctionStartError());
-      
+      const auction_terms_accepted = termsAccepted ? "accepted" : "not_accepted";
       // Start the auction
-      const result = await dispatch(startAuction({ productId })).unwrap();
+      const result = await dispatch(startAuction({ productId, auction_terms_accepted })).unwrap();
       
       // Show success toast
       toast.success(result.message || 'Auction started successfully!');

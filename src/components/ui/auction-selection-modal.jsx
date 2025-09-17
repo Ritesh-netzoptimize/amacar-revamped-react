@@ -87,7 +87,7 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
     };
 
     // Determine share_info_with based on selected option
-    const shareInfoWith = selectedOption ? [selectedOption] : [];
+    const shareInfoWith = selectedOption ? selectedOption : "";
 
     return {
       vehicle: vehiclePayload,
@@ -101,7 +101,7 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
         state: location.state || "",
         zip_code: stateZip || ""
       },
-      share_info_with: shareInfoWith,
+      _dealers_to_send_details: shareInfoWith,
       offer_terms: selectedOption ? "accepted" : "not_accepted"
     };
   }

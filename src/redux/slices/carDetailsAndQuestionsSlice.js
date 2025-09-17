@@ -164,10 +164,10 @@ export const deleteVehicleImage = createAsyncThunk(
 // Async thunk for starting auction
 export const startAuction = createAsyncThunk(
   'carDetailsAndQuestions/startAuction',
-  async ({ productId }, { rejectWithValue }) => {
+  async ({ productId, termsAccepted }, { rejectWithValue }) => {
     try {
       console.log('Starting auction for product:', productId);
-      const response = await api.post('/auction/start', { product_id: productId });
+      const response = await api.post('/auction/start', { product_id: productId, auction_terms: termsAccepted });
       console.log('Auction start API response:', response.data);
       if (response.data.success) {
         return {
@@ -605,17 +605,8 @@ const carDetailsAndQuestionsSlice = createSlice({
         state.auctionStartStatus = 'starting';
         state.auctionStartError = null;
       })
-      .addCase(startAuction.fulfilled, (state, action) => {
-        state.auctionStartStatus = 'succeeded';
-        state.auctionData = {
-          productId: action.payload.productId,
-          message: action.payload.message,
-          auctionStartedAt: action.payload.auctionStartedAt,
-          auctionEndsAt: action.payload.auctionEndsAt,
-          timestamp: action.payload.timestamp
-        };
-        state.auctionStartError = null;
-        state = initialState;
+      .addCase(startAuction.fulfilled, (state) => {
+        return initialState;
         // return initialState; // re check by neeraj sir
       })
       .addCase(startAuction.rejected, (state, action) => {
