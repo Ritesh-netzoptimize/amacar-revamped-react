@@ -201,16 +201,15 @@ export default function AppointmentDetailsModal({
                       <Calendar className="w-5 h-5 text-orange-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-800">Appointment #{appointment.id}</h3>
+                    <div className="text-right text-sm text-slate-600">
+                      <p>Created: {appointment.created_at ? new Date(appointment.created_at).toLocaleDateString() : 'N/A'}</p>
+                    </div>
+                    </div>
+                  </div>
                       <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
                         <div className={`w-2 h-2 rounded-full ${statusStyle.bg.replace('100', '500')}`}></div>
                         {appointment.status?.charAt(0).toUpperCase() + appointment.status?.slice(1) || 'Unknown'}
                       </div>
-                    </div>
-                  </div>
-                  <div className="text-right text-sm text-slate-600">
-                    <p>Created: {appointment.created_at ? new Date(appointment.created_at).toLocaleDateString() : 'N/A'}</p>
-                  </div>
                 </div>
 
                 {/* Date & Time Information */}
@@ -247,7 +246,7 @@ export default function AppointmentDetailsModal({
                     <User className="w-4 h-4" />
                     Dealer Information
                   </h4>
-                  <div className="space-y-3">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
                         <User className="w-4 h-4 text-orange-600" />
