@@ -150,7 +150,7 @@ export const updateProfile = createAsyncThunk(
         zip: profileData.zipcode
       };
       
-      const response = await api.put('/car-dealer/v1/user/profile', apiData);
+      const response = await api.put('/user/profile', apiData);
       if (response.data.success) {
         return response.data.user;
       }
