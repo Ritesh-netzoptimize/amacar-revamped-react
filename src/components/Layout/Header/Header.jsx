@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import LogoutModal from '@/components/ui/LogoutModal'
 import { persistor } from '@/redux/store'
+import { ArrowRight, Play } from 'lucide-react'
 // import { AuthContext } from '@/contexts/AuthContext'
 
 export default function Header() {
@@ -13,6 +14,7 @@ export default function Header() {
     const [loginModalOpen, setLoginModalOpen] = useState(false);
     const [logoutModalOpen, setLogoutModalOpen] = useState(false);
     const { user } = useSelector((state) => state.user);
+    const { productId } = useSelector((state) => state.carDetailsAndQuestions);
     const dispatch = useDispatch();
     const navigate = useNavigate();
   
@@ -41,6 +43,10 @@ export default function Header() {
     const handleRegister = () => {
       console.log("Open register modal");
     };
+
+    const handleContinueClick = () => {
+      navigate('/review');
+    };
   
     return (
       <>
@@ -64,7 +70,16 @@ export default function Header() {
   
               {/* right: actions */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', minWidth: 180 }}>
-                <div className="actions-desktop">
+                <div className="actions-desktop" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {user && productId && (
+                    <button 
+                      className="bg-white border-2 border-[#394da1] text-[#394da1] hover:from-orange-600 hover:to-orange-500 cursor-pointer border-0 rounded-lg px-4 py-2.5 text-sm font-semibold flex items-center gap-1.5 transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl hover:bg-[#394da1] hover:text-white" 
+                      onClick={handleContinueClick}
+                    >
+                      <Play className="w-4 h-4" />
+                      Continue where you left off
+                    </button>
+                  )}
                   {user ? (
                     <button className="btn-login cursor-pointer" onClick={handleLogoutClick}>
                       Logout
@@ -101,6 +116,15 @@ export default function Header() {
                 <a className="nav-link-mobile" href="#">Testimonials</a>
                 <a className="nav-link-mobile" href="#">Join Our Dealer Network</a>
                 <a className="nav-link-mobile" href="#">Our Vision</a>
+                {user && productId && (
+                  <button 
+                    className="bg-gradient-to-br from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white border-0 rounded-lg px-4 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 mt-2 w-full" 
+                    onClick={handleContinueClick}
+                  >
+                    <Play className="w-4 h-4" />
+                    Continue where you left off
+                  </button>
+                )}
                 {user ? (
                   <button className="btn-login-mobile" onClick={handleLogoutClick}>
                     Logout
