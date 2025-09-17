@@ -17,6 +17,8 @@ import {
   selectOffersError 
 } from '../redux/slices/offersSlice';
 import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
+import { Link } from 'react-router-dom';
+import Modal from '../components/ui/modal';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -28,7 +30,7 @@ const Dashboard = () => {
   const dashboardSummary = useSelector(selectDashboardSummary);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   // Calculate stats from dashboard summary data
   const stats = {
     acceptedOffers: dashboardSummary?.accepted_offers || 0,
@@ -258,6 +260,7 @@ const Dashboard = () => {
                   whileHover="hover"
                   whileTap="tap"
                   className="flex items-center space-x-3 p-4 bg-neutral-50 rounded-xl hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 cursor-pointer transition-all duration-300"
+                  onClick={() => setIsModalOpen(true)}
                 >
                   <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
                     <Car className="w-5 h-5 text-primary-600" />
@@ -270,10 +273,12 @@ const Dashboard = () => {
                   whileTap="tap"
                   className="flex items-center space-x-3 p-4 bg-neutral-50 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-100 cursor-pointer transition-all duration-300"
                 >
+                  <Link className='w-full flex items-center space-x-3' to={'/appointments'}>
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                     <Calendar className="w-5 h-5 text-blue-600" />
                   </div>
-                  <span className="text-sm font-medium text-neutral-800">Book Appointment</span>
+                  <span className="text-sm font-medium text-neutral-800">All Appointment</span>
+                  </Link>
                 </motion.div>
                 <motion.div
                   variants={actionVariants}
@@ -281,16 +286,26 @@ const Dashboard = () => {
                   whileTap="tap"
                   className="flex items-center space-x-3 p-4 bg-neutral-50 rounded-xl hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 cursor-pointer transition-all duration-300"
                 >
+                  <Link className='w-full flex items-center space-x-3' to={'/auctions'}>
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                     <Users className="w-5 h-5 text-green-600" />
                   </div>
                   <span className="text-sm font-medium text-neutral-800">All Auctions</span>
+                  </Link>
                 </motion.div>
               </div>
             </div>
           </motion.div>
         </div>
       </div>
+
+      {/* Add Vehicle Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Add Your Vehicle"
+        description="Enter your vehicle details to start the auction process"
+      />
     </>
   );
 };

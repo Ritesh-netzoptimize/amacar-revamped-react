@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import Sidebar from '../Sidebar/Sidebar';
 import { useSearch } from '../../../context/SearchContext';
 import BackToTop from '../../ui/back-to-top';
+import { Link } from 'react-router-dom';
 
 const DashboardLayout = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -238,10 +239,10 @@ const DashboardLayout = ({ children }) => {
                         <p className="text-xs text-neutral-500 truncate">{profileData.email}</p>
                       </div>
                       <div className="py-1">
-                        <button className="w-full px-4 py-2 text-sm text-neutral-600 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200 flex items-center space-x-2">
-                          <Settings className="w-4 h-4" />
-                          <span>Settings</span>
-                        </button>
+                        <Link onClick={() => setIsProfileOpen(false)} to={'/profile'} className="w-full px-4 py-2 text-sm text-neutral-600 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200 flex items-center space-x-2">
+                          <User className="w-4 h-4" />
+                          <span>Profile</span>
+                        </Link>
                         <button className="w-full px-4 py-2 text-sm text-neutral-600 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200 flex items-center space-x-2">
                           <LogOut className="w-4 h-4" />
                           <span>Logout</span>
