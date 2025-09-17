@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { uploadVehicleImage, deleteVehicleImage, addUploadedImage, removeUploadedImage, clearImageUploadError, clearImageDeleteError, startAuction, clearAuctionStartError } from '@/redux/slices/carDetailsAndQuestionsSlice';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
 import {
   Dialog,
   DialogContent,
@@ -238,52 +239,69 @@ export default function VehiclePhotos() {
       // Create image name based on requirement ID
       const imageName = `image_${id}_view`;
       
-      // Dispatch the upload action
-      const result = await dispatch(uploadVehicleImage({
-        file,
-        productId,
-        imageName
-      })).unwrap();
+      // Create FormData
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('product_id', productId);
+      formData.append('image_name', imageName);
 
-      console.log('Image upload successful:', result);
+      // Upload with progress tracking
+      const response = await api.post('/vehicle/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setProgressMap((prev) => ({ ...prev, [id]: progress }));
+        }
+      });
 
-      // Create local photo object for display
-      const newPhoto = {
-        id: `${id}_${Date.now()}`,
-        file,
-        url: result.localUrl, // Use local URL for immediate display
-        serverUrl: result.imageUrl, // Store server URL
-        requirement: id,
-        timestamp: new Date(),
-        attachmentId: result.attachmentId,
-        metaKey: result.metaKey,
-        uploaded: true
-      };
+      console.log('Image upload API response:', response.data);
 
-      // Add to Redux store for persistence
-      dispatch(addUploadedImage({
-        attachmentId: result.attachmentId,
-        imageUrl: result.imageUrl,
-        metaKey: result.metaKey,
-        imageName: result.imageName,
-        productId: result.productId
-      }));
+      if (response.data.success) {
+        const result = {
+          attachmentId: response.data.attachment_id,
+          imageUrl: response.data.image_url,
+          metaKey: response.data.meta_key,
+          productId: response.data.product_id,
+          imageName: imageName,
+          localUrl: URL.createObjectURL(file)
+        };
 
-      if (id.startsWith('accident_')) {
-        setAccidentPhotos((prev) => {
-          const updatedPhotos = prev.map(p => 
-            p.id === id ? { ...p, ...newPhoto } : p
-          );
-          return updatedPhotos;
-        });
+        // Add to Redux store for persistence
+        dispatch(addUploadedImage(result));
+
+        // Create local photo object for display
+        const newPhoto = {
+          id: `${id}_${Date.now()}`,
+          file,
+          url: result.localUrl, // Use local URL for immediate display
+          serverUrl: result.imageUrl, // Store server URL
+          requirement: id,
+          timestamp: new Date(),
+          attachmentId: result.attachmentId,
+          metaKey: result.metaKey,
+          uploaded: true
+        };
+
+        if (id.startsWith('accident_')) {
+          setAccidentPhotos((prev) => {
+            const updatedPhotos = prev.map(p => 
+              p.id === id ? { ...p, ...newPhoto } : p
+            );
+            return updatedPhotos;
+          });
+        } else {
+          setPhotos((prev) => [...prev, newPhoto]);
+        }
       } else {
-        setPhotos((prev) => [...prev, newPhoto]);
+        throw new Error(response.data.message || 'Failed to upload image');
       }
 
     } catch (error) {
       console.error('Image upload failed:', error);
       // Show error to user
-      alert(`Failed to upload image: ${error}`);
+      toast.error(`Failed to upload image: ${error.message || error}`);
     } finally {
       setUploadingMap((prev) => {
         const next = { ...prev };
@@ -591,7 +609,7 @@ export default function VehiclePhotos() {
                         // Validate file type
                         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
                         if (!allowedTypes.includes(file.type)) {
-                          alert('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
+                          toast.error('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
                           return;
                         }
                         handleSinglePhotoUpload(file, photo.id);

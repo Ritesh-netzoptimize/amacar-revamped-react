@@ -187,6 +187,7 @@ export const startAuction = createAsyncThunk(
   }
 );
 
+
 // Initial questions with defaults
 const initialQuestions = [
   {
@@ -614,6 +615,7 @@ const carDetailsAndQuestionsSlice = createSlice({
           timestamp: action.payload.timestamp
         };
         state.auctionStartError = null;
+        state = initialState;
         // return initialState; // re check by neeraj sir
       })
       .addCase(startAuction.rejected, (state, action) => {
