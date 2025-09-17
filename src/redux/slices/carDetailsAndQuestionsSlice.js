@@ -328,7 +328,7 @@ const initialState = {
     auctionStartedAt: null,
     auctionEndsAt: null,
     timestamp: null
-  },
+  },  
 };
 
 // Create slice
