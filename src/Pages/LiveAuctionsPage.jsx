@@ -905,11 +905,6 @@ const LiveAuctionsPage = () => {
         auctionData={selectedAuctionBids}
         isLoading={loading}
         error={error}
-        onAcceptBid={handleAcceptBid}
-        onRejectBid={handleRejectBid}
-        bidOperationLoading={bidOperationLoading}
-        bidOperationError={bidOperationError}
-        bidOperationSuccess={bidOperationSuccess}
       />
 
       {/* Bid Confirmation Modal */}

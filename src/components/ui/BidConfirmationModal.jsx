@@ -1,21 +1,76 @@
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, AlertTriangle, DollarSign } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
 import { formatCurrency } from '../../lib/utils';
+import { acceptBid, rejectBid, clearBidOperationStates } from '../../redux/slices/offersSlice';
 
 const BidConfirmationModal = ({ 
   isOpen, 
   onClose, 
-  onConfirm, 
   action, 
   bidData, 
-  isLoading = false,
-  error = null,
-  success = false
+  auctionData
 }) => {
-  if (!isOpen || !bidData) return null;
+  const dispatch = useDispatch();
+  const bidOperationLoading = useSelector(state => state.offers.bidOperationLoading);
+  const bidOperationError = useSelector(state => state.offers.bidOperationError);
+  const bidOperationSuccess = useSelector(state => state.offers.bidOperationSuccess);
+
+  // Local state to manage success display
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const isAccept = action === 'accept';
   const isReject = action === 'reject';
+
+  // Handle API call when user confirms action
+  const handleConfirmAction = async () => {
+    if (!auctionData) return;
+
+    const bidDataPayload = {
+      bidId: bidData.id,
+      productId: auctionData.id || auctionData.product_id,
+      bidderId: bidData.bidder_id
+    };
+
+    try {
+      if (isAccept) {
+        await dispatch(acceptBid(bidDataPayload)).unwrap();
+      } else if (isReject) {
+        await dispatch(rejectBid(bidDataPayload)).unwrap();
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing bid:`, error);
+      // Error is handled by Redux state
+    }
+  };
+
+  // Handle success state changes
+  useEffect(() => {
+    if (bidOperationSuccess) {
+      setShowSuccess(true);
+      // Close modal after showing success for 2 seconds
+      const timer = setTimeout(() => {
+        onClose();
+        // Clear Redux state after modal closes
+        setTimeout(() => {
+          dispatch(clearBidOperationStates());
+          setShowSuccess(false);
+        }, 300); // Small delay to ensure modal is closed
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [bidOperationSuccess, onClose, dispatch]);
+
+  // Reset success state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setShowSuccess(false);
+    }
+  }, [isOpen]);
+
+  if (!isOpen || !bidData) return null;
 
   const getModalConfig = () => {
     if (isAccept) {
@@ -87,7 +142,7 @@ const BidConfirmationModal = ({
             </div>
 
             {/* Error Display */}
-            {error && (
+            {bidOperationError && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -95,13 +150,13 @@ const BidConfirmationModal = ({
               >
                 <div className="flex items-center space-x-2">
                   <AlertTriangle className="w-5 h-5 text-red-500" />
-                  <p className="text-red-700 text-sm font-medium">{error}</p>
+                  <p className="text-red-700 text-sm font-medium">{bidOperationError}</p>
                 </div>
               </motion.div>
             )}
 
             {/* Success Display */}
-            {success && (
+            {showSuccess && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -147,17 +202,17 @@ const BidConfirmationModal = ({
             <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-200 bg-white">
               <button
                 onClick={onClose}
-                disabled={isLoading}
+                disabled={bidOperationLoading}
                 className="cursor-pointer px-6 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {config.cancelText}
               </button>
               <button
-                onClick={onConfirm}
-                disabled={isLoading}
+                onClick={handleConfirmAction}
+                disabled={bidOperationLoading || showSuccess}
                 className={`cursor-pointer px-6 py-2.5 ${config.confirmClass} rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transform hover:scale-105`}
               >
-                {isLoading ? (
+                {bidOperationLoading ? (
                   <>
                     <motion.div
                       animate={{ rotate: 360 }}
@@ -165,6 +220,11 @@ const BidConfirmationModal = ({
                       className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
                     />
                     <span>Processing...</span>
+                  </>
+                ) : showSuccess ? (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Success!</span>
                   </>
                 ) : (
                   <>

@@ -9,12 +9,7 @@ const BidsModal = ({
   onClose, 
   auctionData, 
   isLoading = false,
-  error = null,
-  onAcceptBid = null,
-  onRejectBid = null,
-  bidOperationLoading = false,
-  bidOperationError = null,
-  bidOperationSuccess = false
+  error = null
 }) => {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [selectedBid, setSelectedBid] = useState(null);
@@ -176,28 +171,24 @@ const BidsModal = ({
                       )}
 
                       {/* Action Buttons for Pending Bids */}
-                      {!bid.is_accepted && !bid.is_expired && bid.status !== 'rejected' && (onAcceptBid || onRejectBid) && (
+                      {!bid.is_accepted && !bid.is_expired && bid.status !== 'rejected' && (
                         <div className="mt-4 flex items-center justify-end gap-2">
-                          {onRejectBid && (
-                            <button
-                              onClick={() => handleRejectBid(bid)}
-                              disabled={bidOperationLoading}
-                              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <XCircle className="w-4 h-4" />
-                              Reject
-                            </button>
-                          )}
-                          {onAcceptBid && (
-                            <button
-                              onClick={() => handleAcceptBid(bid)}
-                              disabled={bidOperationLoading}
-                              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-success bg-success/10 hover:bg-success/20 border border-success/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                              Accept
-                            </button>
-                          )}
+                          <button
+                            onClick={() => handleRejectBid(bid)}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <XCircle className="w-4 h-4" />
+                            Reject
+                          </button>
+                          <button
+                            onClick={() => handleAcceptBid(bid)}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-success bg-success/10 hover:bg-success/20 border border-success/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            Accept
+                          </button>
                         </div>
                       )}
                     </motion.div>
@@ -230,12 +221,9 @@ const BidsModal = ({
       <BidConfirmationModal
         isOpen={isConfirmationModalOpen}
         onClose={handleCloseConfirmationModal}
-        onConfirm={handleConfirmAction}
         action={actionType}
         bidData={selectedBid}
-        isLoading={bidOperationLoading}
-        error={bidOperationError}
-        success={bidOperationSuccess}
+        auctionData={auctionData}
       />
     </AnimatePresence>
   );
