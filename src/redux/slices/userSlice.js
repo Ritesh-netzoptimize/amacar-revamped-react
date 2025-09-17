@@ -137,11 +137,20 @@ export const changePassword = createAsyncThunk(
   }
 );
 
+
 export const updateProfile = createAsyncThunk(
   'user/updateProfile',
   async (profileData, { rejectWithValue }) => {
     try {
-      const response = await api.put('/user/profile', profileData);
+      // Transform data to match API structure
+      const apiData = {
+        phone: profileData.phone,
+        city: profileData.city,
+        state: profileData.state,
+        zip: profileData.zipcode
+      };
+      
+      const response = await api.put('/car-dealer/v1/user/profile', apiData);
       if (response.data.success) {
         return response.data.user;
       }

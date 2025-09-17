@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, CheckCircle2, User, Mail, Phone, MapPin, ShieldCheck, Sparkles, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, User, Mail, Phone, MapPin, ShieldCheck, Sparkles, XCircle, Search } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/dialog';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateProfile } from '@/redux/slices/userSlice';
+import { fetchCityStateByZip } from '@/redux/slices/carDetailsAndQuestionsSlice';
+import useDebounce from '@/hooks/useDebounce';
 import toast from 'react-hot-toast';
 
 export default function EditProfileModal({
@@ -20,6 +22,7 @@ export default function EditProfileModal({
 }) {
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.user);
+  const { location, locationStatus } = useSelector((state) => state.carDetailsAndQuestions);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -32,6 +35,13 @@ export default function EditProfileModal({
   });
   const [errors, setErrors] = useState({});
   const [phase, setPhase] = useState('form'); // form | loading | success | failed
+  
+  // Debounce zipcode input
+  const debouncedZipcode = useDebounce(formData.zipcode, 500);
+  // Debug useEffect to track form data changes
+  useEffect(() => {
+    console.log("Form data updated:", formData);
+  }, [formData]);
 
   // Initialize form data when modal opens
   useEffect(() => {
@@ -49,6 +59,45 @@ export default function EditProfileModal({
       setPhase('form');
     }
   }, [isOpen, initialData]);
+
+  // Fetch city and state when zipcode changes
+  useEffect(() => {
+    const fetchLocationData = async () => {
+      if (debouncedZipcode && debouncedZipcode.length === 5 && /^\d{5}$/.test(debouncedZipcode)) {
+        try {
+          const result = await dispatch(fetchCityStateByZip(debouncedZipcode));
+          if (fetchCityStateByZip.fulfilled.match(result)) {
+            setFormData(prev => ({
+              ...prev,
+              city: result.payload.city,
+              state: result.payload.state
+            }));
+            console.log("Location data fetched:", result.payload);
+          } else {
+            console.log("Failed to fetch location data:", result.payload);
+          }
+        } catch (error) {
+          console.error("Error fetching location data:", error);
+        }
+      }
+    };
+
+    fetchLocationData();
+  }, [debouncedZipcode, dispatch]);
+
+  // Update form data when location is fetched
+  useEffect(() => {
+    if (location && location.city && location.state && locationStatus === 'succeeded') {
+      setFormData(prev => ({
+        ...prev,
+        city: location.city,
+        state: location.state
+      }));
+      console.log("Location data updated in form:", location);
+    }
+  }, [location, locationStatus]);
+
+  
 
   const validateForm = () => {
     const newErrors = {};
@@ -85,8 +134,8 @@ export default function EditProfileModal({
     // Zipcode validation
     if (!formData.zipcode.trim()) {
       newErrors.zipcode = 'Zipcode is required';
-    } else if (!/^\d{5}(-\d{4})?$/.test(formData.zipcode.trim())) {
-      newErrors.zipcode = 'Please enter a valid zipcode (e.g., 12345 or 12345-6789)';
+    } else if (!/^\d{5}$/.test(formData.zipcode.trim())) {
+      newErrors.zipcode = 'Please enter a valid 5-digit zipcode';
     }
 
     // State validation
@@ -338,8 +387,14 @@ export default function EditProfileModal({
                         value={formData.zipcode}
                         onChange={(e) => handleInputChange('zipcode', e.target.value)}
                         placeholder="12345"
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                        maxLength={5}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
                       />
+                      {locationStatus === 'loading' && formData.zipcode.length === 5 && (
+                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
+                      )}
                     </div>
                     {errors.zipcode && (
                       <motion.p
@@ -350,6 +405,16 @@ export default function EditProfileModal({
                         {errors.zipcode}
                       </motion.p>
                     )}
+                    {!errors.zipcode && formData.zipcode.length === 5 && locationStatus !== 'loading' && (
+                      <p className="text-xs text-slate-500">
+                      </p>
+                    )}
+                    {locationStatus === 'loading' && formData.zipcode.length === 5 && (
+                      <p className="text-xs text-blue-600">
+                        Fetching location data...
+                      </p>
+                    )}
+                    
                   </div>
 
                   {/* State Field */}
@@ -367,7 +432,8 @@ export default function EditProfileModal({
                         value={formData.state}
                         onChange={(e) => handleInputChange('state', e.target.value)}
                         placeholder="CA"
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                        disabled
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-gray-50 pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)] cursor-not-allowed text-gray-500"
                       />
                     </div>
                     {errors.state && (
@@ -396,7 +462,8 @@ export default function EditProfileModal({
                         value={formData.city}
                         onChange={(e) => handleInputChange('city', e.target.value)}
                         placeholder="Los Angeles"
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                        disabled
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-gray-50 pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)] cursor-not-allowed text-gray-500"
                       />
                     </div>
                     {errors.city && (

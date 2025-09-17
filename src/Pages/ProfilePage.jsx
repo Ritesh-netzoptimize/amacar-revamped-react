@@ -32,27 +32,7 @@ const ProfilePage = () => {
   const [editData, setEditData] = useState({ ...profile });
 
 
-  const handlePasswordChange = async ({ currentPassword, newPassword }) => {
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate success/failure based on current password
-      if (currentPassword === "wrongpassword") {
-        throw new Error("Invalid current password");
-      }
-      
-      // Here you would make the actual API call
-      console.log("Password changed successfully", { currentPassword, newPassword });
-      
-      // You might want to show a toast notification here
-      return true;
-    } catch (error) {
-      console.error("Password change failed:", error);
-      throw error;
-    }
-  };
-
+ 
 
   // Load user data from Redux state
   useEffect(() => {
@@ -61,10 +41,10 @@ const ProfilePage = () => {
         firstName: user.firstName || user.first_name || '',
         lastName: user.lastName || user.last_name || '',
         email: user.email || '',
-        phone: user.phone || '',
-        zipcode: user.zipcode || '',
-        state: user.state || '',
-        city: user.city || '',
+        phone: user.phone || user.meta?.phone || '',
+        zipcode: user.zipcode || user.meta?.zip_code || '',
+        state: user.state || user.meta?.state || '',
+        city: user.city || user.meta?.city || '',
         bio: user.bio || defaultProfile.bio,
         joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
         totalAuctions: user.totalAuctions || user.total_auctions || 0,
@@ -158,7 +138,7 @@ const ProfilePage = () => {
               <h1 className="text-3xl font-bold text-neutral-800">Profile Settings</h1>
               <button
                 onClick={handleEdit}
-                className="btn-secondary flex items-center space-x-2"
+                className="cursor-pointer btn-secondary flex items-center space-x-2"
               >
                 <Edit3 className="w-4 h-4" />
                 <span>Edit Profile</span>
