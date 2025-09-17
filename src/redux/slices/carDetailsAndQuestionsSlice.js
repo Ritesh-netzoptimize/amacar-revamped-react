@@ -1,5 +1,6 @@
 import api from '@/lib/api';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { logout } from './userSlice';
 
 let vin = "";
 
@@ -617,6 +618,9 @@ const carDetailsAndQuestionsSlice = createSlice({
       .addCase(startAuction.rejected, (state, action) => {
         state.auctionStartStatus = 'failed';
         state.auctionStartError = action.payload;
+      })
+      .addCase(logout, (state) => {
+        return initialState;
       });
   },
 });
