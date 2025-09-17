@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, CheckCircle2, User, Mail, Phone, MapPin, ShieldCheck, Sparkles, XCircle, Search } from 'lucide-react';
+import { Loader2, CheckCircle2, User, Mail, Phone, MapPin, ShieldCheck, Sparkles, XCircle, Search, CheckCircle, AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -79,6 +79,13 @@ export default function EditProfileModal({
         } catch (error) {
           console.error("Error fetching location data:", error);
         }
+      } else if (debouncedZipcode && debouncedZipcode.length < 5) {
+        // Clear city and state when zipcode is incomplete
+        setFormData(prev => ({
+          ...prev,
+          city: '',
+          state: ''
+        }));
       }
     };
 
@@ -161,6 +168,14 @@ export default function EditProfileModal({
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    // Clear location data when zipcode changes
+    if (field === 'zipcode') {
+      setFormData(prev => ({
+        ...prev,
+        city: '',
+        state: ''
+      }));
     }
   };
 
@@ -388,11 +403,27 @@ export default function EditProfileModal({
                         onChange={(e) => handleInputChange('zipcode', e.target.value)}
                         placeholder="12345"
                         maxLength={5}
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                        className={`h-11 w-full rounded-xl border pl-9 pr-10 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)] ${
+                          locationStatus === 'failed' && formData.zipcode.length === 5
+                            ? 'border-red-300 bg-red-50'
+                            : locationStatus === 'succeeded' && formData.zipcode.length === 5
+                            ? 'border-green-300 bg-green-50'
+                            : 'border-slate-200 bg-white'
+                        }`}
                       />
                       {locationStatus === 'loading' && formData.zipcode.length === 5 && (
                         <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
                           <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
+                      )}
+                      {locationStatus === 'succeeded' && formData.zipcode.length === 5 && location.city && location.state && (
+                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                          <CheckCircle className="h-4 w-4" />
+                        </div>
+                      )}
+                      {locationStatus === 'failed' && formData.zipcode.length === 5 && (
+                        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-red-500">
+                          <AlertCircle className="h-4 w-4" />
                         </div>
                       )}
                     </div>
@@ -405,15 +436,8 @@ export default function EditProfileModal({
                         {errors.zipcode}
                       </motion.p>
                     )}
-                    {!errors.zipcode && formData.zipcode.length === 5 && locationStatus !== 'loading' && (
-                      <p className="text-xs text-slate-500">
-                      </p>
-                    )}
-                    {locationStatus === 'loading' && formData.zipcode.length === 5 && (
-                      <p className="text-xs text-blue-600">
-                        Fetching location data...
-                      </p>
-                    )}
+                    
+                   
                     
                   </div>
 
