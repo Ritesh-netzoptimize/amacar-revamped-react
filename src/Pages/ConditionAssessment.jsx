@@ -84,11 +84,7 @@ export default function ConditionAssessment() {
     }
   }, [showValidation]);
 
-  const handleLoginClick = (e) => {
-    e.preventDefault();
-    dispatch(setLoginRedirect(null));
-    setLoginModalOpen(true);
-  };
+
 
   function getFinalSubmissionData() {
     return questions ? questions.map((q) => ({
@@ -129,11 +125,32 @@ export default function ConditionAssessment() {
     let newAnswer;
     if (isMultiSelect) {
       const currentAnswer = questions.find((q) => q.key === key)?.answer || [];
-      newAnswer = Array.isArray(currentAnswer)
-        ? currentAnswer.includes(value)
-          ? currentAnswer.filter((v) => v !== value)
-          : [...currentAnswer, value]
-        : [value];
+      
+      // Special handling for "Notable features" question
+      if (key === 'features') {
+        if (value === 'None of the above') {
+          // If "None of the above" is selected, clear all other selections
+          newAnswer = ['None of the above'];
+        } else {
+          // If any other option is selected, remove "None of the above" if it exists
+          const filteredAnswer = currentAnswer.filter(v => v !== 'None of the above');
+          
+          if (Array.isArray(filteredAnswer)) {
+            newAnswer = filteredAnswer.includes(value)
+              ? filteredAnswer.filter((v) => v !== value)
+              : [...filteredAnswer, value];
+          } else {
+            newAnswer = [value];
+          }
+        }
+      } else {
+        // Default multi-select behavior for other questions
+        newAnswer = Array.isArray(currentAnswer)
+          ? currentAnswer.includes(value)
+            ? currentAnswer.filter((v) => v !== value)
+            : [...currentAnswer, value]
+          : [value];
+      }
     } else {
       newAnswer = value;
     }
