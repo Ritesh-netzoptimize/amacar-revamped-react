@@ -240,8 +240,8 @@ const CarDetailsView = () => {
             {/* Main Content Skeleton */}
             <div className="px-8 pb-8">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Vehicle Overview Skeleton - 2 columns */}
-                <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm">
+                {/* Vehicle Overview Skeleton - Full width */}
+                <div className="lg:col-span-3 bg-white rounded-xl p-6 shadow-sm">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-12 h-12 bg-gray-200 rounded-xl"></div>
                     <div>
@@ -250,7 +250,7 @@ const CarDetailsView = () => {
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[1, 2, 3].map((i) => (
+                    {[1, 2, 3, 4].map((i) => (
                       <div key={i} className="bg-gray-100 p-4 rounded-lg">
                         <div className="flex items-center gap-2 mb-4">
                           <div className="w-5 h-5 bg-gray-200 rounded"></div>
@@ -267,28 +267,6 @@ const CarDetailsView = () => {
                       </div>
                     ))}
                   </div>
-                </div>
-
-                {/* Location & Seller Skeleton - 1 column */}
-                <div className="space-y-6">
-                  {[1, 2].map((i) => (
-                    <div key={i} className="bg-white rounded-xl p-6 shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                        <div className="h-5 bg-gray-200 rounded w-20"></div>
-                      </div>
-                      <div className="bg-gray-100 p-4 rounded-lg">
-                        <div className="space-y-2">
-                          {[1, 2].map((j) => (
-                            <div key={j} className="flex justify-between">
-                              <div className="h-4 bg-gray-200 rounded w-16"></div>
-                              <div className="h-4 bg-gray-200 rounded w-20"></div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
@@ -538,7 +516,7 @@ const CarDetailsView = () => {
           <div className="px-8 pb-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Vehicle Overview - Most Important Info */}
-            <motion.div variants={itemVariants} className="lg:col-span-2 card p-6">
+            <motion.div variants={itemVariants} className="lg:col-span-3 card p-6">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
                   <Car className="w-6 h-6 text-white" />
@@ -550,93 +528,80 @@ const CarDetailsView = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Star className="w-5 h-5 text-blue-600" />
-                      <span className="font-semibold text-blue-800">Vehicle Details</span>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Year/Make/Model:</span>
-                        <span className="font-semibold text-neutral-800">
-                          {basic_info?.year} {basic_info?.make} {basic_info?.model}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Trim:</span>
-                        <span className="font-semibold text-neutral-800">{basic_info?.trim || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Mileage:</span>
-                        <span className="font-semibold text-neutral-800">
-                          {basic_info?.mileage ? `${basic_info.mileage.toLocaleString()} miles` : 'N/A'}
-                        </span>
-                      </div>
-                    </div>
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star className="w-5 h-5 text-blue-600" />
+                    <span className="font-semibold text-blue-800">Vehicle Details</span>
                   </div>
-
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Shield className="w-5 h-5 text-green-600" />
-                      <span className="font-semibold text-green-800">Condition</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Year/Make/Model:</span>
+                      <span className="font-semibold text-neutral-800">
+                        {basic_info?.year} {basic_info?.make} {basic_info?.model}
+                      </span>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Body Type:</span>
-                        <span className="font-semibold text-neutral-800">{basic_info?.body_type || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Exterior:</span>
-                        <span className="font-semibold text-neutral-800">{basic_info?.exterior_color || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Interior:</span>
-                        <span className="font-semibold text-neutral-800">{basic_info?.interior_color || 'N/A'}</span>
-                      </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Trim:</span>
+                      <span className="font-semibold text-neutral-800">{basic_info?.trim || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Mileage:</span>
+                      <span className="font-semibold text-neutral-800">
+                        {basic_info?.mileage ? `${basic_info.mileage.toLocaleString()} miles` : 'N/A'}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Award className="w-5 h-5 text-purple-600" />
-                      <span className="font-semibold text-purple-800">Performance</span>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Transmission:</span>
-                        <span className="font-semibold text-neutral-800">{basic_info?.transmission || 'N/A'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Engine:</span>
-                        <span className="font-semibold text-neutral-800">{basic_info?.engine_type || 'N/A'}</span>
-                      </div>
-                      {basic_info?.powertrain_description && (
-                        <div className="mt-3">
-                          <span className="text-sm text-neutral-600">Powertrain:</span>
-                          <p className="text-sm font-medium text-neutral-800 mt-1">{basic_info.powertrain_description}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Location & Seller Info */}
-            <motion.div variants={itemVariants} className="space-y-6">
-              {/* Location */}
-              <div className="card p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-neutral-800">Location</h3>
-                </div>
-                
                 <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Shield className="w-5 h-5 text-green-600" />
+                    <span className="font-semibold text-green-800">Condition</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Body Type:</span>
+                      <span className="font-semibold text-neutral-800">{basic_info?.body_type || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Exterior:</span>
+                      <span className="font-semibold text-neutral-800">{basic_info?.exterior_color || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Interior:</span>
+                      <span className="font-semibold text-neutral-800">{basic_info?.interior_color || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Award className="w-5 h-5 text-purple-600" />
+                    <span className="font-semibold text-purple-800">Performance</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Transmission:</span>
+                      <span className="font-semibold text-neutral-800">{basic_info?.transmission || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Engine:</span>
+                      <span className="font-semibold text-neutral-800">{basic_info?.engine_type || 'N/A'}</span>
+                    </div>
+                    {basic_info?.powertrain_description && (
+                      <div className="mt-3">
+                        <span className="text-sm text-neutral-600">Powertrain:</span>
+                        <p className="text-sm font-medium text-neutral-800 mt-1">{basic_info.powertrain_description}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-teal-50 to-teal-100 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="w-5 h-5 text-teal-600" />
+                    <span className="font-semibold text-teal-800">Location</span>
+                  </div>
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-neutral-600">City, State:</span>
@@ -654,29 +619,6 @@ const CarDetailsView = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Seller Information
-              <div className="card p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                    <User className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-neutral-800">Seller</h3>
-                </div>
-                
-                <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 p-4 rounded-lg">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">Name:</span>
-                      <span className="font-semibold text-neutral-800">{user?.display_name || 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">Email:</span>
-                      <span className="font-semibold text-neutral-800 text-sm">{user?.email || 'N/A'}</span>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
             </motion.div>
 
 
