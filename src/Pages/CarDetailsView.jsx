@@ -36,6 +36,7 @@ const CarDetailsView = () => {
   const [vehicleData, setVehicleData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [remainingTime, setRemainingTime] = useState(null);
 
   // Fetch vehicle details
   useEffect(() => {
@@ -55,6 +56,7 @@ const CarDetailsView = () => {
         
         if (response.data.success) {
           setVehicleData(response.data.vehicle);
+          setRemainingTime(response.data.vehicle?.auction?.remaining_seconds || 0);
           console.log("response.data.vehicle", response.data.vehicle);
           console.log("vehicleData", vehicleData);
         } else {
@@ -71,6 +73,23 @@ const CarDetailsView = () => {
     fetchVehicleDetails();
   }, [productId]);
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (remainingTime === null || remainingTime <= 0) return;
+
+    const timer = setInterval(() => {
+      setRemainingTime((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [remainingTime]);
+
   // Format remaining time
   const formatRemainingTime = (seconds) => {
     if (!seconds) return 'N/A';
@@ -81,9 +100,9 @@ const CarDetailsView = () => {
     const secs = seconds % 60;
 
     if (days > 0) {
-      return `${days}d ${hours}h ${minutes}m`;
+      return `${days}d ${hours}h ${minutes}m ${secs}s`;
     } else if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m ${secs}s`;
     } else if (minutes > 0) {
       return `${minutes}m ${secs}s`;
     } else {
@@ -322,12 +341,12 @@ const CarDetailsView = () => {
                       </p>
                     </div>
 
-                    <div className="bg-gradient-to-r from-red-50 to-red-100 p-3 rounded-lg">
-                      <p className="text-xs font-medium text-neutral-600 mb-1">Time Left</p>
-                      <p className="text-xs font-semibold text-neutral-800 font-mono">
-                        {formatRemainingTime(auction?.remaining_seconds)}
-                      </p>
-                    </div>
+                     <div className="bg-gradient-to-r from-red-50 to-red-100 p-3 rounded-lg">
+                       <p className="text-xs font-medium text-neutral-600 mb-1">Time Left</p>
+                       <p className="text-xs font-semibold text-neutral-800 font-mono">
+                         {formatRemainingTime(remainingTime)}
+                       </p>
+                     </div>
                   </div>
                 </motion.div>
 
@@ -491,7 +510,7 @@ const CarDetailsView = () => {
                 </div>
               </div>
 
-              {/* Seller Information */}
+              {/* Seller Information
               <div className="card p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -512,36 +531,71 @@ const CarDetailsView = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </motion.div>
 
 
-            {/* Condition Assessment */}
-            {condition_assessment && (
-              <motion.div variants={itemVariants} className="lg:col-span-3 card p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-neutral-800">Condition Assessment</h2>
-                    <p className="text-neutral-600">Vehicle condition details</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-gradient-to-r from-yellow-50 to-amber-100 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-neutral-600 mb-2">Cosmetic Condition</p>
-                    <p className="text-lg font-semibold text-neutral-800">{condition_assessment?.cosmetic_condition || 'N/A'}</p>
-                  </div>
-                  
-                  <div className="bg-gradient-to-r from-yellow-50 to-amber-100 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-neutral-600 mb-2">Smoked Windows</p>
-                    <p className="text-lg font-semibold text-neutral-800">{condition_assessment?.smoked_windows || 'N/A'}</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
+             {/* Condition Assessment */}
+             {condition_assessment && (
+               <motion.div variants={itemVariants} className="lg:col-span-3 card p-6">
+                 <div className="flex items-center gap-3 mb-6">
+                   <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl flex items-center justify-center">
+                     <CheckCircle className="w-6 h-6 text-white" />
+                   </div>
+                   <div>
+                     <h2 className="text-2xl font-bold text-neutral-800">Condition Assessment</h2>
+                     <p className="text-neutral-600">Complete vehicle condition details</p>
+                   </div>
+                 </div>
+                 
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                   <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+                     <p className="text-sm font-medium text-neutral-600 mb-2">Overall Title</p>
+                     <p className="text-lg font-semibold text-green-800">{condition_assessment?.title || 'N/A'}</p>
+                   </div>
+                   
+                   <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+                     <p className="text-sm font-medium text-neutral-600 mb-2">Cosmetic Condition</p>
+                     <p className="text-lg font-semibold text-blue-800">{condition_assessment?.cosmetic || 'N/A'}</p>
+                   </div>
+                   
+                   <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
+                     <p className="text-sm font-medium text-neutral-600 mb-2">Accident History</p>
+                     <p className="text-lg font-semibold text-purple-800">{condition_assessment?.accident || 'N/A'}</p>
+                   </div>
+                   
+                   <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg">
+                     <p className="text-sm font-medium text-neutral-600 mb-2">Tire Tread</p>
+                     <p className="text-lg font-semibold text-orange-800">{condition_assessment?.tread || 'N/A'}</p>
+                   </div>
+                   
+                   <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg">
+                     <p className="text-sm font-medium text-neutral-600 mb-2">Smoked Windows</p>
+                     <p className="text-lg font-semibold text-red-800">{condition_assessment?.smoked || 'N/A'}</p>
+                   </div>
+                   
+                   <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 p-4 rounded-lg">
+                     <p className="text-sm font-medium text-neutral-600 mb-2">Modifications</p>
+                     <p className="text-lg font-semibold text-indigo-800">{condition_assessment?.modifications || 'N/A'}</p>
+                   </div>
+                   
+                   <div className="bg-gradient-to-r from-pink-50 to-pink-100 p-4 rounded-lg">
+                     <p className="text-sm font-medium text-neutral-600 mb-2">Warning Lights</p>
+                     <p className="text-lg font-semibold text-pink-800">{condition_assessment?.warning || 'N/A'}</p>
+                   </div>
+                   
+                   <div className="bg-gradient-to-r from-teal-50 to-teal-100 p-4 rounded-lg lg:col-span-2">
+                     <p className="text-sm font-medium text-neutral-600 mb-2">Features</p>
+                     <p className="text-lg font-semibold text-teal-800">
+                       {condition_assessment?.features ? 
+                         condition_assessment.features.replace(/^a:\d+:\{i:\d+;s:\d+:"([^"]+)";\}$/, '$1') : 
+                         'N/A'
+                       }
+                     </p>
+                   </div>
+                 </div>
+               </motion.div>
+             )}
             </div>
           </div>
 
