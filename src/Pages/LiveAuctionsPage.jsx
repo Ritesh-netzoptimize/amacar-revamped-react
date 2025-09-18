@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search, X, CheckCircle, XCircle } from 'lucide-react';
 import { formatCurrency, formatTimeRemaining } from '../lib/utils';
@@ -29,6 +30,7 @@ import StatsCards from '../components/ui/StatsCards';
 
 const LiveAuctionsPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const liveAuctionsData = useSelector(selectLiveAuctions);
   const dashboardSummary = useSelector(selectDashboardSummary);
   const loading = useSelector(selectOffersLoading);
@@ -76,6 +78,7 @@ const LiveAuctionsPage = () => {
 
       return {
         id: auction.product_id?.toString() || 'unknown',
+        product_id: auction.product_id, // Keep original product_id for navigation
         vehicle: `${auction.year || 'N/A'} ${auction.make || 'Unknown'} ${auction.model || 'Vehicle'}`,
         year: parseInt(auction.year) || 0,
         make: auction.make || 'Unknown',
@@ -325,6 +328,10 @@ const LiveAuctionsPage = () => {
   const handleViewDetails = (auctionId) => {
     setSelectedAuction(auctionId);
     setIsActionDropdownOpen(false);
+  };
+
+  const handleViewCarDetails = (productId) => {
+    navigate('/car-details', { state: { productId } });
   };
 
   const handleViewAllBids = (auction) => {
@@ -831,7 +838,7 @@ const LiveAuctionsPage = () => {
                   {/* Actions */}
                   <div className="flex space-x-3">
                     <button
-                      onClick={() => handleEndAuction(auction.id)}
+                      onClick={() => handleViewCarDetails(auction.product_id)}
                       className="cursor-pointer flex-1 py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                     >
                       <span>View details</span>

@@ -17,6 +17,7 @@ import ConditionAssessment from './Pages/ConditionAssessment.jsx';
 import ExteriorPhotos from './Pages/ExteriorPhotos.jsx';
 import ReviewPage from './Pages/ReviewPage.jsx';
 import UnauthorizedPage from './Pages/UnauthorizedPage.jsx';
+import CarDetailsView from './Pages/CarDetailsView.jsx';
 import { AuthProvider } from './provider/AuthProvider'; // Updated Redux-based AuthProvider
 import PrivateRoute from './components/Auth/PrivateRoute'; // Updated PrivateRoute
 import { SearchProvider } from './context/SearchContext';
@@ -31,7 +32,8 @@ function App() {
     location.pathname.startsWith('/offers') ||
     location.pathname.startsWith('/accepted') ||
     location.pathname.startsWith('/appointments') ||
-    location.pathname.startsWith('/profile');
+    location.pathname.startsWith('/profile') ||
+    location.pathname.startsWith('/car-details');
 
   return (
     <AuthProvider>
@@ -135,6 +137,14 @@ function App() {
               element={
                   <DashboardLayout>
                     <ProfilePage />
+                  </DashboardLayout>
+              }
+            />
+            <Route
+              path="/car-details"
+              element={
+                  <DashboardLayout>
+                    <CarDetailsView />
                   </DashboardLayout>
               }
             />
