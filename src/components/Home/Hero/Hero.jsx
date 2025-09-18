@@ -68,17 +68,13 @@ export default function Hero() {
         </motion.p>
 
         <motion.div className="hero-ctas " variants={fadeUp} custom={0.4}>
-          {
-            !user ?  <button className="cursor-pointer btn-login" href="#" onClick={handleLoginClick}>
-            Login / Register
-          </button> :
+         
             <a href="#" className="btn-white" onClick={(e) => {
               e.preventDefault()
               setOpen(true)
             }}>
             Get Your Instant Offer
           </a>
-          }
           {
             !user ? <button
             onClick={(e) => {
