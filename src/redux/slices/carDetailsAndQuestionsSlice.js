@@ -284,6 +284,7 @@ const initialQuestions = [
 
 // Initial state
 const initialState = {
+  userExists: false,
   productId: null,
   vehicleDetails: {},
   stateZip: "",
@@ -576,10 +577,12 @@ const carDetailsAndQuestionsSlice = createSlice({
         state.offer = action.payload;
         state.offerError = null;
         state.productId = action.payload.productId;
+        state.userExists = action.payload.userInfo.user_exists;
       })
       .addCase(getInstantCashOffer.rejected, (state, action) => {
         state.offerStatus = 'failed';
         state.offerError = action.payload;
+        state.userExists = false;
       })
       // Image upload reducers
       .addCase(uploadVehicleImage.pending, (state) => {

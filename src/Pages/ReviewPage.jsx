@@ -9,23 +9,30 @@ import {
   Star,
   Trophy,
   Sparkles,
-  Camera
+  Camera,
+  User
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import AuctionSelectionModal from '@/components/ui/auction-selection-modal';
+import LoginModal from '@/components/ui/LoginModal';
 
 export default function ReviewPage() {
   const navigate = useNavigate();
   const [showAuctionModal, setShowAuctionModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   
   // Get data from Redux state
-  const { vehicleDetails, offer, offerStatus } = useSelector((state) => state.carDetailsAndQuestions);
+  const { vehicleDetails, offer, offerStatus, userExists } = useSelector((state) => state.carDetailsAndQuestions);
   const userState = useSelector((state) => state.user.user);
   
   // Check if we have the necessary data
   const hasVehicleData = vehicleDetails && Object.keys(vehicleDetails).length > 0;
   const hasOfferData = offer && offer.offerAmount;
+  
+  // Check if user exists from the offer response
+  // const userExists = offer?.userInfo?.user_exists;
+  const isUserLoggedIn = userState && userState.id;
   
   // Redirect if no data available
   useEffect(() => {
@@ -41,6 +48,10 @@ export default function ReviewPage() {
 
   const handleAuctionModalClose = () => {
     setShowAuctionModal(false);
+  };
+
+  const handleLoginModalClose = () => {
+    setShowLoginModal(false);
   };
 
   const handleGoBack = () => {
@@ -132,17 +143,32 @@ export default function ReviewPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              {/* Show login button if user doesn't exist and is not logged in */}
+              {userExists === false && !isUserLoggedIn && (
+                <motion.button
+                  onClick={() => setShowLoginModal(true)}
+                  className="cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition hover:scale-[1.02] hover:shadow-xl"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <User className="h-4 w-4" />
+                  Login to Continue
+                </motion.button>
+              )}
               
-              
-              <motion.button
-                onClick={handleLaunchAuction}
-                className="cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-8 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.02] hover:shadow-xl"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Camera className="h-4 w-4" />
-                Upload photos
-              </motion.button>
+              {
+                userExists === false && isUserLoggedIn && (
+                  <motion.button
+                    onClick={handleLaunchAuction}
+                    className="cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-8 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.02] hover:shadow-xl"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Camera className="h-4 w-4" />
+                    Upload photos
+                  </motion.button>
+                )
+              }
             </div>
           </motion.div>
 
@@ -173,6 +199,14 @@ export default function ReviewPage() {
       <AuctionSelectionModal
         isOpen={showAuctionModal}
         onClose={handleAuctionModalClose}
+      />
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={handleLoginModalClose}
+        title="Login to Continue"
+        description="Please login to access your offer and continue with the auction process"
       />
     </>
   );
