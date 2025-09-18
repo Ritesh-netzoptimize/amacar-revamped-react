@@ -69,7 +69,7 @@ const LiveAuctionsPage = () => {
       );
 
       // Calculate time remaining from remaining_seconds
-      const timeRemaining = new Date(Date.now() + (auction.remaining_seconds * 1000));
+      const timeRemaining = Date.now() + (auction.remaining_seconds * 1000);
 
       // Check if auction has any accepted bids
       const hasAcceptedBid = auction.bid?.some(bid => bid.is_accepted) || false;
@@ -115,6 +115,15 @@ const LiveAuctionsPage = () => {
     dispatch(fetchLiveAuctions());
   }, [dispatch]);
 
+  // Real-time countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   // Handle bid operation success
   useEffect(() => {
     if (bidOperationSuccess) {
@@ -153,6 +162,7 @@ const LiveAuctionsPage = () => {
   const [selectedAuctionBids, setSelectedAuctionBids] = useState(null);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [confirmationData, setConfirmationData] = useState(null);
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -649,175 +659,203 @@ const LiveAuctionsPage = () => {
               variants={itemVariants}
               className="card overflow-hidden hover:shadow-medium relative"
             >
-              {/* Image */}
-              <div className="relative h-48 bg-neutral-200 overflow-hidden">
-                {auction.images[0] && auction.images[0] !== '/api/placeholder/400/300' ? (
-                  <img 
-                    src={auction.images[0]} 
-                    alt={auction.vehicle}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Car className="w-16 h-16 text-neutral-400" />
-                  </div>
-                )}
-                <div className="absolute top-4 left-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    auction.status === 'accepted' 
-                      ? 'bg-success text-white' 
-                      : 'bg-success text-white'
-                  }`}>
-                    {auction.status === 'accepted' ? 'ACCEPTED' : 'LIVE'}
-                  </span>
+              {/* Mobile-optimized card design */}
+              <div className="block lg:hidden">
+                {/* Car Image */}
+                <div className="relative h-48 bg-neutral-200 overflow-hidden">
+                  {auction.images[0] && auction.images[0] !== '/api/placeholder/400/300' ? (
+                    <img 
+                      src={auction.images[0]} 
+                      alt={auction.vehicle}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Car className="w-16 h-16 text-neutral-400" />
+                    </div>
+                  )}
                 </div>
-                {/* Increase Amount Badge */}
-                {auction.currentBid > auction.cashOffer && auction.cashOffer > 0 && (
-                  <div className="absolute top-4 right-4">
-                    <div className="bg-success text-white px-2 py-1 rounded-full text-md font-semibold flex items-center space-x-1">
-                      <ArrowUp className="w-3 h-3" />
-                      <span>+{formatCurrency(auction.currentBid - auction.cashOffer)}</span>
+
+                {/* Card Content */}
+                <div className="p-4">
+                  {/* High Demand Banner */}
+                  <div className="bg-orange-100 text-orange-800 px-3 py-2 rounded-lg mb-4 text-center">
+                    <span className="text-sm font-semibold">Your Car is on high demand</span>
+                  </div>
+
+                  {/* Offer Details */}
+                  <div className="text-center mb-4">
+                    <div className="text-sm text-neutral-600 mb-1">#1 Offer:</div>
+                    <div className="text-3xl font-bold text-neutral-800 mb-1">
+                      {formatCurrency(auction.currentBid)}
+                    </div>
+                    <div className="text-sm text-neutral-600">
+                      from {auction.highestBidder || 'Gotham Motors'}
                     </div>
                   </div>
-                )}
-                {/* <div className="absolute top-4 right-4 dropdown-container">
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <button 
-                      onClick={() => toggleDropdown(auction.id)}
-                      className="cursor-pointer p-2 bg-white/90 hover:bg-white rounded-full shadow-sm transition-colors duration-200"
-                    >
-                      <MoreVertical className="w-4 h-4 text-neutral-600" />
-                    </button>
-                  </motion.div>
-                  <AnimatePresence>
-                    {isActionDropdownOpen && selectedAuction === auction.id && (
-                      <motion.div
-                        variants={dropdownVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 z-20"
-                      >
-                        <motion.div
-                          variants={dropdownItemVariants}
-                          className="px-2 py-1"
-                        >
-                          <button
-                            onClick={() => handleViewDetails(auction.id)}
-                            className="cursor-pointer w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-primary-50 hover:text-primary-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
-                          >
-                            <Eye className="w-4 h-4" />
-                            <span>View Details</span>
-                          </button>
-                        </motion.div>
-                        <motion.div
-                          variants={dropdownItemVariants}
-                          className="px-2 py-1"
-                        >
-                          <button
-                            onClick={() => handleEndAuction(auction.id)}
-                            className="cursor-pointer w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
-                          >
-                            <Pause className="w-4 h-4" />
-                            <span>End Auction</span>
-                          </button>
-                        </motion.div>
-                        <motion.div
-                          variants={dropdownItemVariants}
-                          className="px-2 py-1"
-                        >
-                          <button
-                            onClick={() => handlePauseAuction(auction.id)}
-                            className="cursor-pointer w-full text-left px-4 py-2 text-sm text-neutral-800 hover:bg-yellow-50 hover:text-yellow-600 rounded-md transition-colors duration-150 flex items-center space-x-3"
-                          >
-                            <Play className="w-4 h-4" />
-                            <span>Pause Auction</span>
-                          </button>
-                        </motion.div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div> */}
+
+                  {/* Countdown Timer */}
+                  <div className="flex justify-center items-center space-x-2 mb-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-500">
+                        {(() => {
+                          const timeDiff = auction.timeRemaining - currentTime;
+                          const hours = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60)));
+                          console.log('Timer Debug:', { 
+                            timeRemaining: auction.timeRemaining, 
+                            currentTime, 
+                            timeDiff, 
+                            hours 
+                          });
+                          return hours.toString().padStart(2, '0');
+                        })()}
+                      </div>
+                      <div className="text-xs text-neutral-600">HRS</div>
+                    </div>
+                    <div className="text-orange-500 text-2xl font-bold">:</div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-500">
+                        {Math.max(0, Math.floor(((auction.timeRemaining - currentTime) % (1000 * 60 * 60)) / (1000 * 60))).toString().padStart(2, '0')}
+                      </div>
+                      <div className="text-xs text-neutral-600">MIN</div>
+                    </div>
+                    <div className="text-orange-500 text-2xl font-bold">:</div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-500">
+                        {Math.max(0, Math.floor(((auction.timeRemaining - currentTime) % (1000 * 60)) / 1000)).toString().padStart(2, '0')}
+                      </div>
+                      <div className="text-xs text-neutral-600">SEC</div>
+                    </div>
+                  </div>
+
+                  {/* Call to Action Text */}
+                  <div className="text-center text-sm text-neutral-600 mb-4">
+                    Accept now and secure the top offer before it expires!
+                  </div>
+
+                  {/* Accept Button */}
+                  <button
+                    onClick={() => handleViewAllBids(auction)}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200"
+                  >
+                    Accept Top Offer
+                  </button>
+                </div>
               </div>
 
-              {/* Content */}
-              <div className="p-6">
-                {/* Vehicle Info */}
-                <div className="mb-6">
-                  <h3 className="text-xl font-bold text-neutral-800 mb-2">{auction.vehicle}</h3>
-                  <p className="text-neutral-600 text-sm mb-1">{auction.description}</p>
-                  <p className="text-neutral-500 text-xs">VIN: {auction.vin}</p>
+              {/* Desktop view - keep original design */}
+              <div className="hidden lg:block">
+                {/* Image */}
+                <div className="relative h-48 bg-neutral-200 overflow-hidden">
+                  {auction.images[0] && auction.images[0] !== '/api/placeholder/400/300' ? (
+                    <img 
+                      src={auction.images[0]} 
+                      alt={auction.vehicle}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Car className="w-16 h-16 text-neutral-400" />
+                    </div>
+                  )}
+                  <div className="absolute top-4 left-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      auction.status === 'accepted' 
+                        ? 'bg-success text-white' 
+                        : 'bg-success text-white'
+                    }`}>
+                      {auction.status === 'accepted' ? 'ACCEPTED' : 'LIVE'}
+                    </span>
+                  </div>
+                  {/* Increase Amount Badge */}
+                  {auction.currentBid > auction.cashOffer && auction.cashOffer > 0 && (
+                    <div className="absolute top-4 right-4">
+                      <div className="bg-success text-white px-2 py-1 rounded-full text-md font-semibold flex items-center space-x-1">
+                        <ArrowUp className="w-3 h-3" />
+                        <span>+{formatCurrency(auction.currentBid - auction.cashOffer)}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Bids and Offers Badges */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {/* Highest Bid Badge */}
-                  {auction.bidCount > 0 && (
-                    <div className="inline-flex items-center gap-2 bg-success/10 text-success px-3 py-2 rounded-full border border-success/20">
+                {/* Content */}
+                <div className="p-6">
+                  {/* Vehicle Info */}
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold text-neutral-800 mb-2">{auction.vehicle}</h3>
+                    <p className="text-neutral-600 text-sm mb-1">{auction.description}</p>
+                    <p className="text-neutral-500 text-xs">VIN: {auction.vin}</p>
+                  </div>
+
+                  {/* Bids and Offers Badges */}
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {/* Highest Bid Badge */}
+                    {auction.bidCount > 0 && (
+                      <div className="inline-flex items-center gap-2 bg-success/10 text-success px-3 py-2 rounded-full border border-success/20">
+                        <DollarSign className="w-4 h-4" />
+                        <span className="text-sm font-semibold">
+                          {formatCurrency(auction.currentBid)}
+                        </span>
+                        <span className="text-xs bg-success/20 px-2 py-0.5 rounded-full">
+                          {auction.bidCount} active
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Cash Offer Badge */}
+                    <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border ${
+                      auction.cashOffer > 0 
+                        ? 'bg-primary/10 text-primary-600 border-primary/20' 
+                        : 'bg-neutral-100 text-neutral-500 border-neutral-200'
+                    }`}>
                       <DollarSign className="w-4 h-4" />
                       <span className="text-sm font-semibold">
-                        {formatCurrency(auction.currentBid)}
+                        {auction.cashOffer > 0 ? formatCurrency(auction.cashOffer) : 'No cash offer'}
                       </span>
-                      <span className="text-xs bg-success/20 px-2 py-0.5 rounded-full">
-                        {auction.bidCount} active
-                      </span>
+                      {auction.cashOffer > 0 && (
+                        <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full">
+                          Instant
+                        </span>
+                      )}
                     </div>
-                  )}
+                  </div>
 
-                  {/* Cash Offer Badge */}
-                  <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border ${
-                    auction.cashOffer > 0 
-                      ? 'bg-primary/10 text-primary-600 border-primary/20' 
-                      : 'bg-neutral-100 text-neutral-500 border-neutral-200'
-                  }`}>
-                    <DollarSign className="w-4 h-4" />
-                    <span className="text-sm font-semibold">
-                      {auction.cashOffer > 0 ? formatCurrency(auction.cashOffer) : 'No cash offer'}
+                  {/* Time Remaining */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-2">
+                      <Clock className="w-5 h-5 text-warning" />
+                    <span className="text-sm font-semibold text-warning">
+                      {formatTimeRemaining(new Date(auction.timeRemaining))}
                     </span>
-                    {auction.cashOffer > 0 && (
-                      <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full">
-                        Instant
-                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-neutral-500">Time remaining</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => handleEndAuction(auction.id)}
+                      className="cursor-pointer flex-1 py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                    >
+                      <span>View details</span>
+                    </button>
+                    {auction.totalBids > 0 ? (
+                      <button
+                        onClick={() => handleViewAllBids(auction)}
+                        className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>View All Bids ({auction.totalBids})</span>
+                      </button>
+                    ) : (
+                      <div className="flex-1 py-2.5 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
+                        <DollarSign className="w-4 h-4" />
+                        <span>No bids</span>
+                      </div>
                     )}
                   </div>
-                </div>
-
-                {/* Time Remaining */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-5 h-5 text-warning" />
-                    <span className="text-sm font-semibold text-warning">
-                      {formatTimeRemaining(auction.timeRemaining)}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-neutral-500">Time remaining</p>
-                  </div>
-                </div>
-
-
-                {/* Actions */}
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => handleEndAuction(auction.id)}
-                    className="cursor-pointer flex-1 py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                  >
-                    <span>View details</span>
-                  </button>
-                  {auction.totalBids > 0 ? (
-                    <button
-                      onClick={() => handleViewAllBids(auction)}
-                      className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span>View All Bids ({auction.totalBids})</span>
-                    </button>
-                  ) : (
-                    <div className="flex-1 py-2.5 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
-                      <DollarSign className="w-4 h-4" />
-                      <span>No bids</span>
-                    </div>
-                  )}
                 </div>
               </div>
             </motion.div>

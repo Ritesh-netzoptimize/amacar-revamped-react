@@ -40,7 +40,6 @@ export default function AppointmentDetailsModal({
   isProcessing = false,
   processingAction = ""
 }) {
-  const [showActions, setShowActions] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelProcessing, setIsCancelProcessing] = useState(false);
   const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
@@ -175,9 +174,7 @@ export default function AppointmentDetailsModal({
             <DialogTitle className="text-lg font-bold mb-1">
               Appointment Details
             </DialogTitle>
-            <DialogDescription className="text-white text-sm">
-              View and manage your appointment information
-            </DialogDescription>
+          
           </div>
           {/* Decorative elements */}
           <div className="absolute -top-4 -right-4 w-20 h-20 bg-orange-500/10 rounded-full blur-xl"></div>
@@ -272,7 +269,7 @@ export default function AppointmentDetailsModal({
                   <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                     <h4 className="text-sm font-semibold text-slate-800 mb-2 flex items-center gap-2">
                       <FileText className="w-4 h-4" />
-                      Notes
+                      Cancel Note
                     </h4>
                     <p className="text-sm text-slate-700">{appointment.notes}</p>
                   </div>
@@ -282,13 +279,6 @@ export default function AppointmentDetailsModal({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold text-slate-800">Quick Actions</h4>
-                    <button
-                      onClick={() => setShowActions(!showActions)}
-                      className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700 transition-colors"
-                    >
-                      <span>{showActions ? 'Hide' : 'Show'} Actions</span>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${showActions ? 'rotate-180' : ''}`} />
-                    </button>
                   </div>
 
                   {/* Cancelled Appointment Notice */}
@@ -297,14 +287,13 @@ export default function AppointmentDetailsModal({
                       <div className="flex items-center gap-2">
                         <XCircle className="w-4 h-4 text-red-600" />
                         <p className="text-sm text-red-700">
-                          This appointment has been cancelled. Management actions are not available.
+                          This appointment is cancelled. Management actions are not available.
                         </p>
                       </div>
                     </div>
                   )}
 
                   <AnimatePresence>
-                    {showActions && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
@@ -356,7 +345,6 @@ export default function AppointmentDetailsModal({
                         </div>
 
                       </motion.div>
-                    )}
                   </AnimatePresence>
                 </div>
 
