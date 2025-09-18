@@ -144,8 +144,9 @@ export default function ReviewPage() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               {/* Show login button if user doesn't exist and is not logged in */}
-              {userExists === false && !isUserLoggedIn && (
-                <motion.button
+              {
+                userExists && !isUserLoggedIn && (
+                  <motion.button
                   onClick={() => setShowLoginModal(true)}
                   className="cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-8 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition hover:scale-[1.02] hover:shadow-xl"
                   whileHover={{ scale: 1.02 }}
@@ -154,10 +155,24 @@ export default function ReviewPage() {
                   <User className="h-4 w-4" />
                   Login to Continue
                 </motion.button>
-              )}
-              
+                )
+              }
+
               {
-                userExists === false && isUserLoggedIn && (
+                userExists && isUserLoggedIn && (
+                  <motion.button
+                    onClick={handleLaunchAuction}
+                    className="cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-8 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.02] hover:shadow-xl"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Camera className="h-4 w-4" />
+                    Upload photos
+                  </motion.button>
+                )
+              }
+              {
+                !userExists && (
                   <motion.button
                     onClick={handleLaunchAuction}
                     className="cursor-pointer inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-8 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.02] hover:shadow-xl"

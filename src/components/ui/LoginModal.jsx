@@ -28,6 +28,7 @@ export default function LoginModal({
   const dispatch = useDispatch();
   const { values, errors, setValue, setError, resetForm } = useAuth();
   const { status, error } = useSelector((state) => state.user);
+  const { userInfo } = useSelector((state) => state.carDetailsAndQuestions);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -237,6 +238,16 @@ export default function LoginModal({
     }
   }, [phase]);
 
+  // Prefill email when modal opens and user info is available
+  useEffect(() => {
+    if (isOpen && userInfo?.user_email && !values.email) {
+      setValue("email", userInfo.user_email);
+    }
+  }, [isOpen, userInfo, setValue, values.email]);
+
+  // Check if email is prefilled from user info
+  const isEmailPrefilled = userInfo?.user_email && values.email === userInfo.user_email;
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={isCloseDisabled ? undefined : handleModalClose}>
@@ -290,7 +301,9 @@ export default function LoginModal({
                         Email Address
                       </label>
                       <div className="relative">
-                        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <div className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${
+                          isEmailPrefilled ? 'text-orange-500' : 'text-slate-400'
+                        }`}>
                           <Mail className="h-4 w-4" />
                         </div>
                         <input
@@ -299,9 +312,15 @@ export default function LoginModal({
                           value={values.email || ""}
                           onChange={(e) => setValue("email", e.target.value)}
                           placeholder="user@example.com"
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
+                          disabled={isEmailPrefilled}
+                          className={`h-11 w-full rounded-xl border pl-9 pr-3 text-sm outline-none ring-0 transition-shadow ${
+                            isEmailPrefilled
+                              ? 'border-orange-200 bg-orange-50 text-orange-800 cursor-not-allowed'
+                              : 'border-slate-200 bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]'
+                          }`}
                         />
                       </div>
+                    
                       {errors.email && (
                         <motion.p
                           initial={{ opacity: 0, y: -4 }}
