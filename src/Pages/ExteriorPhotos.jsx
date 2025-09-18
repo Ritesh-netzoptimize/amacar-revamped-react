@@ -816,7 +816,7 @@ export default function VehiclePhotos() {
                 <div className="p-2 bg-purple-100 rounded-xl">
                   <FileText className="h-6 w-6 text-purple-600" />
                 </div>
-                Terms & Conditions
+                Your Car is Ready for Auction
               </DialogTitle>
               <DialogDescription className="text-sm text-slate-600 mt-2">
                 Please review and accept the terms before starting your auction
@@ -829,15 +829,15 @@ export default function VehiclePhotos() {
               {[
                 {
                   title: "Auction Agreement",
-                  content: "You agree to sell your vehicle to the highest bidder through our platform. The final price may vary based on final inspection and verification of vehicle condition."
+                  content: "Once you confirm, your vehicle details will be shared with verified dealerships across the Amacar platform. Dealers will begin bidding in real time based on your car’s information and photos"
                 },
                 {
                   title: "Vehicle Condition",
-                  content: "You warrant that all information provided about your vehicle is accurate and complete."
+                  content: "You confirm that the information and photos provided are accurate and complete."
                 },
                 {
-                  title: "Payment Terms",
-                  content: "Payment will be processed within 24 hours of auction completion and acceptance. "
+                  title: "Final appraisal",
+                  content: "This offer is an estimated online value, Participating Amacar dealers bid to win your car. Final values are subject to dealer inspection and may be adjusted. Amacar is not responsible if a dealer modifies or declines an offer after final appraisal. Dealers pay a fee to participate in this program. Terms and conditions apply."
                 },
               
               ].map((term, index) => (
@@ -857,23 +857,7 @@ export default function VehiclePhotos() {
               ))}
             </div>
 
-            {/* Trust Indicators */}
-            <div className="mt-6 pt-4 border-t border-slate-200">
-              <div className="flex flex-wrap items-center gap-6 text-slate-500">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  <span className="text-xs">Secure Transaction</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" />
-                  <span className="text-xs">Verified Dealers</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span className="text-xs">24/7 Support</span>
-                </div>
-              </div>
-            </div>
+            
           </div>
 
           {/* Modal Footer */}
