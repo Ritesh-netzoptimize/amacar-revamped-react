@@ -7,6 +7,7 @@ import path from "path"
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/frontend/',
   plugins: [react(), tailwindcss(),],
   server: {
     host: '0.0.0.0',
@@ -16,4 +17,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+   build: {
+    chunkSizeWarningLimit: 2000 
+  }
 })
