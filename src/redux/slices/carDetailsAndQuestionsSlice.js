@@ -239,7 +239,7 @@ const initialQuestions = [
     key: 'features',
     label: 'Notable features?',
     emoji: '⭐',
-    options: ['Navigation', 'Leather', 'Sunroof', 'Alloy Wheels', 'Premium Audio', 'Safety+'],
+    options: ['Navigation', 'Leather', 'Sunroof', 'Alloy Wheels', 'Premium Audio', 'Safety+', 'None of the above'],
     positive: [],
     needsDetails: [],
     isMultiSelect: true,

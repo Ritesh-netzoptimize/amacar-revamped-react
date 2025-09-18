@@ -180,7 +180,7 @@ export default function ConditionAssessment() {
   }
 
   function renderQuestion(question, questionIndex) {
-    // console.log(question)
+    console.log(question)
     const selected = question.answer;
     // console.log(question.answer)
     

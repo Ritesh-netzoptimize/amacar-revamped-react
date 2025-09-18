@@ -12,6 +12,7 @@ import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { getInstantCashOffer } from "@/redux/slices/carDetailsAndQuestionsSlice"
+import ErrorModal from "@/components/ui/ErrorModal"
 
 export default function AuctionSelectionModal({ isOpen, onClose, userFormData = null }) {
   const dispatch = useDispatch()
@@ -23,6 +24,8 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [contactConsent, setContactConsent] = useState(false)
   const [termsConsent, setTermsConsent] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
 
   const handleOptionSelect = (optionId) => {
     setSelectedOption(optionId)
@@ -148,8 +151,9 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
 
     } catch (error) {
       console.error("Auction setup failed:", error);
-      const errorMessage = error.message || error || "Failed to setup auction. Please try again.";
-      toast.error(errorMessage);
+      const errorMsg = error.message || error || "Failed to setup auction. Please try again.";
+      setErrorMessage(errorMsg);
+      setShowErrorModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -157,8 +161,9 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
   
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl rounded-2xl shadow-xl p-0 overflow-hidden bg-white">
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-4xl rounded-2xl shadow-xl p-0 overflow-hidden bg-white">
         <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6">
           <DialogHeader className="text-center">
             <DialogTitle className="text-2xl font-semibold tracking-tight text-slate-900">
@@ -187,8 +192,12 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
-                  onClick={() => handleOptionSelect(option.id)}
-                  className={`relative cursor-pointer rounded-2xl p-6 shadow-lg border-2 transition-all ${
+                  onClick={() => !isSubmitting && handleOptionSelect(option.id)}
+                  className={`relative rounded-2xl p-6 shadow-lg border-2 transition-all ${
+                    isSubmitting 
+                      ? 'cursor-not-allowed opacity-60' 
+                      : 'cursor-pointer'
+                  } ${
                     isSelected 
                       ? 'border-green-400 ring-2 ring-green-200' 
                       : `${option.borderColor} border hover:border-gray-300`
@@ -233,7 +242,8 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
                           type="checkbox"
                           checked={contactConsent}
                           onChange={(e) => setContactConsent(e.target.checked)}
-                          className="h-4 w-4 cursor-pointer mt-1"
+                          disabled={isSubmitting}
+                          className="h-4 w-4 mt-1 disabled:cursor-not-allowed disabled:opacity-50"
                         />
                         <label className="text-sm text-slate-700 cursor-pointer">
                           I agree to share my contact information with Amacar's participating dealerships.
@@ -244,7 +254,8 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
                           type="checkbox"
                           checked={termsConsent}
                           onChange={(e) => setTermsConsent(e.target.checked)}
-                          className="h-4 w-4 cursor-pointer mt-1"
+                          disabled={isSubmitting}
+                          className="h-4 w-4 mt-1 disabled:cursor-not-allowed disabled:opacity-50"
                         />
                         <label className="text-sm text-slate-700 cursor-pointer">
                           I have read and agree to the Terms of Use and Privacy Policy.
@@ -256,8 +267,9 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={() => handleOptionSelect(option.id)}
-                        className="h-4 w-4 cursor-pointer mt-1"
+                        onChange={() => !isSubmitting && handleOptionSelect(option.id)}
+                        disabled={isSubmitting}
+                        className="h-4 w-4 mt-1 disabled:cursor-not-allowed disabled:opacity-50"
                       />
                       <label className="text-sm text-slate-700 cursor-pointer">
                         {option.termsText}
@@ -304,5 +316,15 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Error Modal */}
+    <ErrorModal
+      isOpen={showErrorModal}
+      onClose={() => setShowErrorModal(false)}
+      errorMessage={errorMessage}
+      redirectDelay={6000}
+      redirectPath="/"
+    />
+    </>
   )
 }
