@@ -4,7 +4,7 @@ import storage from 'redux-persist/lib/storage'; // localStorage
 export const carPersistConfig = {
   key: 'car',                // storage key prefix
   storage,
-  whitelist: ['carDetails', 'vehicleDetails', 'questions', 'stateZip', 'stateVin', 'productId', 'uploadedImages'] // keys INSIDE carDetailsAndQuestions slice to persist
+  whitelist: ['carDetails', 'vehicleDetails', 'questions', 'stateZip', 'stateVin', 'productId', 'uploadedImages', 'offerAmount', 'carSummary', 'isAuctionable', 'emailSent', 'timestamp'] // keys INSIDE carDetailsAndQuestions slice to persist
 };
 
 export const userPersistConfig = {

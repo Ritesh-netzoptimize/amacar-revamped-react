@@ -17,7 +17,8 @@ export const fetchVehicleDetails = createAsyncThunk(
       if (response.data.success) {
         return {
           vehicleData: response.data.values[0], // Vehicle data from values array
-          cityState: response.data.city_state    // Location data from city_state
+          cityState: response.data.city_state,    // Location data from city_state
+          vehicleImage: response.data.vehicle_image // Vehicle image from API response
         };
       } else {
         return rejectWithValue('API request failed');
@@ -346,6 +347,7 @@ const carDetailsAndQuestionsSlice = createSlice({
       state.vehicleDetails = {
         ...state.vehicleDetails,
         ...newDetails,
+        vehicleImg: action.payload.vehicleImage || '',
         // Ensure these fields are included, using provided values or empty strings
         mileage: newDetails.mileage || '',
         exteriorColor: newDetails.exteriorColor || state.vehicleDetails.exteriorColor || '',
@@ -502,12 +504,13 @@ const carDetailsAndQuestionsSlice = createSlice({
       })
       .addCase(fetchVehicleDetails.fulfilled, (state, action) => {
         state.loading = false;
-        const { vehicleData, cityState } = action.payload;
+        const { vehicleData, cityState, vehicleImage } = action.payload;
         
         // Merge fetched vehicle details with existing, ensuring additional fields are preserved
         state.vehicleDetails = {
           ...state.vehicleDetails,
           ...vehicleData,
+          vehicleImg: vehicleImage || state.vehicleDetails.vehicleImg || '',
           mileage: state.vehicleDetails.mileage || vehicleData.mileage || '',
           averageMileage: vehicleData.averageMileage || vehicleData.avg_mileage || vehicleData.average_mileage || '',
           exteriorColor: state.vehicleDetails.exteriorColor || vehicleData.exteriorColor || '',

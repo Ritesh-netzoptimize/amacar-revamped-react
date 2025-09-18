@@ -97,7 +97,7 @@ const MyAppointments = () => {
     { value: 'pending', label: 'Pending', count: appointments.filter(apt => apt.status === 'pending').length, color: 'bg-blue-100 text-blue-700' },
     { value: 'confirmed', label: 'Confirmed', count: appointments.filter(apt => apt.status === 'confirmed').length, color: 'bg-green-100 text-green-700' },
     { value: 'cancelled', label: 'Cancelled', count: appointments.filter(apt => apt.status === 'cancelled').length, color: 'bg-red-100 text-red-700' },
-    { value: 'completed', label: 'Completed', count: appointments.filter(apt => apt.status === 'completed').length, color: 'bg-emerald-100 text-emerald-700' },
+    // { value: 'completed', label: 'Completed', count: appointments.filter(apt => apt.status === 'completed').length, color: 'bg-emerald-100 text-emerald-700' },
   ];
 
   // Sort options

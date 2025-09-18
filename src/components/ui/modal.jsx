@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { fetchVehicleDetails, setStateVin, setZipState } from "@/redux/slices/carDetailsAndQuestionsSlice";
 
 export default function Modal({
@@ -26,6 +26,7 @@ export default function Modal({
   const [errors, setErrors] = useState({ vin: "", zip: "" });
   const [phase, setPhase] = useState("form"); // form | loading | success | error
   const [stepIndex, setStepIndex] = useState(0);
+  const {vehicleDetails} = useSelector((state) => state.carDetailsAndQuestions);
 
   const steps = useMemo(
     () => [

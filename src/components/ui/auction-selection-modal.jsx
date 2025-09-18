@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { getInstantCashOffer } from "@/redux/slices/carDetailsAndQuestionsSlice"
 
-export default function AuctionSelectionModal({ isOpen, onClose }) {
+export default function AuctionSelectionModal({ isOpen, onClose, userFormData = null }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { questions, vehicleDetails, stateZip, stateVin, location } = useSelector((state) => state.carDetailsAndQuestions)
@@ -104,12 +104,12 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
       condition_assessment: conditionData,
       question_deductions: questionDeductions,
       user_info: {
-        full_name: userState?.display_name || "",
-        email: userState?.email || "",
-        phone: userState?.meta?.phone || "",
-        city: location.city || "",
-        state: location.state || "",
-        zip_code: stateZip || ""
+        full_name: userFormData?.fullName || userState?.display_name || "",
+        email: userFormData?.email || userState?.email || "",
+        phone: userFormData?.phone || userState?.meta?.phone || "",
+        city: userFormData?.city || location.city || "",
+        state: userFormData?.state || location.state || "",
+        zip_code: userFormData?.zipcode || stateZip || ""
       },
       dealers_to_send_details: shareInfoWith,
       offer_terms: selectedOption ? "accepted" : "not_accepted"
@@ -162,7 +162,7 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
         <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6">
           <DialogHeader className="text-center">
             <DialogTitle className="text-2xl font-semibold tracking-tight text-slate-900">
-              Hi, {userState?.display_name || "User"}
+              Hi, {userFormData?.fullName || userState?.display_name || "User"}
             </DialogTitle>
             <DialogDescription className="text-sm text-slate-600 mt-2">
               Choose your auction preferences to get the best offers for your vehicle

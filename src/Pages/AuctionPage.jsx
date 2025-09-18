@@ -21,14 +21,18 @@ export default function AuctionPage() {
   // Fetch vehicle details if not already loaded
   useEffect(() => {
     if (!vehicleDetails || Object.keys(vehicleDetails).length === 0) {
-      dispatch(fetchVehicleDetails({ vin: "JTHBL46FX75021954", zip: "80226" }));
-
+      dispatch(fetchVehicleDetails({ vin: stateVin, zip: stateZip }));
+      console.log("fetching vehicle details");
       // dispatch(fetchVehicleDetails({ vin: stateVin, zip: stateZip }));
     }
-  }, [dispatch, vehicleDetails]);
+  }, [dispatch, vehicleDetails, stateVin, stateZip]);
 useEffect(() => {
     // console.log("avg", vehicleDetails.averagemileage);
-})
+    console.log("stateVin", stateVin);
+    console.log("stateZip", stateZip);
+    console.log("vehicleDetails", vehicleDetails);
+  }, [stateVin, stateZip, vehicleDetails]);
+
   // Initialize form values with Redux data
   const initialValues = useMemo(() => {
     return {
@@ -580,7 +584,7 @@ useEffect(() => {
                       {/* VIN Badge */}
                       <div className="mb-4">
                         <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r bg-[#f6851f] text-white text-sm font-semibold">
-                          VIN- {vehicleDetails?.vin || "JTHBL46FX75021954"}
+                          VIN- {stateVin || vehicleDetails?.vin || "JTHBL46FX75021954"}
                         </div>
                       </div>
 
@@ -602,12 +606,20 @@ useEffect(() => {
 
                       {/* Vehicle Image */}
                       <div className="relative mb-4">
-                        <div className="w-full h-32 rounded-xl overflow-hidden border-2 border-slate-200">
-                          <img 
-                            src="https://amacar.ai/wp-content/uploads/2024/10/amacar-placeholder2.png" 
-                            alt="Vehicle placeholder" 
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="w-full h-48 rounded-xl overflow-hidden border-2 border-slate-200">
+                          {vehicleDetails?.vehicleImg ? (
+                            <img 
+                              src={vehicleDetails.vehicleImg} 
+                              alt="Vehicle image" 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <img 
+                              src="https://amacar.ai/wp-content/uploads/2024/10/amacar-placeholder2.png" 
+                              alt="Vehicle placeholder" 
+                              className="w-full h-full object-cover"
+                            />
+                          )}
                         </div>
                       </div>
 

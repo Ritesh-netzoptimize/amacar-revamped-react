@@ -100,11 +100,16 @@ export default function ConditionAssessment() {
   }
 
   // Simple function to open auction modal
-  function handleSubmitToAuction() {
+  function handleSubmitToAuction(userFormData = null) {
     // Check if vehicle details exist
     if (!vehicleDetails || Object.keys(vehicleDetails).length === 0) {
       toast.error("Vehicle details are required. Please complete the VIN lookup first.");
       return;
+    }
+
+    // Store user form data in state to pass to modal
+    if (userFormData) {
+      setUser(userFormData);
     }
 
     // Open auction selection modal
@@ -574,7 +579,7 @@ export default function ConditionAssessment() {
                         const data = getFinalSubmissionData();
 
                         if (Object.keys(errs).length === 0) {
-                          handleSubmitToAuction();
+                          handleSubmitToAuction(finalUserData);
                         }
                       }}
                       disabled={!vehicleDetails || Object.keys(vehicleDetails).length === 0}
@@ -640,7 +645,7 @@ export default function ConditionAssessment() {
                       {/* VIN Badge */}
                       <div className="mb-4">
                         <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r bg-[#f6851f] text-white text-sm font-semibold">
-                          VIN- {vehicleDetails?.vin || "JTHBL46FX75021954"}
+                          VIN- {stateVin || vehicleDetails?.vin || "JTHBL46FX75021954"}
                         </div>
                       </div>
 
@@ -662,12 +667,20 @@ export default function ConditionAssessment() {
 
                       {/* Vehicle Image */}
                       <div className="relative mb-4">
-                        <div className="w-full h-32 rounded-xl overflow-hidden border-2 border-slate-200">
-                          <img 
-                            src="https://amacar.ai/wp-content/uploads/2024/10/amacar-placeholder2.png" 
-                            alt="Vehicle placeholder" 
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="w-full h-48 rounded-xl overflow-hidden border-2 border-slate-200">
+                          {vehicleDetails?.vehicleImg ? (
+                            <img 
+                              src={vehicleDetails.vehicleImg} 
+                              alt="Vehicle image" 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <img 
+                              src="https://amacar.ai/wp-content/uploads/2024/10/amacar-placeholder2.png" 
+                              alt="Vehicle placeholder" 
+                              className="w-full h-full object-cover"
+                            />
+                          )}
                         </div>
                       </div>
 
@@ -735,7 +748,8 @@ export default function ConditionAssessment() {
 
       <AuctionSelectionModal 
         isOpen={showAuctionModal} 
-        onClose={() => setShowAuctionModal(false)} 
+        onClose={() => setShowAuctionModal(false)}
+        userFormData={user}
       />
 
       <LoginModal
