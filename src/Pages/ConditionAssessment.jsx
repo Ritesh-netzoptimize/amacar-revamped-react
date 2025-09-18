@@ -551,7 +551,6 @@ export default function ConditionAssessment() {
                     </div>
                   )}
 
-                  {userExists ? (
                     <button
                       onClick={() => {
                         const finalUserData = {
@@ -591,14 +590,6 @@ export default function ConditionAssessment() {
                         'Check instant offer'
                       )}
                     </button>
-                  ) : (
-                    <button
-                      onClick={handleLoginClick}
-                      className="cursor-pointer inline-flex h-11 items-center justify-center rounded-xl bg-gradient-to-r from-[#f6851f] to-[#e63946] px-6 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:scale-[1.01]"
-                    >
-                      Login
-                    </button>
-                  )}
                   
                   {/* Success display for offer */}
                   {/* {offerStatus === 'succeeded' && offer.offerAmount && (

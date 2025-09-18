@@ -1,3 +1,4 @@
+import { Facebook, Instagram, Linkedin, Twitter, Youtube } from 'lucide-react'
 import React from 'react'
 
 export default function Footer() {
@@ -12,7 +13,7 @@ export default function Footer() {
             
             <div className="relative z-10 max-w-8xl mx-auto px-8 py-20">
                 {/* Main Footer Content */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-28  mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-28  mb-12">
                     {/* Company Info */}
                     <div className="lg:col-span-1">
                         <div className="mb-8">
@@ -31,17 +32,17 @@ export default function Footer() {
                             
                             {/* Social Links */}
                             <div className="flex space-x-4">
-                                <a href="#" className="group w-12 h-12 bg-neutral-100 hover:bg-primary-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-glow">
-                                    <span className="text-lg font-bold text-neutral-600 group-hover:text-white">f</span>
+                                <a href="https://www.youtube.com/@Amacar-ai" className="group w-12 h-12 bg-neutral-100 hover:bg-primary-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-glow">
+                                    <span className="text-lg font-bold text-neutral-600 group-hover:text-white"><Youtube/></span>
                                 </a>
-                                <a href="#" className="group w-12 h-12 bg-neutral-100 hover:bg-primary-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-glow">
-                                    <span className="text-lg font-bold text-neutral-600 group-hover:text-white">t</span>
+                                <a href="https://x.com/Amacar_us" className="group w-12 h-12 bg-neutral-100 hover:bg-primary-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-glow">
+                                    <span className="text-lg font-bold text-neutral-600 group-hover:text-white"><Twitter /></span>
                                 </a>
-                                <a href="#" className="group w-12 h-12 bg-neutral-100 hover:bg-primary-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-glow">
-                                    <span className="text-lg font-bold text-neutral-600 group-hover:text-white">in</span>
+                                <a href="https://www.linkedin.com/company/amacar-ai/" className="group w-12 h-12 bg-neutral-100 hover:bg-primary-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-glow">
+                                    <span className="text-lg font-bold text-neutral-600 group-hover:text-white"><Linkedin /></span>
                                 </a>
-                                <a href="#" className="group w-12 h-12 bg-neutral-100 hover:bg-primary-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-glow">
-                                    <span className="text-lg font-bold text-neutral-600 group-hover:text-white">p</span>
+                                <a href="https://www.instagram.com/amacar.ai/" className="group w-12 h-12 bg-neutral-100 hover:bg-primary-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-glow">
+                                    <span className="text-lg font-bold text-neutral-600 group-hover:text-white"><Instagram /></span>
                                 </a>
                             </div>
                         </div>
@@ -53,53 +54,25 @@ export default function Footer() {
                         <ul className="space-y-4">
                             <li>
                                 <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
-                                    How It Works
+                                    How to bid us
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
-                                    Get Instant Offer
+                                    Our vision
                                 </a>
                             </li>
                             <li>
                                 <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
-                                    Start Auction
+                                    How to sell with us
                                 </a>
                             </li>
-                            <li>
-                                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
-                                    Success Stories
-                                </a>
-                            </li>
+                         
                         </ul>
                     </div>
 
                     {/* Services */}
-                    <div>
-                        <h4 className="text-xl font-semibold mb-8 text-neutral-900">Services</h4>
-                        <ul className="space-y-4">
-                            <li>
-                                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
-                                    Car Valuation
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
-                                    Vehicle Inspection
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
-                                    Documentation Help
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
-                                    Payment Processing
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                   
 
                     {/* Support & Legal */}
                     <div>
@@ -129,45 +102,12 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Contact Information */}
-                <div className="border-t border-neutral-300 pt-8 mb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="flex items-center space-x-4 group">
-                            <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <span className="text-2xl">📞</span>
-                            </div>
-                            <div>
-                                <p className="text-sm text-neutral-500 uppercase tracking-wide">Call Us</p>
-                                <p className="font-semibold text-lg text-neutral-900">+91 98765 43210</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-4 group">
-                            <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <span className="text-2xl">✉️</span>
-                            </div>
-                            <div>
-                                <p className="text-sm text-neutral-500 uppercase tracking-wide">Email Us</p>
-                                <p className="font-semibold text-lg text-neutral-900">support@amacar.com</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center space-x-4 group">
-                            <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                                <span className="text-2xl">📍</span>
-                            </div>
-                            <div>
-                                <p className="text-sm text-neutral-500 uppercase tracking-wide">Visit Us</p>
-                                <p className="font-semibold text-lg text-neutral-900">Mumbai, Maharashtra</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              
 
                 {/* Bottom Bar */}
                 <div className="border-t border-neutral-300 pt-8">
                     <div className="flex flex-col lg:flex-row justify-between items-center space-y-6 lg:space-y-0">
-                        <div className="text-neutral-600 text-lg">
-                            © 2024 Amacar. All rights reserved. | Made with ❤️ in India
-                        </div>
+                     
                         <div className="flex items-center space-x-8">
                             <span className="text-neutral-600 text-lg">Trusted by</span>
                             <div className="flex items-center space-x-4">
