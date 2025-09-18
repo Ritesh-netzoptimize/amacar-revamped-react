@@ -701,12 +701,7 @@ const LiveAuctionsPage = () => {
                         {(() => {
                           const timeDiff = auction.timeRemaining - currentTime;
                           const hours = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60)));
-                          console.log('Timer Debug:', { 
-                            timeRemaining: auction.timeRemaining, 
-                            currentTime, 
-                            timeDiff, 
-                            hours 
-                          });
+                         
                           return hours.toString().padStart(2, '0');
                         })()}
                       </div>

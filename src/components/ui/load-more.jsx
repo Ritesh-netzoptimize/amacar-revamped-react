@@ -30,16 +30,16 @@ const LoadMore = ({
   // });
 
   // Don't render if no items or no more items to load
-  if (!items.length) {
-    console.log('LoadMore: No items, not rendering');
-    return null;
-  }
+  // if (!items.length) {
+  //   console.log('LoadMore: No items, not rendering');
+  //   return null;
+  // }
 
-  // Don't render if no more items to load
-  if (!hasMoreItems) {
-    console.log('LoadMore: No more items, not rendering');
-    return null;
-  }
+  // // Don't render if no more items to load
+  // if (!hasMoreItems) {
+  //   console.log('LoadMore: No more items, not rendering');
+  //   return null;
+  // }
 
   return (
     <>
