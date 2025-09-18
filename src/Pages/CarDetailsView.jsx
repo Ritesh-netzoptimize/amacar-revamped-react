@@ -14,10 +14,20 @@ import {
   XCircle,
   AlertCircle,
   Phone,
-  Mail
+  Mail,
+  Star,
+  Award,
+  Shield
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
 import api from '../lib/api';
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem, 
+  CarouselNext, 
+  CarouselPrevious 
+} from '../components/ui/carousel';
 
 const CarDetailsView = () => {
   const { state } = useLocation();
@@ -196,186 +206,244 @@ const CarDetailsView = () => {
   const { basic_info, location, cash_offer, auction, user, condition_assessment, bids, images } = vehicleData;
 
   return (
-    <div className="min-h-screen bg-gradient-hero p-8">
+    <div className="min-h-screen bg-gradient-hero">
       <div className="max-w-7xl mx-auto">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="space-y-6"
+          className="space-y-8"
         >
           {/* Header */}
-          <motion.div variants={itemVariants} className="mb-8">
-            <h1 className="text-3xl font-bold text-neutral-800 mb-2">
+          <motion.div variants={itemVariants} className="px-8 pt-8">
+            <h1 className="text-4xl font-bold text-neutral-800 mb-2">
               {basic_info?.title || 'Vehicle Details'}
             </h1>
-            <p className="text-neutral-600">
+            <p className="text-neutral-600 text-lg">
               Complete vehicle information and auction details
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Basic Information */}
-            <motion.div variants={itemVariants} className="card p-6">
+          {/* Images Carousel */}
+          {images && images.length > 0 && (
+            <motion.div variants={itemVariants} className="w-full">
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {images.map((image, index) => (
+                    <CarouselItem key={index}>
+                      <div className="aspect-video w-full bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl flex items-center justify-center overflow-hidden">
+                        <ImageIcon className="w-16 h-16 text-neutral-400" />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-4" />
+                <CarouselNext className="right-4" />
+              </Carousel>
+            </motion.div>
+          )}
+
+          {/* Main Content */}
+          <div className="px-8 pb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Vehicle Overview - Most Important Info */}
+            <motion.div variants={itemVariants} className="lg:col-span-2 card p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Car className="w-5 h-5 text-blue-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                  <Car className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-xl font-semibold text-neutral-800">Basic Information</h2>
+                <div>
+                  <h2 className="text-2xl font-bold text-neutral-800">Vehicle Overview</h2>
+                  <p className="text-neutral-600">Key details about this vehicle</p>
+                </div>
               </div>
               
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Year</label>
-                    <p className="text-neutral-800">{basic_info?.year || 'N/A'}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Star className="w-5 h-5 text-blue-600" />
+                      <span className="font-semibold text-blue-800">Vehicle Details</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Year/Make/Model:</span>
+                        <span className="font-semibold text-neutral-800">
+                          {basic_info?.year} {basic_info?.make} {basic_info?.model}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Trim:</span>
+                        <span className="font-semibold text-neutral-800">{basic_info?.trim || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Mileage:</span>
+                        <span className="font-semibold text-neutral-800">
+                          {basic_info?.mileage ? `${basic_info.mileage.toLocaleString()} miles` : 'N/A'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Make</label>
-                    <p className="text-neutral-800">{basic_info?.make || 'N/A'}</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Model</label>
-                    <p className="text-neutral-800">{basic_info?.model || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Trim</label>
-                    <p className="text-neutral-800">{basic_info?.trim || 'N/A'}</p>
+
+                  <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="w-5 h-5 text-green-600" />
+                      <span className="font-semibold text-green-800">Condition</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Body Type:</span>
+                        <span className="font-semibold text-neutral-800">{basic_info?.body_type || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Exterior:</span>
+                        <span className="font-semibold text-neutral-800">{basic_info?.exterior_color || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Interior:</span>
+                        <span className="font-semibold text-neutral-800">{basic_info?.interior_color || 'N/A'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">VIN</label>
-                  <p className="text-neutral-800 font-mono text-sm">{basic_info?.vin || 'N/A'}</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Mileage</label>
-                    <p className="text-neutral-800">{basic_info?.mileage ? `${basic_info.mileage.toLocaleString()} miles` : 'N/A'}</p>
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Award className="w-5 h-5 text-purple-600" />
+                      <span className="font-semibold text-purple-800">Performance</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Transmission:</span>
+                        <span className="font-semibold text-neutral-800">{basic_info?.transmission || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Engine:</span>
+                        <span className="font-semibold text-neutral-800">{basic_info?.engine_type || 'N/A'}</span>
+                      </div>
+                      {basic_info?.powertrain_description && (
+                        <div className="mt-3">
+                          <span className="text-sm text-neutral-600">Powertrain:</span>
+                          <p className="text-sm font-medium text-neutral-800 mt-1">{basic_info.powertrain_description}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Body Type</label>
-                    <p className="text-neutral-800">{basic_info?.body_type || 'N/A'}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Exterior Color</label>
-                    <p className="text-neutral-800">{basic_info?.exterior_color || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Interior Color</label>
-                    <p className="text-neutral-800">{basic_info?.interior_color || 'N/A'}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Transmission</label>
-                    <p className="text-neutral-800">{basic_info?.transmission || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Engine Type</label>
-                    <p className="text-neutral-800">{basic_info?.engine_type || 'N/A'}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Powertrain</label>
-                  <p className="text-neutral-800">{basic_info?.powertrain_description || 'N/A'}</p>
                 </div>
               </div>
             </motion.div>
 
-            {/* Location */}
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-green-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-neutral-800">Location</h2>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Address</label>
-                  <p className="text-neutral-800">
-                    {location?.city && location?.state 
-                      ? `${location.city}, ${location.state}` 
-                      : 'N/A'
-                    }
-                  </p>
+            {/* Location & Seller Info */}
+            <motion.div variants={itemVariants} className="space-y-6">
+              {/* Location */}
+              <div className="card p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-neutral-800">Location</h3>
                 </div>
                 
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">ZIP Code</label>
-                  <p className="text-neutral-800">{location?.zip_code || 'N/A'}</p>
-                </div>
-
-                {location?.coordinates && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-neutral-600">Latitude</label>
-                      <p className="text-neutral-800 font-mono text-sm">{location.coordinates.lat}</p>
+                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">City, State:</span>
+                      <span className="font-semibold text-neutral-800">
+                        {location?.city && location?.state 
+                          ? `${location.city}, ${location.state}` 
+                          : 'N/A'
+                        }
+                      </span>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-neutral-600">Longitude</label>
-                      <p className="text-neutral-800 font-mono text-sm">{location.coordinates.lon}</p>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">ZIP Code:</span>
+                      <span className="font-semibold text-neutral-800">{location?.zip_code || 'N/A'}</span>
                     </div>
                   </div>
-                )}
+                </div>
+              </div>
+
+              {/* Seller Information */}
+              <div className="card p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-neutral-800">Seller</h3>
+                </div>
+                
+                <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 p-4 rounded-lg">
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Name:</span>
+                      <span className="font-semibold text-neutral-800">{user?.display_name || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-neutral-600">Email:</span>
+                      <span className="font-semibold text-neutral-800 text-sm">{user?.email || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
 
-            {/* Cash Offer */}
-            <motion.div variants={itemVariants} className="card p-6">
+            {/* Cash Offer - Highlighted */}
+            <motion.div variants={itemVariants} className="lg:col-span-3 card p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-5 h-5 text-orange-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-xl font-semibold text-neutral-800">Cash Offer</h2>
+                <div>
+                  <h2 className="text-2xl font-bold text-neutral-800">Cash Offer</h2>
+                  <p className="text-neutral-600">Current offer for this vehicle</p>
+                </div>
               </div>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Offer Amount</label>
-                  <p className="text-2xl font-bold text-orange-600">
-                    {cash_offer?.offer_amount ? formatCurrency(cash_offer.offer_amount) : 'N/A'}
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="bg-white p-6 rounded-xl shadow-sm">
+                    <p className="text-sm font-medium text-neutral-600 mb-2">Offer Amount</p>
+                    <p className="text-3xl font-bold text-orange-600">
+                      {cash_offer?.offer_amount ? formatCurrency(cash_offer.offer_amount) : 'N/A'}
+                    </p>
+                  </div>
                 </div>
                 
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Offer Date</label>
-                  <p className="text-neutral-800">
-                    {cash_offer?.offer_date ? formatDate(cash_offer.offer_date) : 'N/A'}
-                  </p>
+                <div className="text-center">
+                  <div className="bg-white p-6 rounded-xl shadow-sm">
+                    <p className="text-sm font-medium text-neutral-600 mb-2">Offer Date</p>
+                    <p className="text-lg font-semibold text-neutral-800">
+                      {cash_offer?.offer_date ? formatDate(cash_offer.offer_date) : 'N/A'}
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Expiration</label>
-                  <p className="text-neutral-800">{cash_offer?.offer_expiration || 'N/A'}</p>
+                <div className="text-center">
+                  <div className="bg-white p-6 rounded-xl shadow-sm">
+                    <p className="text-sm font-medium text-neutral-600 mb-2">Expiration</p>
+                    <p className="text-lg font-semibold text-neutral-800">{cash_offer?.offer_expiration || 'N/A'}</p>
+                  </div>
                 </div>
               </div>
             </motion.div>
 
             {/* Auction Information */}
-            <motion.div variants={itemVariants} className="card p-6">
+            <motion.div variants={itemVariants} className="lg:col-span-3 card p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Gavel className="w-5 h-5 text-purple-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Gavel className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-xl font-semibold text-neutral-800">Auction Details</h2>
+                <div>
+                  <h2 className="text-2xl font-bold text-neutral-800">Auction Details</h2>
+                  <p className="text-neutral-600">Current auction status and timing</p>
+                </div>
               </div>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Status</label>
-                  <div className="flex items-center gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-neutral-600 mb-2">Status</p>
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       auction?.is_active 
                         ? 'bg-green-100 text-green-800' 
@@ -386,180 +454,126 @@ const CarDetailsView = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Auction Started</label>
-                  <p className="text-neutral-800">
-                    {auction?.auction_started_at ? formatDate(auction.auction_started_at) : 'N/A'}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Auction Ends</label>
-                  <p className="text-neutral-800">
-                    {auction?.auction_ends_at ? formatDate(auction.auction_ends_at) : 'N/A'}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Time Remaining</label>
-                  <p className="text-neutral-800 font-mono">
-                    {formatRemainingTime(auction?.remaining_seconds)}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Working Hours</label>
-                  <p className="text-neutral-800">
-                    {auction?.in_working_hours ? 'Yes' : 'No'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* User Information */}
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <User className="w-5 h-5 text-indigo-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-neutral-800">Seller Information</h2>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Name</label>
-                  <p className="text-neutral-800">{user?.display_name || 'N/A'}</p>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Email</label>
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-neutral-500" />
-                    <p className="text-neutral-800">{user?.email || 'N/A'}</p>
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-neutral-600 mb-2">Started</p>
+                    <p className="text-sm font-semibold text-neutral-800">
+                      {auction?.auction_started_at ? formatDate(auction.auction_started_at) : 'N/A'}
+                    </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">First Name</label>
-                    <p className="text-neutral-800">{user?.first_name || 'N/A'}</p>
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-neutral-600 mb-2">Ends</p>
+                    <p className="text-sm font-semibold text-neutral-800">
+                      {auction?.auction_ends_at ? formatDate(auction.auction_ends_at) : 'N/A'}
+                    </p>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-neutral-600">Last Name</label>
-                    <p className="text-neutral-800">{user?.last_name || 'N/A'}</p>
+                </div>
+
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-neutral-600 mb-2">Time Remaining</p>
+                    <p className="text-sm font-semibold text-neutral-800 font-mono">
+                      {formatRemainingTime(auction?.remaining_seconds)}
+                    </p>
                   </div>
                 </div>
               </div>
             </motion.div>
 
             {/* Condition Assessment */}
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-yellow-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-neutral-800">Condition Assessment</h2>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Cosmetic Condition</label>
-                  <p className="text-neutral-800">{condition_assessment?.cosmetic_condition || 'N/A'}</p>
+            {condition_assessment && (
+              <motion.div variants={itemVariants} className="lg:col-span-3 card p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-neutral-800">Condition Assessment</h2>
+                    <p className="text-neutral-600">Vehicle condition details</p>
+                  </div>
                 </div>
                 
-                <div>
-                  <label className="text-sm font-medium text-neutral-600">Smoked Windows</label>
-                  <p className="text-neutral-800">{condition_assessment?.smoked_windows || 'N/A'}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gradient-to-r from-yellow-50 to-amber-100 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-neutral-600 mb-2">Cosmetic Condition</p>
+                    <p className="text-lg font-semibold text-neutral-800">{condition_assessment?.cosmetic_condition || 'N/A'}</p>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-yellow-50 to-amber-100 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-neutral-600 mb-2">Smoked Windows</p>
+                    <p className="text-lg font-semibold text-neutral-800">{condition_assessment?.smoked_windows || 'N/A'}</p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
+            </div>
           </div>
 
           {/* Bids Table */}
           {bids && bids.length > 0 && (
-            <motion.div variants={itemVariants} className="card p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <Gavel className="w-5 h-5 text-red-600" />
+            <motion.div variants={itemVariants} className="px-8 pb-8">
+              <div className="card p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
+                    <Gavel className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-neutral-800">Bids ({bids.length})</h2>
+                    <p className="text-neutral-600">Current bids on this vehicle</p>
+                  </div>
                 </div>
-                <h2 className="text-xl font-semibold text-neutral-800">Bids ({bids.length})</h2>
-              </div>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-neutral-200">
-                      <th className="text-left py-3 px-4 font-medium text-neutral-600">Amount</th>
-                      <th className="text-left py-3 px-4 font-medium text-neutral-600">Bidder</th>
-                      <th className="text-left py-3 px-4 font-medium text-neutral-600">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-neutral-600">Date & Time</th>
-                      <th className="text-left py-3 px-4 font-medium text-neutral-600">Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bids.map((bid) => (
-                      <tr key={bid.id} className="border-b border-neutral-100 hover:bg-neutral-50">
-                        <td className="py-3 px-4">
-                          <span className="font-semibold text-green-600">
-                            {formatCurrency(bid.amount)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div>
-                            <p className="font-medium text-neutral-800">{bid.bidder_display_name}</p>
-                            <p className="text-sm text-neutral-600">{bid.bidder_email}</p>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            {getBidStatusIcon(bid.status)}
-                            <span className="text-sm">{getBidStatusText(bid.status)}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div>
-                            <p className="text-sm text-neutral-800">{bid.bid_at?.date}</p>
-                            <p className="text-sm text-neutral-600">{bid.bid_at?.time}</p>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="text-sm text-neutral-600">{bid.notes || 'N/A'}</p>
-                        </td>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-neutral-200">
+                        <th className="text-left py-4 px-4 font-semibold text-neutral-700">Amount</th>
+                        <th className="text-left py-4 px-4 font-semibold text-neutral-700">Bidder</th>
+                        <th className="text-left py-4 px-4 font-semibold text-neutral-700">Status</th>
+                        <th className="text-left py-4 px-4 font-semibold text-neutral-700">Date & Time</th>
+                        <th className="text-left py-4 px-4 font-semibold text-neutral-700">Notes</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {bids.map((bid) => (
+                        <tr key={bid.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
+                          <td className="py-4 px-4">
+                            <span className="text-xl font-bold text-green-600">
+                              {formatCurrency(bid.amount)}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div>
+                              <p className="font-semibold text-neutral-800">{bid.bidder_display_name}</p>
+                              <p className="text-sm text-neutral-600">{bid.bidder_email}</p>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-2">
+                              {getBidStatusIcon(bid.status)}
+                              <span className="font-medium">{getBidStatusText(bid.status)}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div>
+                              <p className="font-medium text-neutral-800">{bid.bid_at?.date}</p>
+                              <p className="text-sm text-neutral-600">{bid.bid_at?.time}</p>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4">
+                            <p className="text-sm text-neutral-600">{bid.notes || 'N/A'}</p>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </motion.div>
           )}
-
-          {/* Images Section */}
-          <motion.div variants={itemVariants} className="card p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
-                <ImageIcon className="w-5 h-5 text-pink-600" />
-              </div>
-              <h2 className="text-xl font-semibold text-neutral-800">Images</h2>
-            </div>
-            
-            {images && images.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {images.map((image, index) => (
-                  <div key={index} className="aspect-square bg-neutral-100 rounded-lg flex items-center justify-center">
-                    <ImageIcon className="w-8 h-8 text-neutral-400" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <ImageIcon className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-                <p className="text-neutral-600">No images available</p>
-                <p className="text-sm text-neutral-500 mt-2">
-                  Images will be displayed here when available
-                </p>
-              </div>
-            )}
-          </motion.div>
         </motion.div>
       </div>
     </div>
