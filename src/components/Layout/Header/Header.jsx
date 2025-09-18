@@ -71,15 +71,7 @@ export default function Header() {
               {/* right: actions */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', minWidth: 180 }}>
                 <div className="actions-desktop" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  {user && productId && (
-                    <button 
-                      className="bg-white border-2 border-[#394da1] text-[#394da1] hover:from-orange-600 hover:to-orange-500 cursor-pointer border-0 rounded-lg px-4 py-2.5 text-sm font-semibold flex items-center gap-1.5 transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl hover:bg-[#394da1] hover:text-white" 
-                      onClick={handleContinueClick}
-                    >
-                      <Play className="w-4 h-4" />
-                      Continue where you left off
-                    </button>
-                  )}
+                  
                   {user ? (
                     <button className="btn-login cursor-pointer" onClick={handleLogoutClick}>
                       Logout
