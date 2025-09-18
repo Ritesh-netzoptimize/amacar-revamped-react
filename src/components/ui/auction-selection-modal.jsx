@@ -188,7 +188,7 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                   onClick={() => handleOptionSelect(option.id)}
-                  className={`cursor-pointer rounded-2xl p-6 shadow-lg border-2 transition-all ${
+                  className={`relative cursor-pointer rounded-2xl p-6 shadow-lg border-2 transition-all ${
                     isSelected 
                       ? 'border-green-400 ring-2 ring-green-200' 
                       : `${option.borderColor} border hover:border-gray-300`
@@ -264,32 +264,43 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
                       </label>
                     </div>
                   )}
+
+                  {/* Grab your offer button - only show on selected card */}
+                  {isSelected && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                      className="absolute bottom-4 right-4"
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent card selection when clicking button
+                          handleGo();
+                        }}
+                        disabled={isSubmitting || (option.id === "all" && (!contactConsent || !termsConsent))}
+                        className={`cursor-pointer inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02] ${
+                          !isSubmitting && (option.id !== "all" || (contactConsent && termsConsent))
+                            ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600' 
+                            : 'bg-slate-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {isSubmitting ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Setting up...
+                          </div>
+                        ) : (
+                          'Continue →'
+                        )}
+                      </button>
+                    </motion.div>
+                  )}
                 </motion.div>
               )
             })}
           </motion.div>
 
-          {/* Footer CTA */}
-          <div className="mt-6 flex items-center justify-end">
-            <button
-              onClick={handleGo}
-              disabled={isSubmitting || !selectedOption || (selectedOption === "all" && (!contactConsent || !termsConsent))}
-              className={`cursor-pointer inline-flex h-11 items-center justify-center rounded-xl px-6 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.01] ${
-                selectedOption && !isSubmitting && (selectedOption !== "all" || (contactConsent && termsConsent))
-                  ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600' 
-                  : 'bg-slate-400 cursor-not-allowed'
-              }`}
-            >
-              {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Setting up offer...
-                </div>
-              ) : (
-                'Grab your offer →'
-              )}
-            </button>
-          </div>
         </div>
       </DialogContent>
     </Dialog>
