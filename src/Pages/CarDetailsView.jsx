@@ -54,6 +54,8 @@ const CarDetailsView = () => {
         
         if (response.data.success) {
           setVehicleData(response.data.vehicle);
+          console.log("response.data.vehicle", response.data.vehicle);
+          console.log("vehicleData", vehicleData);
         } else {
           setError(response.data.message || 'Failed to fetch vehicle details');
         }
@@ -206,7 +208,7 @@ const CarDetailsView = () => {
   const { basic_info, location, cash_offer, auction, user, condition_assessment, bids, images } = vehicleData;
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="mt-16 min-h-screen bg-gradient-hero">
       <div className="max-w-7xl mx-auto">
         <motion.div
           variants={containerVariants}
@@ -226,19 +228,19 @@ const CarDetailsView = () => {
 
           {/* Images Carousel */}
           {images && images.length > 0 && (
-            <motion.div variants={itemVariants} className="w-full">
+            <motion.div variants={itemVariants} className="px-8">
               <Carousel className="w-full">
                 <CarouselContent>
                   {images.map((image, index) => (
                     <CarouselItem key={index}>
-                      <div className="aspect-video w-full bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl flex items-center justify-center overflow-hidden">
+                      <div className="aspect-[16/9] w-full bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl flex items-center justify-center overflow-hidden shadow-sm">
                         <ImageIcon className="w-16 h-16 text-neutral-400" />
                       </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="left-4" />
-                <CarouselNext className="right-4" />
+                <CarouselPrevious className="left-2 bg-white/90 hover:bg-white shadow-lg border-0 cursor-pointer" />
+                <CarouselNext className="right-2 bg-white/90 hover:bg-white shadow-lg border-0 cursor-pointer" />
               </Carousel>
             </motion.div>
           )}
