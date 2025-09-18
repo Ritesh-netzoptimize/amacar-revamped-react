@@ -134,7 +134,7 @@ const StatsCards = ({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${Math.min(visibleCards.length, 5)} gap-6 ${className}`}
+      className={`grid grid-cols-1 md:grid-cols-5 lg:grid-cols-${Math.min(visibleCards.length, 5)} gap-6 ${className}`}
     >
       {visibleCards.map((card) => {
         const IconComponent = card.icon;
