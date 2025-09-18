@@ -161,6 +161,54 @@ export const updateProfile = createAsyncThunk(
   }
 );
 
+// Auto-login with JWT token from offer response
+export const autoLoginWithToken = createAsyncThunk(
+  'user/autoLoginWithToken',
+  async (userInfo, { rejectWithValue }) => {
+    try {
+      // Store auth tokens in localStorage for persistence
+      if (userInfo.jwt_token) {
+        localStorage.setItem('authToken', userInfo.jwt_token);
+      }
+      
+      // Create user object from the response
+      const user = {
+        id: userInfo.user_id,
+        email: userInfo.user_email,
+        display_name: userInfo.user_full_name,
+        phone: userInfo.user_phone,
+        city: userInfo.user_city,
+        state: userInfo.user_state,
+        zip_code: userInfo.user_zip_code,
+        meta: {
+          phone: userInfo.user_phone,
+          city: userInfo.user_city,
+          state: userInfo.user_state,
+          zip_code: userInfo.user_zip_code
+        }
+      };
+      
+      if (user) {
+        localStorage.setItem('authUser', JSON.stringify(user));
+      }
+      
+      // Set expiration time (default 24 hours if not provided)
+      const expirationTime = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+      localStorage.setItem('authExpiration', expirationTime);
+      
+      return {
+        user,
+        token: userInfo.jwt_token,
+        expires_in: 24 * 60 * 60, // 24 hours in seconds
+        account_created: userInfo.account_created,
+        reset_password_required: userInfo.reset_password_required
+      };
+    } catch (error) {
+      return rejectWithValue(error.message || 'Auto-login failed');
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: 'user',
   initialState: {
@@ -329,6 +377,20 @@ const userSlice = createSlice({
         localStorage.setItem('authUser', JSON.stringify(action.payload));
       })
       .addCase(updateProfile.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      // Auto-login with token
+      .addCase(autoLoginWithToken.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(autoLoginWithToken.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.user = action.payload.user;
+        // Tokens are already stored in localStorage by the thunk
+      })
+      .addCase(autoLoginWithToken.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       });

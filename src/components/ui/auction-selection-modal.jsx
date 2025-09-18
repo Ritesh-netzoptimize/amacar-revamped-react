@@ -12,6 +12,7 @@ import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
 import { useDispatch, useSelector } from "react-redux"
 import { getInstantCashOffer } from "@/redux/slices/carDetailsAndQuestionsSlice"
+import { autoLoginWithToken } from "@/redux/slices/userSlice"
 import ErrorModal from "@/components/ui/ErrorModal"
 
 export default function AuctionSelectionModal({ isOpen, onClose, userFormData = null }) {
@@ -142,7 +143,24 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       const result = await dispatch(getInstantCashOffer(offerPayload)).unwrap();
       console.log("Instant Cash Offer successful:", result);
 
-      toast.success("Auction setup successful! Redirecting to review...");
+      // Check if user info and JWT token are present for auto-login
+      if (result.userInfo && result.userInfo.jwt_token) {
+        console.log("Auto-logging in user with JWT token:", result.userInfo);
+        
+        try {
+          // Auto-login the user with the JWT token
+          await dispatch(autoLoginWithToken(result.userInfo)).unwrap();
+          console.log("Auto-login successful");
+          
+          toast.success("Account created and logged in! Redirecting to review...");
+        } catch (loginError) {
+          console.error("Auto-login failed:", loginError);
+          // Continue with the flow even if auto-login fails
+          toast.success("Auction setup successful! Redirecting to review...");
+        }
+      } else {
+        toast.success("Auction setup successful! Redirecting to review...");
+      }
       
       setTimeout(() => {
         onClose(false);
@@ -322,7 +340,7 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       isOpen={showErrorModal}
       onClose={() => setShowErrorModal(false)}
       errorMessage={errorMessage}
-      redirectDelay={6000}
+      redirectDelay={15000}
       redirectPath="/"
     />
     </>

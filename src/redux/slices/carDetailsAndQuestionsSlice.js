@@ -65,7 +65,7 @@ export const getInstantCashOffer = createAsyncThunk(
       const response = await api.post('/offer/instant-cash', offerData);
       console.log('Instant Cash Offer API response:', response.data);
       
-      if (response.data.success) {
+      if (response.data.status === 'success') {
         return {
           offerAmount: response.data.offer_amount,
           carSummary: response.data.car_summary,
@@ -73,9 +73,10 @@ export const getInstantCashOffer = createAsyncThunk(
           productId: response.data.product_id,
           emailSent: response.data.email_sent,
           timestamp: response.data.timestamp,
+          userInfo: response.data.user_info, // Include user info for auto-login
         };
       } else {
-        console.log('API returned success: false, message:', response.data.message);
+        console.log('API returned status:', response.data.status, 'message:', response.data.message);
         return rejectWithValue(response.data.message || 'Failed to get instant cash offer');
       }
     } catch (error) {
