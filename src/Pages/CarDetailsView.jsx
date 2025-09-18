@@ -28,6 +28,7 @@ import {
   CarouselNext, 
   CarouselPrevious 
 } from '../components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay";
 
 const CarDetailsView = () => {
   const { state } = useLocation();
@@ -226,24 +227,148 @@ const CarDetailsView = () => {
             </p>
           </motion.div>
 
-          {/* Images Carousel */}
-          {images && images.length > 0 && (
-            <motion.div variants={itemVariants} className="px-8">
-              <Carousel className="w-full">
-                <CarouselContent>
-                  {images.map((image, index) => (
-                    <CarouselItem key={index}>
-                      <div className="aspect-[16/9] w-full bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl flex items-center justify-center overflow-hidden shadow-sm">
-                        <ImageIcon className="w-16 h-16 text-neutral-400" />
+          {/* Images Carousel and Key Info Section */}
+          <div className="px-8 pb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+               {/* Images Carousel - Takes 2 columns */}
+               {images && images.length > 0 ? (
+                 <motion.div variants={itemVariants} className="lg:col-span-2">
+                   <Carousel 
+                     className="w-full"
+                     opts={{
+                       align: "start",
+                       loop: true,
+                     }}
+                     plugins={[
+                       Autoplay({
+                         delay: 3000,
+                         stopOnInteraction: false,
+                         stopOnMouseEnter: true,
+                       }),
+                     ]}
+                   >
+                     <CarouselContent>
+                       {images.map((image, index) => (
+                         <CarouselItem key={image.attachment_id || index}>
+                           <div className="aspect-[4/3] w-full rounded-xl overflow-hidden shadow-sm">
+                             <img 
+                               src={image.url} 
+                               alt={image.name || `Vehicle image ${index + 1}`}
+                               className="w-full h-full object-cover"
+                               onError={(e) => {
+                                 e.target.style.display = 'none';
+                                 e.target.nextSibling.style.display = 'flex';
+                               }}
+                             />
+                             <div className="w-full h-full bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center" style={{display: 'none'}}>
+                               <ImageIcon className="w-16 h-16 text-neutral-400" />
+                             </div>
+                           </div>
+                         </CarouselItem>
+                       ))}
+                     </CarouselContent>
+                     <CarouselPrevious className="left-2 bg-white/90 hover:bg-white shadow-lg border-0 cursor-pointer" />
+                     <CarouselNext className="right-2 bg-white/90 hover:bg-white shadow-lg border-0 cursor-pointer" />
+                   </Carousel>
+                 </motion.div>
+               ) : (
+                 <motion.div variants={itemVariants} className="lg:col-span-2">
+                   <div className="aspect-[4/3] w-full bg-gradient-to-br from-neutral-100 to-neutral-200 rounded-xl flex items-center justify-center shadow-sm">
+                     <div className="text-center">
+                       <ImageIcon className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
+                       <p className="text-neutral-600">No images available</p>
+                     </div>
+                   </div>
+                 </motion.div>
+               )}
+
+              {/* Auction Details and Cash Offer - Takes 1 column */}
+              <div className="space-y-6">
+                {/* Auction Information */}
+                <motion.div variants={itemVariants} className="card h-[50%] p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <Gavel className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-neutral-800">Auction Details</h2>
+                      <p className="text-sm text-neutral-600">Status and timing</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 h-fit">
+                    <div className=" bg-gradient-to-r from-purple-50 to-purple-100 p-3 rounded-lg">
+                      <p className="text-xs font-medium text-neutral-600 mb-1">Status</p>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        auction?.is_active 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {auction?.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-3 rounded-lg">
+                      <p className="text-xs font-medium text-neutral-600 mb-1">Started</p>
+                      <p className="text-xs font-semibold text-neutral-800">
+                        {auction?.auction_started_at ? formatDate(auction.auction_started_at) : 'N/A'}
+                      </p>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-3 rounded-lg">
+                      <p className="text-xs font-medium text-neutral-600 mb-1">Ends</p>
+                      <p className="text-xs font-semibold text-neutral-800">
+                        {auction?.auction_ends_at ? formatDate(auction.auction_ends_at) : 'N/A'}
+                      </p>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-red-50 to-red-100 p-3 rounded-lg">
+                      <p className="text-xs font-medium text-neutral-600 mb-1">Time Left</p>
+                      <p className="text-xs font-semibold text-neutral-800 font-mono">
+                        {formatRemainingTime(auction?.remaining_seconds)}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Cash Offer - Highlighted */}
+                <motion.div variants={itemVariants} className="h- card p-4 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg flex items-center justify-center">
+                      <DollarSign className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-neutral-800">Cash Offer</h2>
+                      <p className="text-sm text-neutral-600">Current offer</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <p className="text-xs font-medium text-neutral-600 mb-1">Offer Amount</p>
+                      <p className="text-xl font-bold text-orange-600">
+                        {cash_offer?.offer_amount ? formatCurrency(cash_offer.offer_amount) : 'N/A'}
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <p className="text-xs font-medium text-neutral-600 mb-1">Date</p>
+                        <p className="text-sm font-semibold text-neutral-800">
+                          {cash_offer?.offer_date ? formatDate(cash_offer.offer_date) : 'N/A'}
+                        </p>
                       </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="left-2 bg-white/90 hover:bg-white shadow-lg border-0 cursor-pointer" />
-                <CarouselNext className="right-2 bg-white/90 hover:bg-white shadow-lg border-0 cursor-pointer" />
-              </Carousel>
-            </motion.div>
-          )}
+
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <p className="text-xs font-medium text-neutral-600 mb-1">Expires</p>
+                        <p className="text-sm font-semibold text-neutral-800">{cash_offer?.offer_expiration || 'N/A'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
 
           {/* Main Content */}
           <div className="px-8 pb-8">
@@ -390,100 +515,6 @@ const CarDetailsView = () => {
               </div>
             </motion.div>
 
-            {/* Cash Offer - Highlighted */}
-            <motion.div variants={itemVariants} className="lg:col-span-3 card p-6 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-neutral-800">Cash Offer</h2>
-                  <p className="text-neutral-600">Current offer for this vehicle</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="bg-white p-6 rounded-xl shadow-sm">
-                    <p className="text-sm font-medium text-neutral-600 mb-2">Offer Amount</p>
-                    <p className="text-3xl font-bold text-orange-600">
-                      {cash_offer?.offer_amount ? formatCurrency(cash_offer.offer_amount) : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="bg-white p-6 rounded-xl shadow-sm">
-                    <p className="text-sm font-medium text-neutral-600 mb-2">Offer Date</p>
-                    <p className="text-lg font-semibold text-neutral-800">
-                      {cash_offer?.offer_date ? formatDate(cash_offer.offer_date) : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <div className="bg-white p-6 rounded-xl shadow-sm">
-                    <p className="text-sm font-medium text-neutral-600 mb-2">Expiration</p>
-                    <p className="text-lg font-semibold text-neutral-800">{cash_offer?.offer_expiration || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Auction Information */}
-            <motion.div variants={itemVariants} className="lg:col-span-3 card p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
-                  <Gavel className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-neutral-800">Auction Details</h2>
-                  <p className="text-neutral-600">Current auction status and timing</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-neutral-600 mb-2">Status</p>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      auction?.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {auction?.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-neutral-600 mb-2">Started</p>
-                    <p className="text-sm font-semibold text-neutral-800">
-                      {auction?.auction_started_at ? formatDate(auction.auction_started_at) : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-neutral-600 mb-2">Ends</p>
-                    <p className="text-sm font-semibold text-neutral-800">
-                      {auction?.auction_ends_at ? formatDate(auction.auction_ends_at) : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-neutral-600 mb-2">Time Remaining</p>
-                    <p className="text-sm font-semibold text-neutral-800 font-mono">
-                      {formatRemainingTime(auction?.remaining_seconds)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
 
             {/* Condition Assessment */}
             {condition_assessment && (
