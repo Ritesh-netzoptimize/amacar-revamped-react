@@ -1,7 +1,7 @@
 import { toast } from "react-hot-toast";
 import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle, ChevronLeft, ChevronRight, User, Mail, Phone, MapPin, Landmark, Building } from "lucide-react";
+import { CheckCircle2, Circle, ChevronLeft, ChevronRight, User, Mail, Phone, MapPin, Landmark, Building, Loader2 } from "lucide-react";
 import AuctionSelectionModal from "@/components/ui/auction-selection-modal";
 import { useDispatch, useSelector } from "react-redux";
 import LoginModal from "@/components/ui/LoginModal";
@@ -32,6 +32,24 @@ export default function ConditionAssessment() {
     setLocalCity(result.city)
     setLocalState(result.state)
   }, [stateZip]);
+
+  // Image loading handlers
+  const handleImageLoad = () => {
+    setImageLoading(false);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+    setImageError(true);
+  };
+
+  const handleImageLoadStart = () => {
+    if (vehicleDetails?.vehicleImg) {
+      setImageLoading(true);
+      setImageError(false);
+    }
+  };
   
   // Group questions into sections for rendering
   const sections = useMemo(() => {
@@ -61,6 +79,8 @@ export default function ConditionAssessment() {
     city: "",
   });
   const [userErrors, setUserErrors] = useState({});
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const userExists = useSelector((state) => state?.user?.user);
 
@@ -684,13 +704,34 @@ export default function ConditionAssessment() {
 
                       {/* Vehicle Image */}
                       <div className="relative mb-4">
-                        <div className="w-full h-48 rounded-xl overflow-hidden border-2 border-slate-200">
+                        <div className="w-full h-48 rounded-xl overflow-hidden border-2 border-slate-200 bg-slate-100">
                           {vehicleDetails?.vehicleImg ? (
-                            <img 
-                              src={vehicleDetails.vehicleImg} 
-                              alt="Vehicle image" 
-                              className="w-full h-full object-cover"
-                            />
+                            <>
+                              {imageLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+                                  <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                                </div>
+                              )}
+                              <img 
+                                src={vehicleDetails.vehicleImg} 
+                                alt="Vehicle image" 
+                                className={`w-full h-full object-cover transition-opacity duration-300 ${
+                                  imageLoading ? 'opacity-0' : 'opacity-100'
+                                }`}
+                                onLoadStart={handleImageLoadStart}
+                                onLoad={handleImageLoad}
+                                onError={handleImageError}
+                                style={{ display: imageLoading ? 'none' : 'block' }}
+                              />
+                              {imageError && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+                                  <div className="text-center">
+                                    <div className="text-slate-400 mb-2">⚠️</div>
+                                    <p className="text-xs text-slate-500">Image failed to load</p>
+                                  </div>
+                                </div>
+                              )}
+                            </>
                           ) : (
                             <img 
                               src="https://amacar.ai/wp-content/uploads/2024/10/amacar-placeholder2.png" 

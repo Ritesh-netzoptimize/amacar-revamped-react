@@ -8,6 +8,7 @@ import {
   Cog,
   Fuel,
   ChevronLeft,
+  Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -74,6 +75,8 @@ useEffect(() => {
   const [submitted, setSubmitted] = useState(false);
   const [step, setStep] = useState(0); // 0,1,2
   const [showAll, setShowAll] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const fields = useMemo(
     () => [
@@ -147,6 +150,24 @@ useEffect(() => {
   useEffect(() => {
     setValues(initialValues);
   }, [initialValues]);
+
+  // Image loading handlers
+  const handleImageLoad = () => {
+    setImageLoading(false);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoading(false);
+    setImageError(true);
+  };
+
+  const handleImageLoadStart = () => {
+    if (vehicleDetails?.vehicleImg) {
+      setImageLoading(true);
+      setImageError(false);
+    }
+  };
 
   function validate(key, value) {
     switch (key) {
@@ -606,13 +627,34 @@ useEffect(() => {
 
                       {/* Vehicle Image */}
                       <div className="relative mb-4">
-                        <div className="w-full h-48 rounded-xl overflow-hidden border-2 border-slate-200">
+                        <div className="w-full h-48 rounded-xl overflow-hidden border-2 border-slate-200 bg-slate-100">
                           {vehicleDetails?.vehicleImg ? (
-                            <img 
-                              src={vehicleDetails.vehicleImg} 
-                              alt="Vehicle image" 
-                              className="w-full h-full object-cover"
-                            />
+                            <>
+                              {imageLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+                                  <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                                </div>
+                              )}
+                              <img 
+                                src={vehicleDetails.vehicleImg} 
+                                alt="Vehicle image" 
+                                className={`w-full h-full object-cover transition-opacity duration-300 ${
+                                  imageLoading ? 'opacity-0' : 'opacity-100'
+                                }`}
+                                onLoadStart={handleImageLoadStart}
+                                onLoad={handleImageLoad}
+                                onError={handleImageError}
+                                style={{ display: imageLoading ? 'none' : 'block' }}
+                              />
+                              {imageError && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
+                                  <div className="text-center">
+                                    <div className="text-slate-400 mb-2">⚠️</div>
+                                    <p className="text-xs text-slate-500">Image failed to load</p>
+                                  </div>
+                                </div>
+                              )}
+                            </>
                           ) : (
                             <img 
                               src="https://amacar.ai/wp-content/uploads/2024/10/amacar-placeholder2.png" 
