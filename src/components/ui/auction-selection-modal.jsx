@@ -26,23 +26,23 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
     {
       id: "local",
       title: "Local Auction",
-      subtitle: "Three competitive dealers are interested in buying your car.",
+      subtitle: "Three verified dealers are actively interested in buying your car",
       icon: MapPin,
       color: "from-blue-500 to-blue-600",
       borderColor: "border-blue-200",
       bgColor: "bg-blue-50/50",
-      consentText: "I Consent to share my contact information with Amacar's participating dealerships. By providing this consent, I authorize Amacar to share my details with local dealerships for the purpose of facilitating this offer. Participating dealerships may contact me via phone, text, or email.",
-      termsText: "Yes, I Pledge to the Terms of Service and Privacy Policy."
+      consentText: "I have read Terms of Service and Privacy Policy and I agree to share my contact details with Amacar’s participating dealers, who may contact me by phone, text, or email about this offer..",
+      termsText: "I agree"
     },
     {
       id: "all", 
       title: "All (Dealerships across platform)",
-      subtitle: "Would you like to explore additional competitive offers?",
+      subtitle: "See if more dealers across Amacar can beat these offers — would you like to explore?",
       icon: Users,
       color: "from-orange-500 to-orange-600",
       borderColor: "border-orange-200",
       bgColor: "bg-orange-50/50",
-      consentText: "Additional dealerships within the platform are available to provide you with further proposals. By providing this consent, I authorize Amacar to share my contact details with its member dealerships for the purpose of presenting their offers. I understand that participating dealerships may contact me via phone, text, or email. Furthermore, I agree to allow all member dealerships to reach out to me in connection with their offers.",
+      consentText: "Additional dealerships on the Amacar platform may provide more competitive offers. By consenting, I authorize Amacar to share my details with member dealerships for this purpose. Dealers may contact me by phone, text, or email",
       termsText: "Yes, I Pledge to the Terms of Service and Privacy Policy."
     }
   ]
