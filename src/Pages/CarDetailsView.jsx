@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Car, 
@@ -17,7 +17,8 @@ import {
   Mail,
   Star,
   Award,
-  Shield
+  Shield,
+  ArrowLeft
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
 import api from '../lib/api';
@@ -32,6 +33,7 @@ import Autoplay from "embla-carousel-autoplay";
 
 const CarDetailsView = () => {
   const { state } = useLocation();
+  const navigate = useNavigate();
   const productId = state?.productId;
   const [vehicleData, setVehicleData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -238,12 +240,23 @@ const CarDetailsView = () => {
         >
           {/* Header */}
           <motion.div variants={itemVariants} className="px-8 pt-8">
-            <h1 className="text-4xl font-bold text-neutral-800 mb-2">
-              {basic_info?.title || 'Vehicle Details'}
-            </h1>
-            <p className="text-neutral-600 text-lg">
-              Complete vehicle information and auction details
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h1 className="text-4xl font-bold text-neutral-800 mb-2">
+                  {basic_info?.title || 'Vehicle Details'}
+                </h1>
+                <p className="text-neutral-600 text-lg">
+                  Complete vehicle information and auction details
+                </p>
+              </div>
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-neutral-50 border border-neutral-200 rounded-lg shadow-sm transition-colors duration-200"
+              >
+                <ArrowLeft className="w-4 h-4 text-neutral-600" />
+                <span className="text-neutral-700 font-medium">Back</span>
+              </button>
+            </div>
           </motion.div>
 
           {/* Images Carousel and Key Info Section */}
