@@ -27,6 +27,7 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
   const [termsConsent, setTermsConsent] = useState(false)
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
+  const [errorSuggestion, setErrorSuggestion] = useState("")
 
   const handleOptionSelect = (optionId) => {
     setSelectedOption(optionId)
@@ -170,7 +171,17 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
     } catch (error) {
       console.error("Auction setup failed:", error);
       const errorMsg = error.message || error || "Failed to setup auction. Please try again.";
+      
+      // Extract suggestion from error response if available
+      let suggestion = "";
+      if (error.response?.data?.suggestion) {
+        suggestion = error.response.data.suggestion;
+      } else if (error.response?.data?.message && error.response.data.message !== errorMsg) {
+        suggestion = error.response.data.message;
+      }
+      
       setErrorMessage(errorMsg);
+      setErrorSuggestion(suggestion);
       setShowErrorModal(true);
     } finally {
       setIsSubmitting(false);
@@ -340,6 +351,7 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       isOpen={showErrorModal}
       onClose={() => setShowErrorModal(false)}
       errorMessage={errorMessage}
+      suggestion={errorSuggestion}
       redirectDelay={15000}
       redirectPath="/"
     />

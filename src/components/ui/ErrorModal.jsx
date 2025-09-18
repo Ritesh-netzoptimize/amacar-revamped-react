@@ -14,6 +14,7 @@ export default function ErrorModal({
   isOpen, 
   onClose, 
   errorMessage = "An error occurred. Please try again.",
+  suggestion = null,
   redirectDelay = 5000,
   redirectPath = "/"
 }) {
@@ -60,14 +61,14 @@ export default function ErrorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md rounded-2xl shadow-xl p-0 overflow-hidden bg-white">
+      <DialogContent className="sm:max-w-md rounded-2xl shadow-xl p-0 overflow-hidden bg-white" showCloseButton={false}>
         <div className="bg-gradient-to-br from-white via-red-50 to-red-100 p-6">
           <DialogHeader className="text-center">
             <DialogTitle className="text-2xl font-semibold tracking-tight text-slate-900">
               Error Occurred
             </DialogTitle>
             <DialogDescription className="text-sm text-slate-600 mt-2">
-              Something went wrong while processing your request
+              {suggestion || "Something went wrong while processing your request"}
             </DialogDescription>
           </DialogHeader>
         </div>
