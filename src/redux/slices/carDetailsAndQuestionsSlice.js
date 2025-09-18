@@ -343,11 +343,14 @@ const carDetailsAndQuestionsSlice = createSlice({
       const { vehicle_data } = action.payload;
       const newDetails = vehicle_data[0] || {};
 
+      console.log('setVehicleDetails - action.payload.vehicleImage:', action.payload.vehicleImage);
+      console.log('setVehicleDetails - existing vehicleImg:', state.vehicleDetails.vehicleImg);
+
       // Merge new details with existing vehicleDetails, prioritizing new details
       state.vehicleDetails = {
         ...state.vehicleDetails,
         ...newDetails,
-        vehicleImg: action.payload.vehicleImage || '',
+        vehicleImg: action.payload.vehicleImage || state.vehicleDetails.vehicleImg || '',
         // Ensure these fields are included, using provided values or empty strings
         mileage: newDetails.mileage || '',
         exteriorColor: newDetails.exteriorColor || state.vehicleDetails.exteriorColor || '',
@@ -505,6 +508,9 @@ const carDetailsAndQuestionsSlice = createSlice({
       .addCase(fetchVehicleDetails.fulfilled, (state, action) => {
         state.loading = false;
         const { vehicleData, cityState, vehicleImage } = action.payload;
+        
+        console.log('fetchVehicleDetails.fulfilled - vehicleImage:', vehicleImage);
+        console.log('fetchVehicleDetails.fulfilled - existing vehicleImg:', state.vehicleDetails.vehicleImg);
         
         // Merge fetched vehicle details with existing, ensuring additional fields are preserved
         state.vehicleDetails = {
