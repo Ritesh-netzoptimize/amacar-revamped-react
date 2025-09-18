@@ -21,6 +21,17 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
   
   const [selectedOption, setSelectedOption] = useState(null) // 'local' or 'all' or null
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [contactConsent, setContactConsent] = useState(false)
+  const [termsConsent, setTermsConsent] = useState(false)
+
+  const handleOptionSelect = (optionId) => {
+    setSelectedOption(optionId)
+    // Reset consent states when switching options
+    if (optionId !== "all") {
+      setContactConsent(false)
+      setTermsConsent(false)
+    }
+  }
   
   const auctionOptions = [
     {
@@ -42,8 +53,7 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
       color: "from-orange-500 to-orange-600",
       borderColor: "border-orange-200",
       bgColor: "bg-orange-50/50",
-      consentText: "Additional dealerships on the Amacar platform may provide more competitive offers. By consenting, I authorize Amacar to share my details with member dealerships for this purpose. Dealers may contact me by phone, text, or email",
-      termsText: "Yes, I Pledge to the Terms of Service and Privacy Policy."
+      consentText: "Additional dealerships on the Amacar platform may provide more competitive offers. By consenting, I authorize Amacar to share my details with member dealerships for this purpose. Dealers may contact me by phone, text, or email"
     }
   ]
   // Build the API request payload for Instant Cash Offer
@@ -111,6 +121,15 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
       toast.error("Please select an auction option.")
       return
     }
+
+    // Check for required consents when "all" option is selected
+    if (selectedOption === "all") {
+      if (!contactConsent || !termsConsent) {
+        toast.error("Please agree to both consent checkboxes to proceed.")
+        return
+      }
+    }
+
     try {
       setIsSubmitting(true);
       
@@ -168,7 +187,7 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
-                  onClick={() => setSelectedOption(option.id)}
+                  onClick={() => handleOptionSelect(option.id)}
                   className={`cursor-pointer rounded-2xl p-6 shadow-lg border-2 transition-all ${
                     isSelected 
                       ? 'border-green-400 ring-2 ring-green-200' 
@@ -207,17 +226,44 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
                   </div>
 
                   {/* Terms Checkbox */}
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => setSelectedOption(option.id)}
-                      className="h-4 w-4 cursor-pointer mt-1"
-                    />
-                    <label className="text-sm text-slate-700 cursor-pointer">
-                      {option.termsText}
-                    </label>
-                  </div>
+                  {option.id === "all" ? (
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={contactConsent}
+                          onChange={(e) => setContactConsent(e.target.checked)}
+                          className="h-4 w-4 cursor-pointer mt-1"
+                        />
+                        <label className="text-sm text-slate-700 cursor-pointer">
+                          I agree to share my contact information with Amacar's participating dealerships.
+                        </label>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={termsConsent}
+                          onChange={(e) => setTermsConsent(e.target.checked)}
+                          className="h-4 w-4 cursor-pointer mt-1"
+                        />
+                        <label className="text-sm text-slate-700 cursor-pointer">
+                          I have read and agree to the Terms of Use and Privacy Policy.
+                        </label>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleOptionSelect(option.id)}
+                        className="h-4 w-4 cursor-pointer mt-1"
+                      />
+                      <label className="text-sm text-slate-700 cursor-pointer">
+                        {option.termsText}
+                      </label>
+                    </div>
+                  )}
                 </motion.div>
               )
             })}
@@ -227,9 +273,9 @@ export default function AuctionSelectionModal({ isOpen, onClose }) {
           <div className="mt-6 flex items-center justify-end">
             <button
               onClick={handleGo}
-              disabled={isSubmitting || !selectedOption}
+              disabled={isSubmitting || !selectedOption || (selectedOption === "all" && (!contactConsent || !termsConsent))}
               className={`cursor-pointer inline-flex h-11 items-center justify-center rounded-xl px-6 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.01] ${
-                selectedOption && !isSubmitting
+                selectedOption && !isSubmitting && (selectedOption !== "all" || (contactConsent && termsConsent))
                   ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600' 
                   : 'bg-slate-400 cursor-not-allowed'
               }`}
