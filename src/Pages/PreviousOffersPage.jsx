@@ -150,6 +150,15 @@ const PreviousOffersPage = () => {
     const expiredDate = new Date(offer.expired_at);
     const isExpired = expiredDate < new Date();
     
+    // Extract front view image from images array, fallback to image_url, then to null
+    const getFrontViewImage = () => {
+      if (offer.images && offer.images.length > 0) {
+        const frontViewImage = offer.images.find(img => img.name === 'front_view');
+        return frontViewImage ? frontViewImage.url : offer.images[0].url;
+      }
+      return offer.image_url || null;
+    };
+    
     return {
       id: offer.product_id,
       vehicle: vehicleName,
@@ -159,7 +168,7 @@ const PreviousOffersPage = () => {
       date: expiredDate,
       auctionId: offer.product_id,
       vin: offer.vin,
-      imageUrl: offer.image_url,
+      imageUrl: getFrontViewImage(),
       title: offer.title
     };
   };

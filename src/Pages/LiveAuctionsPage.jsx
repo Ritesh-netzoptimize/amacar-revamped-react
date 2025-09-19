@@ -909,7 +909,7 @@ const LiveAuctionsPage = () => {
                                   <img
                                     src={image}
                                     alt={`${auction.vehicle} - Image ${index + 1}`}
-                                    className="w-full h-full object-center"
+                                    className="w-full h-full object-cover"
                                   />
                                 </CarouselItem>
                               ))}
