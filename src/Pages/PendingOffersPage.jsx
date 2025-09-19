@@ -600,11 +600,6 @@ const PendingOffersPage = () => {
                       <span className="text-sm text-neutral-500">
                         {formatDate(offer.auctionEndTime)} • {offer.bidCount} active bids
                       </span>
-                      {offer.cashOffer > 0 && (
-                        <span className="text-sm text-success font-medium">
-                          Cash Offer: {formatCurrency(offer.cashOffer)}
-                        </span>
-                      )}
                       {offer.totalBids > offer.bidCount && (
                         <span className="text-sm text-neutral-400">
                           ({offer.totalBids - offer.bidCount} expired)
@@ -615,16 +610,35 @@ const PendingOffersPage = () => {
                 </div>
 
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-success mb-1">
-                    {offer.highestBid > 0 ? formatCurrency(offer.highestBid) : formatCurrency(offer.cashOffer)}
+                  {/* Highest Bid or Cash Offer Badge */}
+                  <div className="mb-2">
+                    {(() => {
+                      const hasActiveBids = offer.bidCount > 0;
+                      const cashOfferHigher = offer.cashOffer > offer.highestBid;
+                      const showCashOffer = !hasActiveBids || cashOfferHigher;
+                      
+                      return (
+                        <div className={`inline-flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm font-semibold ${
+                          showCashOffer 
+                            ? 'bg-blue-100 text-blue-800 border border-blue-200' 
+                            : 'bg-green-100 text-green-800 border border-green-200'
+                        }`}>
+                          <DollarSign className="w-4 h-4" />
+                          <span>
+                            {showCashOffer 
+                              ? `Cash: ${formatCurrency(offer.cashOffer)}`
+                              : `Highest: ${formatCurrency(offer.highestBid)}`
+                            }
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
+                  
                   <div className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(offer.status)}`}>
                     {getStatusIcon(offer.status)}
                     <span className="capitalize">{offer.status}</span>
                   </div>
-                  {offer.highestBid === 0 && offer.cashOffer > 0 && (
-                    <div className="text-xs text-neutral-500 mt-1">Cash Offer</div>
-                  )}
                 </div>
               </div>
 
@@ -661,12 +675,6 @@ const PendingOffersPage = () => {
                           {offer.cashOffer > 0 ? 'Cash Offer Available' : 'No Active Bids'}
                         </p>
                         <div className="flex items-center space-x-2 text-sm text-neutral-600">
-                          {offer.cashOffer > 0 && (
-                            <>
-                              <span>Cash Offer: {formatCurrency(offer.cashOffer)}</span>
-                              <span>•</span>
-                            </>
-                          )}
                           <span>Total Bids: {offer.totalBids}</span>
                           {offer.totalBids > 0 && (
                             <>
