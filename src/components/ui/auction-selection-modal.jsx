@@ -23,7 +23,6 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
   
   const [selectedOption, setSelectedOption] = useState(null) // 'local' or 'all' or null
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [contactConsent, setContactConsent] = useState(false)
   const [termsConsent, setTermsConsent] = useState(false)
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
@@ -31,11 +30,6 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
 
   const handleOptionSelect = (optionId) => {
     setSelectedOption(optionId)
-    // Reset consent states when switching options
-    if (optionId !== "all") {
-      setContactConsent(false)
-      setTermsConsent(false)
-    }
   }
   
   const auctionOptions = [
@@ -127,12 +121,10 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       return
     }
 
-    // Check for required consents when "all" option is selected
-    if (selectedOption === "all") {
-      if (!contactConsent || !termsConsent) {
-        toast.error("Please agree to both consent checkboxes to proceed.")
-        return
-      }
+    // Check for required consent
+    if (!termsConsent) {
+      toast.error("Please agree to the Terms of Use and Privacy Policy to proceed.")
+      return
     }
 
     try {
@@ -192,7 +184,7 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-4xl rounded-2xl shadow-xl p-0 overflow-hidden bg-white">
+        <DialogContent className="sm:max-w-4xl rounded-2xl shadow-xl p-0 overflow-hidden bg-white max-h-[90vh] flex flex-col">
         <div className="bg-gradient-to-br from-white via-slate-50 to-slate-100 p-6">
           <DialogHeader className="text-center">
             <DialogTitle className="text-2xl font-semibold tracking-tight text-slate-900">
@@ -204,7 +196,7 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
           </DialogHeader>
         </div>
 
-        <div className="p-6 pt-0">
+        <div className="flex-1 overflow-y-auto p-6 pt-0">
           <motion.div 
             className="space-y-6"
             initial={{ opacity: 0, y: 20 }}
@@ -263,85 +255,48 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
                     </p>
                   </div>
 
-                  {/* Terms Checkbox */}
-                  {option.id === "all" ? (
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3">
-                        <input
-                          type="checkbox"
-                          checked={contactConsent}
-                          onChange={(e) => setContactConsent(e.target.checked)}
-                          disabled={isSubmitting}
-                          className="h-4 w-4 mt-1 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                        <label className="text-sm text-slate-700 cursor-pointer">
-                          I agree to share my contact information with Amacar's participating dealerships.
-                        </label>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <input
-                          type="checkbox"
-                          checked={termsConsent}
-                          onChange={(e) => setTermsConsent(e.target.checked)}
-                          disabled={isSubmitting}
-                          className="h-4 w-4 mt-1 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                        <label className="text-sm text-slate-700 cursor-pointer">
-                          I have read and agree to the Terms of Use and Privacy Policy.
-                        </label>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => !isSubmitting && handleOptionSelect(option.id)}
-                        disabled={isSubmitting}
-                        className="h-4 w-4 mt-1 disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                      <label className="text-sm text-slate-700 cursor-pointer">
-                        {option.termsText}
-                      </label>
-                    </div>
-                  )}
-
-                  {/* Grab your offer button - only show on selected card */}
-                  {isSelected && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3, delay: 0.2 }}
-                      className="absolute bottom-4 right-4"
-                    >
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent card selection when clicking button
-                          handleGo();
-                        }}
-                        disabled={isSubmitting || (option.id === "all" && (!contactConsent || !termsConsent))}
-                        className={`cursor-pointer inline-flex h-10 items-center justify-center rounded-xl px-4 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02] ${
-                          !isSubmitting && (option.id !== "all" || (contactConsent && termsConsent))
-                            ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600' 
-                            : 'bg-slate-400 cursor-not-allowed'
-                        }`}
-                      >
-                        {isSubmitting ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Setting up...
-                          </div>
-                        ) : (
-                          'Continue →'
-                        )}
-                      </button>
-                    </motion.div>
-                  )}
                 </motion.div>
               )
             })}
           </motion.div>
 
+        </div>
+
+        {/* Common Terms Checkbox and Continue Button */}
+        <div className="border-t border-slate-200 p-6 bg-slate-50/50">
+          <div className="flex items-start gap-3 mb-4">
+            <input
+              type="checkbox"
+              checked={termsConsent}
+              onChange={(e) => setTermsConsent(e.target.checked)}
+              disabled={isSubmitting}
+              className="h-4 w-4 mt-1 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            <label className="text-sm text-slate-700 cursor-pointer">
+              I have read and agree to the Terms of Use and Privacy Policy.
+            </label>
+          </div>
+          
+          <div className="flex justify-end">
+            <button
+              onClick={handleGo}
+              disabled={isSubmitting || !selectedOption || !termsConsent}
+              className={`inline-flex h-12 items-center justify-center rounded-xl px-8 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02] ${
+                !isSubmitting && selectedOption && termsConsent
+                  ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600' 
+                  : 'bg-slate-400 cursor-not-allowed'
+              }`}
+            >
+              {isSubmitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Setting up...
+                </div>
+              ) : (
+                'Continue →'
+              )}
+            </button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
