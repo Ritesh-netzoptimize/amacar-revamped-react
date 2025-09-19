@@ -29,14 +29,17 @@ const BidConfirmationModal = ({
 
     // Check if this is a cash offer
     if (bidData.id === 'cash-offer') {
-      // Handle cash offer acceptance
-      console.log('Accepting cash offer:', bidData.amount, 'for auction:', auctionData.id);
-      // TODO: Implement cash offer acceptance API call
-      // For now, we'll just show success
-      setShowSuccess(true);
+      // Handle cash offer acceptance/rejection
+      console.log(`${action}ing cash offer:`, bidData.amount, 'for auction:', auctionData.id);
+      // TODO: Implement cash offer API call
+      // For now, we'll simulate success after a short delay
+      setTimeout(() => {
+        setShowSuccess(true);
+      }, 1000);
       return;
     }
 
+    // Handle regular bid acceptance
     const bidDataPayload = {
       bidId: bidData.id,
       productId: auctionData.id || auctionData.product_id,
@@ -100,13 +103,16 @@ const BidConfirmationModal = ({
         bgGradient: 'from-success/5 to-success/10'
       };
     } else if (isReject) {
+      const isCashOffer = bidData.id === 'cash-offer';
       return {
         icon: XCircle,
         iconColor: 'text-red-500',
         iconBg: 'bg-red-50',
-        title: 'Reject This Bid?',
-        description: `Are you sure you want to reject this bid of ${formatCurrency(parseFloat(bidData.amount))}? This action cannot be undone.`,
-        confirmText: 'Yes, Reject Bid',
+        title: isCashOffer ? 'Reject Cash Offer?' : 'Reject This Bid?',
+        description: isCashOffer 
+          ? `Are you sure you want to reject this cash offer of ${formatCurrency(parseFloat(bidData.amount))}? This action cannot be undone.`
+          : `Are you sure you want to reject this bid of ${formatCurrency(parseFloat(bidData.amount))}? This action cannot be undone.`,
+        confirmText: isCashOffer ? 'Yes, Reject Cash Offer' : 'Yes, Reject Bid',
         confirmClass: 'bg-red-500 hover:bg-red-600 text-white',
         cancelText: 'Cancel',
         accentColor: 'border-red-200',

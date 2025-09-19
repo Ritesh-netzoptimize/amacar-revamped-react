@@ -25,6 +25,7 @@ import useLoadMore from '../hooks/useLoadMore';
 import BidConfirmationModal from '../components/ui/BidConfirmationModal';
 import BidsModal from '../components/ui/BidsModal';
 import StatsCards from '../components/ui/StatsCards';
+import { useNavigate } from 'react-router-dom';
 
 const PendingOffersPage = () => {
   const dispatch = useDispatch();
@@ -45,7 +46,7 @@ const PendingOffersPage = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
-
+  const navigate = useNavigate();
   // Load more configuration
   const itemsPerPage = 5;
 
@@ -160,24 +161,75 @@ const PendingOffersPage = () => {
   }, []);
 
   const handleAcceptOffer = (offer) => {
-    // Find the highest active bid
-    const activeBids = offer.bids?.filter(bid => !bid.is_expired && !bid.is_accepted && bid.status === 'pending') || [];
-    const highestBid = activeBids.reduce((max, bid) => 
-      parseFloat(bid.amount) > parseFloat(max.amount) ? bid : max, 
-      activeBids[0]
-    );
+    // Determine what to accept: highest bid or cash offer
+    const hasActiveBids = offer.bidCount > 0;
+    const cashOfferHigher = offer.cashOffer > offer.highestBid;
     
-    if (highestBid) {
-      setConfirmationData({ bid: highestBid, action: 'accept', offer: offer });
-      setIsConfirmationModalOpen(true);
+    let bidToAccept;
+    let action = 'accept';
+    
+    if (hasActiveBids && !cashOfferHigher) {
+      // Accept highest bid
+      bidToAccept = offer.highestBidData || {
+        id: 'highest-bid',
+        amount: offer.highestBid.toString(),
+        bidder_display_name: offer.dealer,
+        bidder_id: offer.highestBidData?.bidder_id || 'unknown',
+        notes: 'Highest active bid'
+      };
+    } else if (offer.cashOffer > 0) {
+      // Accept cash offer (either no bids or cash offer is higher)
+      bidToAccept = {
+        id: 'cash-offer',
+        amount: offer.cashOffer.toString(),
+        bidder_display_name: 'Instant Cash Offer',
+        bidder_id: 'cash-offer',
+        notes: 'Instant cash offer - no waiting required'
+      };
+    } else {
+      // No valid offer to accept
+      console.warn('No valid offer to accept for:', offer.id);
+      return;
     }
+    
+    setConfirmationData({ bid: bidToAccept, action, offer: offer });
+    setIsConfirmationModalOpen(true);
   };
 
-  const handleRejectOffer = (offerId) => {
-    // TODO: Implement API call to reject offer
-    console.log('Rejecting offer:', offerId);
-    // For now, just dispatch the action to remove from pending offers
-    // dispatch(removePendingOffer(offerId));
+  const handleRejectOffer = (offer) => {
+    // Determine what to reject: highest bid or cash offer
+    const hasActiveBids = offer.bidCount > 0;
+    const cashOfferHigher = offer.cashOffer > offer.highestBid;
+    
+    let bidToReject;
+    let action = 'reject';
+    
+    if (hasActiveBids && !cashOfferHigher) {
+      // Reject highest bid
+      bidToReject = offer.highestBidData || {
+        id: 'highest-bid',
+        amount: offer.highestBid.toString(),
+        bidder_display_name: offer.dealer,
+        bidder_id: offer.highestBidData?.bidder_id || 'unknown',
+        notes: 'Highest active bid'
+      };
+    } else if (offer.cashOffer > 0) {
+      // Reject cash offer (either no bids or cash offer is higher)
+      bidToReject = {
+        id: 'cash-offer',
+        amount: offer.cashOffer.toString(),
+        bidder_display_name: 'Instant Cash Offer',
+        bidder_id: 'cash-offer',
+        notes: 'Instant cash offer - no waiting required'
+      };
+    } else {
+      // No valid offer to reject
+      console.warn('No valid offer to reject for:', offer.id);
+      return;
+    }
+    
+    setConfirmationData({ bid: bidToReject, action, offer: offer });
+    setIsConfirmationModalOpen(true);
   };
 
   // Handle show bids modal
@@ -193,43 +245,13 @@ const PendingOffersPage = () => {
   };
 
 
-  // Handle confirm bid action
-  const handleConfirmBidAction = async () => {
-    if (!confirmationData) return;
-    
-    const { bid, action, offer } = confirmationData;
-    const bidData = {
-      bidId: bid.id,
-      productId: offer.id,
-      bidderId: bid.bidder_id
-    };
-    
-    try {
-      if (action === 'accept') {
-        await dispatch(acceptBid(bidData)).unwrap();
-      } else if (action === 'reject') {
-        await dispatch(rejectBid(bidData)).unwrap();
-      }
-      
-      // Close modals and reset state on success
-      setIsConfirmationModalOpen(false);
-      setIsBidsModalOpen(false);
-      setConfirmationData(null);
-      
-    } catch (error) {
-      console.error(`Error ${action}ing bid:`, error);
-      // Error is handled by Redux state, no need to do anything here
-    }
-  };
 
   // Handle close confirmation modal
   const handleCloseConfirmationModal = () => {
-    if (!bidOperationLoading) {
-      setIsConfirmationModalOpen(false);
-      setConfirmationData(null);
-      // Clear any bid operation states
-      dispatch(clearBidOperationStates());
-    }
+    setIsConfirmationModalOpen(false);
+    setConfirmationData(null);
+    // Clear any bid operation states
+    dispatch(clearBidOperationStates());
   };
 
   // Sort options
@@ -703,12 +725,12 @@ const PendingOffersPage = () => {
               {/* Action Buttons */}
               <div className="flex items-center justify-between">
                 <div className="flex space-x-2">
-                  <button className="cursor-pointer btn-ghost flex items-center space-x-2">
+                  <button onClick={() => navigate('/car-details', {state: {productId: offer.id}})} className="cursor-pointer btn-ghost flex items-center space-x-2">
                     <Eye className="w-4 h-4" />
                     <span>View Details</span>
                   </button>
                   <button 
-                    className="btn-secondary cursor-pointer" 
+                    className="cursor-pointer btn-secondary flex items-center space-x-2" 
                     onClick={() => handleShowBids(offer)}
                     disabled={offer.totalBids === 0}
                   >
@@ -718,8 +740,8 @@ const PendingOffersPage = () => {
 
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleRejectOffer(offer.id)}
-                    disabled={offer.bidCount === 0}
+                    onClick={() => handleRejectOffer(offer)}
+                    disabled={offer.bidCount === 0 && offer.cashOffer === 0}
                     className="cursor-pointer btn-ghost text-error hover:bg-error/10 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <X className="w-4 h-4" />
@@ -789,12 +811,9 @@ const PendingOffersPage = () => {
       <BidConfirmationModal
         isOpen={isConfirmationModalOpen}
         onClose={handleCloseConfirmationModal}
-        onConfirm={handleConfirmBidAction}
         action={confirmationData?.action}
         bidData={confirmationData?.bid}
-        isLoading={bidOperationLoading}
-        error={bidOperationError}
-        success={bidOperationSuccess}
+        auctionData={confirmationData?.offer}
       />
     </div>
   );
