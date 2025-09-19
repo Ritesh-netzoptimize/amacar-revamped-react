@@ -3,17 +3,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Menu, X, User, Search, LogOut, Settings, ChevronDown, X as XIcon, Calendar, DollarSign, Gavel } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchDashboardSummary, selectDashboardSummary } from '../../../redux/slices/offersSlice';
+import { logout } from '../../../redux/slices/userSlice';
 import Sidebar from '../Sidebar/Sidebar';
 import { useSearch } from '../../../context/SearchContext';
 import BackToTop from '../../ui/back-to-top';
-import { Link } from 'react-router-dom';
+import LogoutModal from '../../ui/LogoutModal';
+import { Link, useNavigate } from 'react-router-dom';
 
 const DashboardLayout = ({ children }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
   const profileRef = useRef(null);
   const notificationsRef = useRef(null);
@@ -47,6 +51,15 @@ const DashboardLayout = ({ children }) => {
   const toggleNotificationsDropdown = () => {
     setIsNotificationsOpen(!isNotificationsOpen);
     setIsProfileOpen(false); // Close profile if notifications is opened
+  };
+
+  const handleLogoutClick = () => {
+    setLogoutModalOpen(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    await dispatch(logout());   
+    navigate('/');
   };
 
   // Fetch dashboard summary on component mount
@@ -314,7 +327,10 @@ const DashboardLayout = ({ children }) => {
                           <User className="w-4 h-4" />
                           <span>Profile</span>
                         </Link>
-                        <button className="w-full px-4 py-2 text-sm text-neutral-600 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200 flex items-center space-x-2">
+                        <button 
+                          onClick={handleLogoutClick}
+                          className="w-full px-4 py-2 text-sm text-neutral-600 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200 flex items-center space-x-2"
+                        >
                           <LogOut className="w-4 h-4" />
                           <span>Logout</span>
                         </button>
@@ -334,6 +350,13 @@ const DashboardLayout = ({ children }) => {
         {/* Back to Top Button */}
         <BackToTop />
       </motion.main>
+
+      {/* Logout Modal */}
+      <LogoutModal
+        isOpen={logoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+      />
     </div>
   );
 };
