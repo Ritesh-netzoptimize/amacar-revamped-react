@@ -1,32 +1,51 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Clock, Users, DollarSign, Eye, MoreVertical, Play, Pause, RefreshCw, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Search, X, CheckCircle, XCircle } from 'lucide-react';
-import { formatCurrency, formatTimeRemaining } from '../lib/utils';
-import { useDispatch, useSelector } from 'react-redux';
-import { 
-  fetchLiveAuctions, 
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Car,
+  Clock,
+  Users,
+  DollarSign,
+  Eye,
+  MoreVertical,
+  Play,
+  Pause,
+  RefreshCw,
+  AlertCircle,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  ChevronDown,
+  Search,
+  X,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
+import { formatCurrency, formatTimeRemaining } from "../lib/utils";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchLiveAuctions,
   fetchDashboardSummary,
-  acceptBid, 
-  rejectBid, 
+  acceptBid,
+  rejectBid,
   clearBidOperationStates,
-  selectLiveAuctions, 
+  selectLiveAuctions,
   selectDashboardSummary,
-  selectOffersLoading, 
-  selectOffersError, 
+  selectOffersLoading,
+  selectOffersError,
   selectHasAuctions,
   selectBidOperationLoading,
   selectBidOperationError,
-  selectBidOperationSuccess
-} from '../redux/slices/offersSlice';
-import { useSearch } from '../context/SearchContext';
-import LiveAuctionsSkeleton from '../components/skeletons/LiveAuctionsSkeleton';
-import LiveAuctionsSortingSkeleton from '@/components/skeletons/LiveAuctionsSortingSkeleton';
-import LoadMore from '../components/ui/load-more';
-import useLoadMore from '../hooks/useLoadMore';
-import BidConfirmationModal from '../components/ui/BidConfirmationModal';
-import BidsModal from '../components/ui/BidsModal';
-import StatsCards from '../components/ui/StatsCards';
+  selectBidOperationSuccess,
+} from "../redux/slices/offersSlice";
+import { useSearch } from "../context/SearchContext";
+import LiveAuctionsSkeleton from "../components/skeletons/LiveAuctionsSkeleton";
+import LiveAuctionsSortingSkeleton from "@/components/skeletons/LiveAuctionsSortingSkeleton";
+import LoadMore from "../components/ui/load-more";
+import useLoadMore from "../hooks/useLoadMore";
+import BidConfirmationModal from "../components/ui/BidConfirmationModal";
+import BidsModal from "../components/ui/BidsModal";
+import StatsCards from "../components/ui/StatsCards";
 
 const LiveAuctionsPage = () => {
   const dispatch = useDispatch();
@@ -44,7 +63,7 @@ const LiveAuctionsPage = () => {
   const { getSearchResults, searchQuery, clearSearch } = useSearch();
 
   // Sorting state
-  const [sortBy, setSortBy] = useState('time-asc');
+  const [sortBy, setSortBy] = useState("time-asc");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
@@ -56,62 +75,68 @@ const LiveAuctionsPage = () => {
   // Transform API data to match component structure
   const transformAuctionsData = (auctions) => {
     if (!auctions || !Array.isArray(auctions)) return [];
-    
-    return auctions.map(auction => {
+
+    return auctions.map((auction) => {
       // Find the highest active bid (not expired, not accepted, status pending)
-      const activeBids = auction.bid?.filter(bid => 
-        !bid.is_expired && 
-        !bid.is_accepted && 
-        bid.status === 'pending'
-      ) || [];
-      
-      const highestBid = activeBids.reduce((max, bid) => 
-        parseFloat(bid.amount) > parseFloat(max.amount) ? bid : max, 
-        activeBids[0] || { amount: '0' }
+      const activeBids =
+        auction.bid?.filter(
+          (bid) =>
+            !bid.is_expired && !bid.is_accepted && bid.status === "pending"
+        ) || [];
+
+      const highestBid = activeBids.reduce(
+        (max, bid) =>
+          parseFloat(bid.amount) > parseFloat(max.amount) ? bid : max,
+        activeBids[0] || { amount: "0" }
       );
 
       // Calculate time remaining from remaining_seconds
-      const timeRemaining = Date.now() + (auction.remaining_seconds * 1000);
+      const timeRemaining = Date.now() + auction.remaining_seconds * 1000;
 
       // Check if auction has any accepted bids
-      const hasAcceptedBid = auction.bid?.some(bid => bid.is_accepted) || false;
+      const hasAcceptedBid =
+        auction.bid?.some((bid) => bid.is_accepted) || false;
 
       return {
-        id: auction.product_id?.toString() || 'unknown',
+        id: auction.product_id?.toString() || "unknown",
         product_id: auction.product_id, // Keep original product_id for navigation
-        vehicle: `${auction.year || 'N/A'} ${auction.make || 'Unknown'} ${auction.model || 'Vehicle'}`,
+        vehicle: `${auction.year || "N/A"} ${auction.make || "Unknown"} ${
+          auction.model || "Vehicle"
+        }`,
         year: parseInt(auction.year) || 0,
-        make: auction.make || 'Unknown',
-        model: auction.model || 'Unknown',
-        trim: auction.trim || 'N/A',
-        vin: auction.vin || 'N/A',
-        mileage: 'N/A', // Not provided in API
-        currentBid: parseFloat(highestBid?.amount || auction.cash_offer || '0'),
+        make: auction.make || "Unknown",
+        model: auction.model || "Unknown",
+        trim: auction.trim || "N/A",
+        vin: auction.vin || "N/A",
+        mileage: "N/A", // Not provided in API
+        currentBid: parseFloat(highestBid?.amount || auction.cash_offer || "0"),
         timeRemaining: timeRemaining,
         bidCount: activeBids.length,
         totalBids: auction.bid?.length || 0,
-        highestBidder: highestBid?.bidder_display_name || 'No Active Bids',
-        status: hasAcceptedBid ? 'accepted' : 'live',
-        images: auction.image_url ? [auction.image_url] : ['/api/placeholder/400/300'],
-        description: auction.title || 'Vehicle description not available',
-        cashOffer: parseFloat(auction.cash_offer || '0'),
-        cashOfferExpires: auction.cash_offer_expires_in || '',
-        auctionEndsAt: auction.auction_ends_at || '',
+        highestBidder: highestBid?.bidder_display_name || "No Active Bids",
+        status: hasAcceptedBid ? "accepted" : "live",
+        images: auction.image_url
+          ? [auction.image_url]
+          : ["/api/placeholder/400/300"],
+        description: auction.title || "Vehicle description not available",
+        cashOffer: parseFloat(auction.cash_offer || "0"),
+        cashOfferExpires: auction.cash_offer_expires_in || "",
+        auctionEndsAt: auction.auction_ends_at || "",
         inWorkingHours: auction.in_working_hours || false,
-        isSentToSalesforce: auction.is_sent_to_salesforce || '',
+        isSentToSalesforce: auction.is_sent_to_salesforce || "",
         bids: auction.bid || [],
         highestBidData: highestBid,
-        hasAcceptedBid: hasAcceptedBid
+        hasAcceptedBid: hasAcceptedBid,
       };
     });
   };
 
   // Get search results for live auctions
-  const searchResults = getSearchResults('liveAuctions');
+  const searchResults = getSearchResults("liveAuctions");
   const allAuctions = transformAuctionsData(searchResults);
-  
+
   // Filter out auctions with accepted bids, but show auctions with rejected bids
-  const auctions = allAuctions.filter(auction => !auction.hasAcceptedBid);
+  const auctions = allAuctions.filter((auction) => !auction.hasAcceptedBid);
 
   useEffect(() => {
     dispatch(fetchDashboardSummary());
@@ -132,7 +157,7 @@ const LiveAuctionsPage = () => {
     if (bidOperationSuccess) {
       // Refresh live auctions to get updated data
       dispatch(fetchLiveAuctions());
-      
+
       // Auto-close modal after a short delay to show success message
       const timer = setTimeout(() => {
         setIsConfirmationModalOpen(false);
@@ -140,7 +165,7 @@ const LiveAuctionsPage = () => {
         setConfirmationData(null);
         dispatch(clearBidOperationStates());
       }, 2000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [bidOperationSuccess, dispatch]);
@@ -153,9 +178,9 @@ const LiveAuctionsPage = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -214,16 +239,47 @@ const LiveAuctionsPage = () => {
 
   // Sort options
   const sortOptions = [
-    { value: 'time-asc', label: 'Ending Soon', icon: Clock, description: 'Shortest time remaining' },
-    { value: 'time-desc', label: 'Ending Later', icon: Clock, description: 'Longest time remaining' },
-    { value: 'amount-desc', label: 'Highest Bid', icon: ArrowDown, description: 'Highest to lowest' },
-    { value: 'amount-asc', label: 'Lowest Bid', icon: ArrowUp, description: 'Lowest to highest' },
-    { value: 'bids-desc', label: 'Most Bids', icon: Users, description: 'Most active auctions' },
-    { value: 'bids-asc', label: 'Least Bids', icon: Users, description: 'Least active auctions' },
+    {
+      value: "time-asc",
+      label: "Ending Soon",
+      icon: Clock,
+      description: "Shortest time remaining",
+    },
+    {
+      value: "time-desc",
+      label: "Ending Later",
+      icon: Clock,
+      description: "Longest time remaining",
+    },
+    {
+      value: "amount-desc",
+      label: "Highest Bid",
+      icon: ArrowDown,
+      description: "Highest to lowest",
+    },
+    {
+      value: "amount-asc",
+      label: "Lowest Bid",
+      icon: ArrowUp,
+      description: "Lowest to highest",
+    },
+    {
+      value: "bids-desc",
+      label: "Most Bids",
+      icon: Users,
+      description: "Most active auctions",
+    },
+    {
+      value: "bids-asc",
+      label: "Least Bids",
+      icon: Users,
+      description: "Least active auctions",
+    },
   ];
 
   // Get current selected option
-  const selectedOption = sortOptions.find(option => option.value === sortBy) || sortOptions[0];
+  const selectedOption =
+    sortOptions.find((option) => option.value === sortBy) || sortOptions[0];
 
   // Handle sort selection with loading animation
   const handleSortSelect = (value) => {
@@ -231,17 +287,17 @@ const LiveAuctionsPage = () => {
       setIsDropdownOpen(false);
       return;
     }
-    
+
     setIsSorting(true);
     setSortProgress(0);
     setIsDropdownOpen(false);
-    
+
     // Simulate sorting process with random delay and progress
     const randomDelay = Math.random() * 1000 + 500; // 500-1500ms
     const progressInterval = 50; // Update progress every 50ms
-    
+
     const progressTimer = setInterval(() => {
-      setSortProgress(prev => {
+      setSortProgress((prev) => {
         if (prev >= 90) {
           clearInterval(progressTimer);
           return 90;
@@ -249,12 +305,12 @@ const LiveAuctionsPage = () => {
         return prev + Math.random() * 15;
       });
     }, progressInterval);
-    
+
     setTimeout(() => {
       clearInterval(progressTimer);
       setSortProgress(100);
       setSortBy(value);
-      
+
       // Reset after a short delay
       setTimeout(() => {
         setIsSorting(false);
@@ -270,17 +326,17 @@ const LiveAuctionsPage = () => {
     // Sort the auctions
     return [...auctions].sort((a, b) => {
       switch (sortBy) {
-        case 'time-asc':
+        case "time-asc":
           return a.timeRemaining - b.timeRemaining;
-        case 'time-desc':
+        case "time-desc":
           return b.timeRemaining - a.timeRemaining;
-        case 'amount-desc':
+        case "amount-desc":
           return b.currentBid - a.currentBid;
-        case 'amount-asc':
+        case "amount-asc":
           return a.currentBid - b.currentBid;
-        case 'bids-desc':
+        case "bids-desc":
           return b.bidCount - a.bidCount;
-        case 'bids-asc':
+        case "bids-asc":
           return a.bidCount - b.bidCount;
         default:
           return 0;
@@ -294,7 +350,7 @@ const LiveAuctionsPage = () => {
     hasMoreItems,
     remainingItems,
     isLoadingMore,
-    handleLoadMore
+    handleLoadMore,
   } = useLoadMore(sortedAuctions, itemsPerPage);
 
   // Debug logging
@@ -310,7 +366,7 @@ const LiveAuctionsPage = () => {
   const handleEndAuction = (auctionId) => {
     setAuctions((prev) =>
       prev.map((auction) =>
-        auction.id === auctionId ? { ...auction, status: 'ended' } : auction
+        auction.id === auctionId ? { ...auction, status: "ended" } : auction
       )
     );
     setIsActionDropdownOpen(false);
@@ -319,7 +375,7 @@ const LiveAuctionsPage = () => {
   const handlePauseAuction = (auctionId) => {
     setAuctions((prev) =>
       prev.map((auction) =>
-        auction.id === auctionId ? { ...auction, status: 'paused' } : auction
+        auction.id === auctionId ? { ...auction, status: "paused" } : auction
       )
     );
     setIsActionDropdownOpen(false);
@@ -331,7 +387,7 @@ const LiveAuctionsPage = () => {
   };
 
   const handleViewCarDetails = (productId) => {
-    navigate('/car-details', { state: { productId } });
+    navigate("/car-details", { state: { productId } });
   };
 
   const handleViewAllBids = (auction) => {
@@ -343,29 +399,29 @@ const LiveAuctionsPage = () => {
     const bidData = {
       bidId: bid.id,
       productId: selectedAuctionBids?.id,
-      bidderId: bid.bidder_id
+      bidderId: bid.bidder_id,
     };
-    
+
     try {
       await dispatch(acceptBid(bidData)).unwrap();
       // Refresh the bids data after successful action
       dispatch(fetchLiveAuctions());
     } catch (error) {
-      console.error('Error accepting bid:', error);
+      console.error("Error accepting bid:", error);
     }
   };
 
   // Handle accepting top bid directly from card
   const handleAcceptTopBid = (auction) => {
     if (!auction.highestBidData) {
-      console.error('No highest bid data available');
+      console.error("No highest bid data available");
       return;
     }
 
     // Set the confirmation data and open the modal
     setConfirmationData({
       bid: auction.highestBidData,
-      action: 'accept'
+      action: "accept",
     });
     setSelectedAuctionBids(auction);
     setIsConfirmationModalOpen(true);
@@ -375,17 +431,17 @@ const LiveAuctionsPage = () => {
   const handleAcceptCashOffer = (auction) => {
     // For cash offers, we'll create a mock bid data structure for the confirmation modal
     const mockBidData = {
-      id: 'cash-offer',
+      id: "cash-offer",
       amount: auction.cashOffer.toString(),
-      bidder_display_name: 'Instant Cash Offer',
-      bidder_id: 'cash-offer',
-      notes: 'This is an instant cash offer that can be accepted immediately.'
+      bidder_display_name: "Instant Cash Offer",
+      bidder_id: "cash-offer",
+      notes: "This is an instant cash offer that can be accepted immediately.",
     };
 
     // Set the confirmation data and open the modal
     setConfirmationData({
       bid: mockBidData,
-      action: 'accept'
+      action: "accept",
     });
     setSelectedAuctionBids(auction);
     setIsConfirmationModalOpen(true);
@@ -395,40 +451,39 @@ const LiveAuctionsPage = () => {
     const bidData = {
       bidId: bid.id,
       productId: selectedAuctionBids?.id,
-      bidderId: bid.bidder_id
+      bidderId: bid.bidder_id,
     };
-    
+
     try {
       await dispatch(rejectBid(bidData)).unwrap();
       // Refresh the bids data after successful action
       dispatch(fetchLiveAuctions());
     } catch (error) {
-      console.error('Error rejecting bid:', error);
+      console.error("Error rejecting bid:", error);
     }
   };
 
   const handleConfirmBidAction = async () => {
     if (!confirmationData) return;
-    
+
     const { bid, action } = confirmationData;
     const bidData = {
       bidId: bid.id,
       productId: selectedAuctionBids?.id,
-      bidderId: bid.bidder_id
+      bidderId: bid.bidder_id,
     };
-    
+
     try {
-      if (action === 'accept') {
+      if (action === "accept") {
         await dispatch(acceptBid(bidData)).unwrap();
-      } else if (action === 'reject') {
+      } else if (action === "reject") {
         await dispatch(rejectBid(bidData)).unwrap();
       }
-      
+
       // Close modals and reset state on success
       setIsConfirmationModalOpen(false);
       setIsBidsModalOpen(false);
       setConfirmationData(null);
-      
     } catch (error) {
       console.error(`Error ${action}ing bid:`, error);
       // Error is handled by Redux state, no need to do anything here
@@ -446,11 +501,13 @@ const LiveAuctionsPage = () => {
 
   const toggleDropdown = (auctionId) => {
     setSelectedAuction(auctionId);
-    setIsActionDropdownOpen(prev => prev && selectedAuction === auctionId ? false : true);
+    setIsActionDropdownOpen((prev) =>
+      prev && selectedAuction === auctionId ? false : true
+    );
   };
 
   const handleClickOutside = (e) => {
-    if (!e.target.closest('.dropdown-container')) {
+    if (!e.target.closest(".dropdown-container")) {
       setIsActionDropdownOpen(false);
     }
   };
@@ -470,9 +527,11 @@ const LiveAuctionsPage = () => {
               <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="w-8 h-8 text-error" />
               </div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-2">Error Loading Auctions</h3>
+              <h3 className="text-xl font-semibold text-neutral-800 mb-2">
+                Error Loading Auctions
+              </h3>
               <p className="text-neutral-600 mb-4">{error}</p>
-              <button 
+              <button
                 onClick={() => dispatch(fetchLiveAuctions())}
                 className="btn-primary"
               >
@@ -496,7 +555,10 @@ const LiveAuctionsPage = () => {
         >
           <div className="flex items-center justify-between">
             <div>
-              <motion.h1 variants={itemVariants} className="text-3xl font-bold text-neutral-800 mb-2">
+              <motion.h1
+                variants={itemVariants}
+                className="text-3xl font-bold text-neutral-800 mb-2"
+              >
                 Live Auctions
               </motion.h1>
               <motion.p variants={itemVariants} className="text-neutral-600">
@@ -509,15 +571,16 @@ const LiveAuctionsPage = () => {
               disabled={loading}
               className="cursor-pointer btn-ghost flex items-center space-x-2"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              />
               <span>Refresh</span>
             </motion.button>
           </div>
         </motion.div>
 
-
         {/* Stats Cards */}
-        <StatsCards 
+        <StatsCards
           data={dashboardSummary}
           loading={loading}
           className="mb-8"
@@ -565,10 +628,14 @@ const LiveAuctionsPage = () => {
           >
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-neutral-800 mb-1">Live Auctions</h2>
-                <p className="text-sm text-neutral-600">{auctions.length} active auctions</p>
+                <h2 className="text-lg font-semibold text-neutral-800 mb-1">
+                  Live Auctions
+                </h2>
+                <p className="text-sm text-neutral-600">
+                  {auctions.length} active auctions
+                </p>
               </div>
-              
+
               {/* Modern Sort Dropdown */}
               <motion.div
                 variants={containerVariants}
@@ -577,10 +644,12 @@ const LiveAuctionsPage = () => {
               >
                 {/* Dropdown Trigger */}
                 <button
-                  onClick={() => !isSorting && setIsDropdownOpen(!isDropdownOpen)}
+                  onClick={() =>
+                    !isSorting && setIsDropdownOpen(!isDropdownOpen)
+                  }
                   disabled={isSorting}
                   className={`cursor-pointer flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${
-                    isSorting ? 'opacity-75 cursor-not-allowed' : ''
+                    isSorting ? "opacity-75 cursor-not-allowed" : ""
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -591,15 +660,15 @@ const LiveAuctionsPage = () => {
                     )}
                     <div className="text-left">
                       <div className="text-sm font-medium text-neutral-700">
-                        {isSorting ? 'Sorting...' : selectedOption.label}
+                        {isSorting ? "Sorting..." : selectedOption.label}
                       </div>
                     </div>
                   </div>
                   {!isSorting && (
-                    <ChevronDown 
+                    <ChevronDown
                       className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
-                        isDropdownOpen ? 'rotate-180' : ''
-                      }`} 
+                        isDropdownOpen ? "rotate-180" : ""
+                      }`}
                     />
                   )}
                 </button>
@@ -617,26 +686,42 @@ const LiveAuctionsPage = () => {
                       {sortOptions.map((option, index) => {
                         const IconComponent = option.icon;
                         const isSelected = option.value === sortBy;
-                        
+
                         return (
                           <button
                             key={option.value}
                             onClick={() => handleSortSelect(option.value)}
                             className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 transition-colors duration-150 ${
-                              isSelected ? 'bg-orange-50 text-orange-700' : 'text-neutral-700'
-                            } ${index !== sortOptions.length - 1 ? 'border-b border-neutral-100' : ''}`}
+                              isSelected
+                                ? "bg-orange-50 text-orange-700"
+                                : "text-neutral-700"
+                            } ${
+                              index !== sortOptions.length - 1
+                                ? "border-b border-neutral-100"
+                                : ""
+                            }`}
                           >
-                            <div className={`p-1.5 rounded-lg ${
-                              isSelected ? 'bg-orange-100' : 'bg-neutral-100'
-                            }`}>
-                              <IconComponent className={`w-3.5 h-3.5 ${
-                                isSelected ? 'text-orange-600' : 'text-neutral-500'
-                              }`} />
+                            <div
+                              className={`p-1.5 rounded-lg ${
+                                isSelected ? "bg-orange-100" : "bg-neutral-100"
+                              }`}
+                            >
+                              <IconComponent
+                                className={`w-3.5 h-3.5 ${
+                                  isSelected
+                                    ? "text-orange-600"
+                                    : "text-neutral-500"
+                                }`}
+                              />
                             </div>
                             <div className="flex-1">
-                              <div className={`text-sm font-medium ${
-                                isSelected ? 'text-orange-700' : 'text-neutral-700'
-                              }`}>
+                              <div
+                                className={`text-sm font-medium ${
+                                  isSelected
+                                    ? "text-orange-700"
+                                    : "text-neutral-700"
+                                }`}
+                              >
                                 {option.label}
                               </div>
                             </div>
@@ -697,232 +782,290 @@ const LiveAuctionsPage = () => {
             {!isSorting && (
               <>
                 {paginatedAuctions.map((auction) => (
-            <motion.div
-              key={auction.id}
-              variants={itemVariants}
-              className="card overflow-hidden hover:shadow-medium relative"
-            >
-              {/* Mobile-optimized card design */}
-              <div className="block lg:hidden">
-                {/* Car Image */}
-                <div className="relative h-48 bg-neutral-200 overflow-hidden">
-                  {auction.images[0] && auction.images[0] !== '/api/placeholder/400/300' ? (
-                    <img 
-                      src={auction.images[0]} 
-                      alt={auction.vehicle}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Car className="w-16 h-16 text-neutral-400" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Card Content */}
-                <div className="p-4">
-                  {/* High Demand Banner */}
-                  <div className="bg-orange-100 text-orange-800 px-3 py-2 rounded-lg mb-4 text-center">
-                    <span className="text-sm font-semibold">Your Car is on high demand</span>
-                  </div>
-
-                  {/* Offer Details */}
-                  <div className="text-center mb-4">
-                    <div className="text-sm text-neutral-600 mb-1">#1 Offer:</div>
-                    <div className="text-3xl font-bold text-neutral-800 mb-1">
-                      {formatCurrency(auction.currentBid)}
-                    </div>
-                    <div className="text-sm text-neutral-600">
-                      from {auction.highestBidder || 'Gotham Motors'}
-                    </div>
-                  </div>
-
-                  {/* Countdown Timer */}
-                  <div className="flex justify-center items-center space-x-2 mb-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-500">
-                        {(() => {
-                          const timeDiff = auction.timeRemaining - currentTime;
-                          const hours = Math.max(0, Math.floor(timeDiff / (1000 * 60 * 60)));
-                         
-                          return hours.toString().padStart(2, '0');
-                        })()}
-                      </div>
-                      <div className="text-xs text-neutral-600">HRS</div>
-                    </div>
-                    <div className="text-orange-500 text-2xl font-bold">:</div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-500">
-                        {Math.max(0, Math.floor(((auction.timeRemaining - currentTime) % (1000 * 60 * 60)) / (1000 * 60))).toString().padStart(2, '0')}
-                      </div>
-                      <div className="text-xs text-neutral-600">MIN</div>
-                    </div>
-                    <div className="text-orange-500 text-2xl font-bold">:</div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-500">
-                        {Math.max(0, Math.floor(((auction.timeRemaining - currentTime) % (1000 * 60)) / 1000)).toString().padStart(2, '0')}
-                      </div>
-                      <div className="text-xs text-neutral-600">SEC</div>
-                    </div>
-                  </div>
-
-                  {/* Call to Action Text */}
-                  <div className="text-center text-sm text-neutral-600 mb-4">
-                    Accept now and secure the top offer before it expires!
-                  </div>
-
-                  {/* Accept Button */}
-                  <button
-                    onClick={() => {
-                      if (auction.totalBids > 0) {
-                        handleAcceptTopBid(auction);
-                      } else if (auction.cashOffer > 0) {
-                        handleAcceptCashOffer(auction);
-                      }
-                    }}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200"
+                  <motion.div
+                    key={auction.id}
+                    variants={itemVariants}
+                    className="card overflow-hidden hover:shadow-medium relative"
                   >
-                    {auction.totalBids > 0 ? 'Accept Top Bid' : 'Accept Cash Offer'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Desktop view - keep original design */}
-              <div className="hidden lg:block">
-                {/* Image */}
-                <div className="relative h-48 bg-neutral-200 overflow-hidden">
-                  {auction.images[0] && auction.images[0] !== '/api/placeholder/400/300' ? (
-                    <img 
-                      src={auction.images[0]} 
-                      alt={auction.vehicle}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Car className="w-16 h-16 text-neutral-400" />
-                    </div>
-                  )}
-                  <div className="absolute top-4 left-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      auction.status === 'accepted' 
-                        ? 'bg-success text-white' 
-                        : 'bg-success text-white'
-                    }`}>
-                      {auction.status === 'accepted' ? 'ACCEPTED' : 'LIVE'}
-                    </span>
-                  </div>
-                  {/* Increase Amount Badge */}
-                  {auction.currentBid > auction.cashOffer && auction.cashOffer > 0 && (
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-success text-white px-2 py-1 rounded-full text-md font-semibold flex items-center space-x-1">
-                        <ArrowUp className="w-3 h-3" />
-                        <span>+{formatCurrency(auction.currentBid - auction.cashOffer)}</span>
+                    {/* Mobile-optimized card design */}
+                    <div className="block lg:hidden">
+                      {/* Car Image */}
+                      <div className="relative h-48 bg-neutral-200 overflow-hidden">
+                        {auction.images[0] &&
+                        auction.images[0] !== "/api/placeholder/400/300" ? (
+                          <img
+                            src={auction.images[0]}
+                            alt={auction.vehicle}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Car className="w-16 h-16 text-neutral-400" />
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
-                </div>
 
-                {/* Content */}
-                <div className="p-6">
-                  {/* Vehicle Info */}
-                  <div className="mb-6">
-                    <h3 className="text-xl font-bold text-neutral-800 mb-2">{auction.vehicle}</h3>
-                    <p className="text-neutral-600 text-sm mb-1">{auction.description}</p>
-                    <p className="text-neutral-500 text-xs">VIN: {auction.vin}</p>
-                  </div>
-
-                  {/* Bids and Offers Badges */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {/* Highest Bid Badge */}
-                    {auction.bidCount > 0 && (
-                      <div className="inline-flex items-center gap-2 bg-success/10 text-success px-3 py-2 rounded-full border border-success/20">
-                        <DollarSign className="w-4 h-4" />
-                        <span className="text-sm font-semibold">
-                          {formatCurrency(auction.currentBid)}
-                        </span>
-                        <span className="text-xs bg-success/20 px-2 py-0.5 rounded-full">
-                          {auction.bidCount} active
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Cash Offer Badge */}
-                    <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border ${
-                      auction.cashOffer > 0 
-                        ? 'bg-primary/10 text-primary-600 border-primary/20' 
-                        : 'bg-neutral-100 text-neutral-500 border-neutral-200'
-                    }`}>
-                      <DollarSign className="w-4 h-4" />
-                      <span className="text-sm font-semibold">
-                        {auction.cashOffer > 0 ? formatCurrency(auction.cashOffer) : 'No cash offer'}
-                      </span>
-                      {auction.cashOffer > 0 && (
-                        <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full">
-                          Instant
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Time Remaining */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-2">
-                      <Clock className="w-5 h-5 text-warning" />
-                    <span className="text-sm font-semibold text-warning">
-                      {formatTimeRemaining(new Date(auction.timeRemaining))}
-                    </span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-neutral-500">Time remaining</p>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={() => handleViewCarDetails(auction.product_id)}
-                      className="cursor-pointer flex-1 py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                    >
-                      <span>View details</span>
-                    </button>
-                    {auction.totalBids > 0 ? (
-                      <>
-                        <button
-                          onClick={() => handleViewAllBids(auction)}
-                          className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span>View All Bids ({auction.totalBids})</span>
-                        </button>
-                        <button
-                          onClick={() => handleAcceptTopBid(auction)}
-                          className="cursor-pointer flex-1 py-2.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          <span>Accept Top Bid</span>
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex-1 py-2.5 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
-                          <DollarSign className="w-4 h-4" />
-                          <span>No bids</span>
+                      {/* Card Content */}
+                      <div className="p-4">
+                        {/* High Demand Banner */}
+                        <div className="bg-orange-100 text-orange-800 px-3 py-2 rounded-lg mb-4 text-center">
+                          <span className="text-sm font-semibold">
+                            Your Car is on high demand
+                          </span>
                         </div>
-                        {auction.cashOffer > 0 && (
+
+                        {/* Offer Details */}
+                        <div className="text-center mb-4">
+                          <div className="text-sm text-neutral-600 mb-1">
+                            #1 Offer:
+                          </div>
+                          <div className="text-3xl font-bold text-neutral-800 mb-1">
+                            {formatCurrency(auction.currentBid)}
+                          </div>
+                          <div className="text-sm text-neutral-600">
+                            from {auction.highestBidder || "Gotham Motors"}
+                          </div>
+                        </div>
+
+                        {/* Countdown Timer */}
+                        <div className="flex justify-center items-center space-x-2 mb-4">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-orange-500">
+                              {(() => {
+                                const timeDiff =
+                                  auction.timeRemaining - currentTime;
+                                const hours = Math.max(
+                                  0,
+                                  Math.floor(timeDiff / (1000 * 60 * 60))
+                                );
+
+                                return hours.toString().padStart(2, "0");
+                              })()}
+                            </div>
+                            <div className="text-xs text-neutral-600">HRS</div>
+                          </div>
+                          <div className="text-orange-500 text-2xl font-bold">
+                            :
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-orange-500">
+                              {Math.max(
+                                0,
+                                Math.floor(
+                                  ((auction.timeRemaining - currentTime) %
+                                    (1000 * 60 * 60)) /
+                                    (1000 * 60)
+                                )
+                              )
+                                .toString()
+                                .padStart(2, "0")}
+                            </div>
+                            <div className="text-xs text-neutral-600">MIN</div>
+                          </div>
+                          <div className="text-orange-500 text-2xl font-bold">
+                            :
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-orange-500">
+                              {Math.max(
+                                0,
+                                Math.floor(
+                                  ((auction.timeRemaining - currentTime) %
+                                    (1000 * 60)) /
+                                    1000
+                                )
+                              )
+                                .toString()
+                                .padStart(2, "0")}
+                            </div>
+                            <div className="text-xs text-neutral-600">SEC</div>
+                          </div>
+                        </div>
+
+                        {/* Call to Action Text */}
+                        <div className="text-center text-sm text-neutral-600 mb-4">
+                          Accept now and secure the top offer before it expires!
+                        </div>
+
+                        {/* Accept Button */}
+                        <button
+                          onClick={() => {
+                            if (auction.totalBids > 0) {
+                              handleAcceptTopBid(auction);
+                            } else if (auction.cashOffer > 0) {
+                              handleAcceptCashOffer(auction);
+                            }
+                          }}
+                          className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200"
+                        >
+                          {auction.totalBids > 0
+                            ? "Accept Top Bid"
+                            : "Accept Cash Offer"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Desktop view - keep original design */}
+                    <div className="hidden lg:block">
+                      {/* Image */}
+                      <div className="relative h-48 bg-neutral-200 overflow-hidden">
+                        {auction.images[0] &&
+                        auction.images[0] !== "/api/placeholder/400/300" ? (
+                          <img
+                            src={auction.images[0]}
+                            alt={auction.vehicle}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Car className="w-16 h-16 text-neutral-400" />
+                          </div>
+                        )}
+                        <div className="absolute top-4 left-4">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              auction.status === "accepted"
+                                ? "bg-success text-white"
+                                : "bg-success text-white"
+                            }`}
+                          >
+                            {auction.status === "accepted"
+                              ? "ACCEPTED"
+                              : "LIVE"}
+                          </span>
+                        </div>
+                        {/* Increase Amount Badge */}
+                        {auction.currentBid > auction.cashOffer &&
+                          auction.cashOffer > 0 && (
+                            <div className="absolute top-4 right-4">
+                              <div className="bg-success text-white px-2 py-1 rounded-full text-md font-semibold flex items-center space-x-1">
+                                <ArrowUp className="w-3 h-3" />
+                                <span>
+                                  +
+                                  {formatCurrency(
+                                    auction.currentBid - auction.cashOffer
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-6">
+                        {/* Vehicle Info */}
+                        <div className="mb-6">
+                          <h3 className="text-xl font-bold text-neutral-800 mb-2">
+                            {auction.vehicle}
+                          </h3>
+                          <p className="text-neutral-600 text-sm mb-1">
+                            {auction.description}
+                          </p>
+                          <p className="text-neutral-500 text-xs">
+                            VIN: {auction.vin}
+                          </p>
+                        </div>
+
+                        {/* Bids and Offers Badges */}
+                        <div className="flex justify-between gap-2 mb-6">
+                          {/* Highest Bid Badge */}
+                          {auction.bidCount > 0 && (
+                            <div className="inline-flex items-center gap-2 bg-success/10 text-success px-3 py-2 rounded-full border border-success/20">
+                              <DollarSign className="w-4 h-4" />
+                              <span className="text-sm font-semibold">
+                                {formatCurrency(auction.currentBid)}
+                              </span>
+                              <span className="text-xs bg-success/20 px-2 py-0.5 rounded-full">
+                                {auction.bidCount} active
+                              </span>
+                              {/* Accept Top Bid Button */}
+                              <button
+                                onClick={() => handleAcceptTopBid(auction)}
+                                className="ml-2 px-3 py-1 bg-success hover:bg-success/90 text-white text-xs font-medium rounded-lg transition-colors duration-200 flex items-center gap-1"
+                              >
+                                <CheckCircle className="w-3 h-3" />
+                                Accept
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Cash Offer Badge */}
+                          <div
+                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border ${
+                              auction.cashOffer > 0
+                                ? "bg-primary/10 text-primary-600 border-primary/20"
+                                : "bg-neutral-100 text-neutral-500 border-neutral-200"
+                            }`}
+                          >
+                            <DollarSign className="w-4 h-4" />
+                            <span className="text-sm font-semibold">
+                              {auction.cashOffer > 0
+                                ? formatCurrency(auction.cashOffer)
+                                : "No cash offer"}
+                            </span>
+                            {auction.cashOffer > 0 && (
+                              <>
+                                <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full">
+                                  Instant
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          {/* Accept Cash Offer Button */}
                           <button
                             onClick={() => handleAcceptCashOffer(auction)}
-                            className="cursor-pointer flex-1 py-2.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                            className="cursor-pointer h-12 w-40 ml-2 px-3 py-1 bg-green-500 hover:bg-green-600 text-white  font-medium rounded-lg transition-colors duration-200 flex items-center justify-center gap-1"
                           >
-                            <CheckCircle className="w-4 h-4" />
-                            <span>Accept Cash Offer</span>
+                            <CheckCircle className="w-5 h-5" />
+                            Accept
                           </button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+                        </div>
+
+                        {/* Time Remaining */}
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center space-x-2">
+                            <Clock className="w-5 h-5 text-warning" />
+                            <span className="text-sm font-semibold text-warning">
+                              {formatTimeRemaining(
+                                new Date(auction.timeRemaining)
+                              )}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-neutral-500">
+                              Time remaining
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={() =>
+                              handleViewCarDetails(auction.product_id)
+                            }
+                            className="cursor-pointer flex-1 py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                          >
+                            <span>View details</span>
+                          </button>
+                          {auction.totalBids > 0 ? (
+                            <button
+                              onClick={() => handleViewAllBids(auction)}
+                              className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                            >
+                              <Eye className="w-4 h-4" />
+                              <span>View All Bids ({auction.totalBids})</span>
+                            </button>
+                          ) : (
+                            <div className="flex-1 py-2.5 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
+                              <DollarSign className="w-4 h-4" />
+                              <span>No bids</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
                 ))}
               </>
             )}
@@ -947,18 +1090,17 @@ const LiveAuctionsPage = () => {
 
         {/* Empty State */}
         {!loading && !error && (!hasAuctions || auctions.length === 0) && (
-          <motion.div
-            variants={itemVariants}
-            className="text-center py-16"
-          >
+          <motion.div variants={itemVariants} className="text-center py-16">
             <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Car className="w-12 h-12 text-neutral-400" />
             </div>
-            <h3 className="text-xl font-semibold text-neutral-800 mb-2">No Active Auctions</h3>
-            <p className="text-neutral-600 mb-6">Start a new auction to get the best offers for your vehicle.</p>
-            <button className="btn-primary">
-              Start New Auction
-            </button>
+            <h3 className="text-xl font-semibold text-neutral-800 mb-2">
+              No Active Auctions
+            </h3>
+            <p className="text-neutral-600 mb-6">
+              Start a new auction to get the best offers for your vehicle.
+            </p>
+            <button className="btn-primary">Start New Auction</button>
           </motion.div>
         )}
       </div>
