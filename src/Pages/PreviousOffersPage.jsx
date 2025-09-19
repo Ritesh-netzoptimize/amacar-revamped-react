@@ -20,8 +20,11 @@ import { useSearch } from '../context/SearchContext';
 import PreviousOffersSkeleton from '../components/Skeletons/PreviousOffersSkeleton';
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 import LoadMore from '../components/ui/load-more';
+import ConfirmRelistVehicleModal from '../components/ui/ConfirmRelistVehicleModal';
 import useLoadMore from '../hooks/useLoadMore';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import api from '../lib/api';
 
 const PreviousOffersPage = () => {
   const dispatch = useDispatch();
@@ -43,7 +46,7 @@ const PreviousOffersPage = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
-
+  
   // Load more configuration
   const itemsPerPage = 5;
 
@@ -51,6 +54,8 @@ const PreviousOffersPage = () => {
   // Modal state
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [isBidsModalOpen, setIsBidsModalOpen] = useState(false);
+  const [isRelistModalOpen, setIsRelistModalOpen] = useState(false);
+  const [selectedVehicleForRelist, setSelectedVehicleForRelist] = useState(null);
   
   // Notification state
   const [showNotification, setShowNotification] = useState(false);
@@ -59,6 +64,7 @@ const PreviousOffersPage = () => {
   
   // Local loading state to track which specific vehicle is being re-auctioned
   const [reAuctioningVehicleId, setReAuctioningVehicleId] = useState(null);
+  const [isModalLoading, setIsModalLoading] = useState(false);
   const navigate = useNavigate();
 
   // Fetch offers on component mount
@@ -158,6 +164,7 @@ const PreviousOffersPage = () => {
     };
   };
 
+
   // Sort options
   const sortOptions = [
     { value: 'date-desc', label: 'Newest First', icon: ArrowDown, description: 'Most recent offers' },
@@ -220,7 +227,102 @@ const PreviousOffersPage = () => {
     setSelectedOffer(null);
   };
 
-  // Handle re-auction vehicle
+  // Fetch vehicle details from API
+  // const fetchVehicleDetails = async (productId) => {
+  //   try {
+  //     console.log("fetching vehicle details", productId);
+  //     const response = await fetch(`/vehicle/details/${productId}`);
+  //     const data = await response.json();
+      
+  //     if (data.success && data.vehicle) {
+  //       return {
+  //         vin: data.vehicle.basic_info.vin,
+  //         zipCode: data.vehicle.location.zip_code,
+  //         vehicleName: `${data.vehicle.basic_info.year} ${data.vehicle.basic_info.make} ${data.vehicle.basic_info.model}`
+  //       };
+  //     } else {
+  //       throw new Error('Failed to fetch vehicle details');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching vehicle details:', error);
+  //     throw error;
+  //   }
+  // };
+
+  const fetchVehicleDetails = async (productId) => {
+    console.log("productId", productId);
+    if (!productId) {
+      toast.error('No product ID available');
+      return;
+    }
+
+    try {
+      console.log("productId", productId);
+      console.log("before api call")
+      const response = await api.get(`/vehicle/details/${productId}`);
+      
+      if (response.data.success) {
+        return {
+          vin: response.data.vehicle.basic_info.vin,
+          zipCode: response.data.vehicle.location.zip_code,
+          vehicleName: `${response.data.vehicle.basic_info.year} ${response.data.vehicle.basic_info.make} ${response.data.vehicle.basic_info.model}`,
+          vehicleType: response.data.vehicle.basic_info.vehicle_type
+        };
+      } else {
+        toast.error(response.data.message || 'Failed to fetch vehicle details');
+      }
+    } catch (err) {
+      console.error('Error fetching vehicle details:', err);
+      toast.error(err.response?.data?.message || err.message || 'Failed to fetch vehicle details');
+    }
+};
+
+  // Handle relist vehicle button click
+  const handleRelistVehicleClick = async (offer) => {
+    try {
+      const formattedOffer = formatOfferData(offer);
+      setSelectedVehicleForRelist(formattedOffer);
+      setIsRelistModalOpen(true);
+    } catch (error) {
+      console.error('Error preparing relist:', error);
+      setNotificationMessage('Error preparing vehicle for relist. Please try again.');
+      setNotificationType('error');
+      setShowNotification(true);
+    }
+  };
+
+  // Handle confirm relist
+  const handleConfirmRelist = async () => {
+    if (!selectedVehicleForRelist) return;
+
+    try {
+      setIsModalLoading(true);
+      const vehicleDetails = await fetchVehicleDetails(selectedVehicleForRelist.id);
+      
+      // Navigate to condition assessment page with VIN and ZIP
+      navigate('/auction-page', {
+        state: {
+          vin: vehicleDetails.vin,
+          zipCode: vehicleDetails.zipCode,
+          vehicleName: vehicleDetails.vehicleName,
+          vehicleType: vehicleDetails.vehicleType,
+        }
+      });
+      
+      // Close modal
+      setIsRelistModalOpen(false);
+      setSelectedVehicleForRelist(null);
+    } catch (error) {
+      console.error('Error confirming relist:', error);
+      setNotificationMessage('Failed to fetch vehicle details. Please try again.');
+      setNotificationType('error');
+      setShowNotification(true);
+    } finally {
+      setIsModalLoading(false);
+    }
+  };
+
+  // Handle re-auction vehicle (keeping for backward compatibility)
   const handleReAuctionVehicle = async (productId) => {
     try {
       // Set local loading state for this specific vehicle
@@ -538,12 +640,11 @@ const PreviousOffersPage = () => {
                             <span>View Details</span>
                           </button>
                           <button 
-                            onClick={() => handleReAuctionVehicle(formattedOffer.id)}
-                            disabled={reAuctioningVehicleId === formattedOffer.id}
-                            className="cursor-pointer btn-secondary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => handleRelistVehicleClick(offer)}
+                            className="cursor-pointer btn-secondary flex items-center space-x-2"
                           >
-                            <RefreshCw className={`w-4 h-4 ${reAuctioningVehicleId === formattedOffer.id ? 'animate-spin' : ''}`} />
-                            <span>{reAuctioningVehicleId === formattedOffer.id ? 'Relisting...' : 'Relist Vehicle'}</span>
+                            <RefreshCw className="w-4 h-4" />
+                            <span>Relist Vehicle</span>
                           </button>
                         </div>
                       </div>
@@ -718,6 +819,20 @@ const PreviousOffersPage = () => {
            </motion.div>
          )}
        </AnimatePresence>
+
+       {/* Confirm Relist Vehicle Modal */}
+       <ConfirmRelistVehicleModal
+         isOpen={isRelistModalOpen}
+         onClose={() => {
+           if (!isModalLoading) {
+             setIsRelistModalOpen(false);
+             setSelectedVehicleForRelist(null);
+           }
+         }}
+         onConfirm={handleConfirmRelist}
+         vehicleName={selectedVehicleForRelist?.vehicle || ''}
+         isLoading={isModalLoading}
+       />
 
        {/* Notification */}
        <AnimatePresence>

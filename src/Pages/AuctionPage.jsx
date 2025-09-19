@@ -10,29 +10,38 @@ import {
   ChevronLeft,
   Loader2,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchVehicleDetails, setVehicleDetails } from "../redux/slices/carDetailsAndQuestionsSlice";
 
 export default function AuctionPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { vehicleDetails, loading, error, stateVin, stateZip } = useSelector((state) => state.carDetailsAndQuestions);
+
+  // Get data from location state first, fallback to Redux state
+  const vin = location.state?.vin || stateVin;
+  const zipCode = location.state?.zipCode || stateZip;
+  const vehicleName = location.state?.vehicleName || vehicleDetails?.vehicleName;
+  const vehicleType = location.state?.vehicleType || vehicleDetails?.vehicleType;
 
   // Fetch vehicle details if not already loaded
   useEffect(() => {
     if (!vehicleDetails || Object.keys(vehicleDetails).length === 0) {
-      dispatch(fetchVehicleDetails({ vin: stateVin, zip: stateZip }));
+      dispatch(fetchVehicleDetails({ vin: vin, zip: zipCode }));
       console.log("fetching vehicle details");
-      // dispatch(fetchVehicleDetails({ vin: stateVin, zip: stateZip }));
+      // dispatch(fetchVehicleDetails({ vin: vin, zip: zipCode }));
     }
-  }, [dispatch, vehicleDetails, stateVin, stateZip]);
+  }, [dispatch, vehicleDetails, vin, zipCode]);
 useEffect(() => {
     // console.log("avg", vehicleDetails.averagemileage);
-    console.log("stateVin", stateVin);
-    console.log("stateZip", stateZip);
+    console.log("vin", vin);
+    console.log("zipCode", zipCode);
+    console.log("vehicleName", vehicleName);
+    console.log("vehicleType", vehicleType);
     console.log("vehicleDetails", vehicleDetails);
-  }, [stateVin, stateZip, vehicleDetails]);
+  }, [vin, zipCode, vehicleName, vehicleType, vehicleDetails]);
 
   // Initialize form values with Redux data
   const initialValues = useMemo(() => {
@@ -523,11 +532,7 @@ useEffect(() => {
                                       : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
                                   }`}
                                 />
-                                {key === "mileage" && (
-                                  <span className="pointer-events-none absolute right-3 top-6 -translate-y-1/2 rounded-md border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-medium text-slate-600">
-                                    km
-                                  </span>
-                                )}
+                               
                                 {key === "mileage" && (
                                   <p className="text-xs text-slate-500 mt-1">
                                     Average: {vehicleDetails.averagemileage ? Number(vehicleDetails.averagemileage) + ' km' : 'N/A'}
@@ -605,7 +610,7 @@ useEffect(() => {
                       {/* VIN Badge */}
                       <div className="mb-4">
                         <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-gradient-to-r bg-[#f6851f] text-white text-sm font-semibold">
-                          VIN- {stateVin || vehicleDetails?.vin || "JTHBL46FX75021954"}
+                          VIN- {vin || vehicleDetails?.vin || "JTHBL46FX75021954"}
                         </div>
                       </div>
 
@@ -614,15 +619,23 @@ useEffect(() => {
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-slate-700">Vehicle</span>
                           <span className="text-sm font-semibold text-slate-900">
-                            {vehicleDetails?.modelyear || "2007"} {vehicleDetails?.make || "LEXUS"} {vehicleDetails?.model || "LS"}
+                            {vehicleName || `${vehicleDetails?.modelyear || "2007"} ${vehicleDetails?.make || "LEXUS"} ${vehicleDetails?.model || "LS"}`}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-slate-700">Type</span>
                           <span className="text-sm font-semibold text-[#f6851f]">
-                            {vehicleDetails?.bodytype || "SEDAN"} {vehicleDetails?.doors || "4D"} {vehicleDetails?.model || "LS460"} {vehicleDetails?.engineconfiguration || "4.6L"} {vehicleDetails?.fueltype || "V8"}
+                            {vehicleType || `${vehicleDetails?.bodytype || "SEDAN"} ${vehicleDetails?.doors || "4D"} ${vehicleDetails?.model || "LS460"} ${vehicleDetails?.engineconfiguration || "4.6L"} ${vehicleDetails?.fueltype || "V8"}`}
                           </span>
                         </div>
+                        {zipCode && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-slate-700">Location</span>
+                            <span className="text-sm font-semibold text-slate-600">
+                              ZIP: {zipCode}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Vehicle Image */}
