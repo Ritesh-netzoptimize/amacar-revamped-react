@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Edit3, Key } from 'lucide-react';
-import { useSelector, useDispatch } from 'react-redux';
-import { loadUser } from '../redux/slices/userSlice';
-import { 
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { User, Mail, Phone, MapPin, Edit3, Key } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import { loadUser } from "../redux/slices/userSlice";
+import {
   fetchDashboardSummary,
   selectDashboardSummary,
-  selectOffersLoading 
-} from '../redux/slices/offersSlice';
-import EditProfileModal from '../components/ui/EditProfileModal';
-import ChangePasswordModal from '../components/ui/ChangePasswordModal';
+  selectOffersLoading,
+} from "../redux/slices/offersSlice";
+import EditProfileModal from "../components/ui/EditProfileModal";
+import ChangePasswordModal from "../components/ui/ChangePasswordModal";
 
 const ProfilePage = () => {
   const dispatch = useDispatch();
@@ -18,18 +18,18 @@ const ProfilePage = () => {
   const offersLoading = useSelector(selectOffersLoading);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-  
+
   // Default profile data structure
   const defaultProfile = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    zipcode: '',
-    state: '',
-    city: '',
-    bio: 'Car enthusiast and frequent seller on Amacar platform.',
-    joinDate: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    zipcode: "",
+    state: "",
+    city: "",
+    bio: "Car enthusiast and frequent seller on Amacar platform.",
+    joinDate: "",
     totalAuctions: 0,
     totalEarnings: 0,
     rating: 0,
@@ -38,30 +38,34 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState(defaultProfile);
   const [editData, setEditData] = useState({ ...profile });
 
-
- 
-
   // Load user data from Redux state
   useEffect(() => {
     if (user) {
-      console.log('User data for zipcode debugging:', {
+      console.log("User data for zipcode debugging:", {
         zipcode: user.zipcode,
-        'meta.zipcode': user.meta?.zipcode,
-        'meta.zip_code': user.meta?.zip_code,
-        'zip_code': user.zip_code,
-        fullUser: user
+        "meta.zipcode": user.meta?.zipcode,
+        "meta.zip_code": user.meta?.zip_code,
+        zip_code: user.zip_code,
+        fullUser: user,
       });
-      
+
       const userProfile = {
-        firstName: user.firstName || user.first_name || '',
-        lastName: user.lastName || user.last_name || '',
-        email: user.email || '',
-        phone: user.phone || user.meta?.phone || '',
-        zipcode: user.zipcode || user.meta?.zipcode || user.meta?.zip_code || user.zip_code || '',
-        state: user.state || user.meta?.state || '',
-        city: user.city || user.meta?.city || '',
+        firstName: user.firstName || user.first_name || "",
+        lastName: user.lastName || user.last_name || "",
+        email: user.email || "",
+        phone: user.phone || user.meta?.phone || "",
+        zipcode:
+          user.zipcode ||
+          user.meta?.zipcode ||
+          user.meta?.zip_code ||
+          user.zip_code ||
+          "",
+        state: user.state || user.meta?.state || "",
+        city: user.city || user.meta?.city || "",
         bio: user.bio || defaultProfile.bio,
-        joinDate: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '',
+        joinDate: user.createdAt
+          ? new Date(user.createdAt).toLocaleDateString()
+          : "",
         totalAuctions: user.totalAuctions || user.total_auctions || 0,
         totalEarnings: user.totalEarnings || user.total_earnings || 0,
         rating: user.rating || 0,
@@ -89,7 +93,7 @@ const ProfilePage = () => {
       setProfile({ ...updatedData });
       setShowEditModal(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
     }
   };
 
@@ -97,7 +101,6 @@ const ProfilePage = () => {
     setEditData({ ...profile });
     setShowEditModal(false);
   };
-
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -151,7 +154,10 @@ const ProfilePage = () => {
                 <div className="h-6 bg-gray-200 rounded w-40 mb-6"></div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="text-center p-6 bg-gray-50 rounded-xl">
+                    <div
+                      key={i}
+                      className="text-center p-6 bg-gray-50 rounded-xl"
+                    >
                       <div className="w-12 h-12 bg-gray-200 rounded-xl mx-auto mb-4"></div>
                       <div className="h-8 bg-gray-200 rounded w-16 mx-auto mb-2"></div>
                       <div className="h-4 bg-gray-200 rounded w-24 mx-auto"></div>
@@ -185,7 +191,10 @@ const ProfilePage = () => {
                 <div className="h-6 bg-gray-200 rounded w-40 mb-6"></div>
                 <div className="space-y-4">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex items-center justify-between py-4 border-b border-gray-200">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between py-4 border-b border-gray-200"
+                    >
                       <div className="space-y-2">
                         <div className="h-5 bg-gray-200 rounded w-48"></div>
                         <div className="h-4 bg-gray-200 rounded w-64"></div>
@@ -213,7 +222,9 @@ const ProfilePage = () => {
           {/* Header */}
           <motion.div variants={itemVariants} className="card p-8 mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-neutral-800">Profile Settings</h1>
+              <h1 className="text-3xl font-bold text-neutral-800">
+                Profile Settings
+              </h1>
               <button
                 onClick={handleEdit}
                 className="cursor-pointer btn-secondary flex items-center space-x-2"
@@ -232,33 +243,39 @@ const ProfilePage = () => {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-neutral-800">
-                  {profile.firstName && profile.lastName 
+                  {profile.firstName && profile.lastName
                     ? `${profile.firstName} ${profile.lastName}`
-                    : 'User Profile'
-                  }
+                    : "User Profile"}
                 </h2>
                 <p className="text-neutral-600">
-                  {profile.joinDate ? `Member since ${profile.joinDate}` : 'New member'}
+                  {profile.joinDate
+                    ? `Member since ${profile.joinDate}`
+                    : "New member"}
                 </p>
                 <div className="flex items-center space-x-4 mt-2">
                   <div className="flex items-center space-x-1">
                     <span className="text-sm text-neutral-600">Rating:</span>
-                    <span className="font-semibold text-warning">{profile.rating}/5</span>
+                    <span className="font-semibold text-warning">
+                      {profile.rating}/5
+                    </span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <span className="text-sm text-neutral-600">Auctions:</span>
-                    <span className="font-semibold text-primary-600">{profile.totalAuctions}</span>
+                    <span className="font-semibold text-primary-600">
+                      {profile.totalAuctions}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
           </motion.div>
 
-
           {/* Profile Information */}
           <motion.div variants={itemVariants} className="card p-8 mb-8">
-            <h3 className="text-xl font-bold text-neutral-800 mb-6">Personal Information</h3>
-            
+            <h3 className="text-xl font-bold text-neutral-800 mb-6">
+              Personal Information
+            </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-neutral-700 mb-2">
@@ -266,7 +283,7 @@ const ProfilePage = () => {
                 </label>
                 <div className="flex items-center space-x-2 text-neutral-600">
                   <Mail className="w-5 h-5" />
-                  <span>{profile.email || 'Not provided'}</span>
+                  <span>{profile.email || "Not provided"}</span>
                 </div>
               </div>
 
@@ -276,7 +293,7 @@ const ProfilePage = () => {
                 </label>
                 <div className="flex items-center space-x-2 text-neutral-600">
                   <Phone className="w-5 h-5" />
-                  <span>{profile.phone || 'Not provided'}</span>
+                  <span>{profile.phone || "Not provided"}</span>
                 </div>
               </div>
 
@@ -286,7 +303,7 @@ const ProfilePage = () => {
                 </label>
                 <div className="flex items-center space-x-2 text-neutral-600">
                   <MapPin className="w-5 h-5" />
-                  <span>{profile.city || 'Not provided'}</span>
+                  <span>{profile.city || "Not provided"}</span>
                 </div>
               </div>
 
@@ -296,7 +313,7 @@ const ProfilePage = () => {
                 </label>
                 <div className="flex items-center space-x-2 text-neutral-600">
                   <MapPin className="w-5 h-5" />
-                  <span>{profile.state || 'Not provided'}</span>
+                  <span>{profile.state || "Not provided"}</span>
                 </div>
               </div>
 
@@ -306,7 +323,7 @@ const ProfilePage = () => {
                 </label>
                 <div className="flex items-center space-x-2 text-neutral-600">
                   <MapPin className="w-5 h-5" />
-                  <span>{profile.zipcode || 'Not provided'}</span>
+                  <span>{profile.zipcode || "Not provided"}</span>
                 </div>
               </div>
             </div>
@@ -314,45 +331,90 @@ const ProfilePage = () => {
 
           {/* Your Statistics */}
           <motion.div variants={itemVariants} className="card p-8 mb-8">
-            <h3 className="text-xl font-bold text-neutral-800 mb-6">Your Statistics</h3>
-            
+            <h3 className="text-xl font-bold text-neutral-800 mb-6">
+              Your Statistics
+            </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Total Vehicles */}
               <div className="text-center p-6 bg-blue-50 rounded-xl">
                 <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0M15 17a2 2 0 104 0" />
+                  <svg
+                    className="w-6 h-6 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0M15 17a2 2 0 104 0"
+                    />
                   </svg>
                 </div>
                 <div className="text-3xl font-bold text-blue-600 mb-2">
-                  {offersLoading ? '...' : (dashboardSummary?.total_vehicles || 0)}
+                  {offersLoading
+                    ? "..."
+                    : dashboardSummary?.total_vehicles || 0}
                 </div>
                 <div className="text-sm text-neutral-600">Total Vehicles</div>
               </div>
-              
+
               {/* Accepted Offers */}
               <div className="text-center p-6 bg-green-50 rounded-xl">
                 <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-6 h-6 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 </div>
                 <div className="text-3xl font-bold text-green-600 mb-2">
-                  {offersLoading ? '...' : (dashboardSummary?.accepted_offers || 0)}
+                  {offersLoading
+                    ? "..."
+                    : dashboardSummary?.accepted_offers || 0}
                 </div>
                 <div className="text-sm text-neutral-600">Accepted Offers</div>
               </div>
-              
+
               {/* Total Bid Value */}
               <div className="text-center p-6 bg-emerald-50 rounded-xl">
                 <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  <svg
+                    className="w-6 h-6 text-emerald-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                    />
                   </svg>
                 </div>
                 <div className="text-3xl font-bold text-emerald-600 mb-2">
-                  {offersLoading ? '...' : `$${(dashboardSummary?.total_bid_value || 0).toLocaleString()}`}
+                  {offersLoading
+                    ? "..."
+                    : `$${(
+                        dashboardSummary?.total_bid_value || 0
+                      ).toLocaleString()}`}
                 </div>
                 <div className="text-sm text-neutral-600">Total Bid Value</div>
               </div>
@@ -361,35 +423,23 @@ const ProfilePage = () => {
 
           {/* Account Settings */}
           <motion.div variants={itemVariants} className="card p-8">
-            <h3 className="text-xl font-bold text-neutral-800 mb-6">Account Settings</h3>
-            
+            <h3 className="text-xl font-bold text-neutral-800 mb-6">
+              Account Settings
+            </h3>
+
             <div className="space-y-4">
+             
+
               <div className="flex items-center justify-between py-4 border-b border-neutral-200">
                 <div>
-                  <h4 className="font-semibold text-neutral-800">Email Notifications</h4>
-                  <p className="text-sm text-neutral-600">Receive updates about your auctions and offers</p>
+                  <h4 className="font-semibold text-neutral-800">
+                    Change Password
+                  </h4>
+                  <p className="text-sm text-neutral-600">
+                    Update your password to keep your account secure
+                  </p>
                 </div>
-                <button className="w-12 h-6 bg-primary-500 rounded-full relative">
-                  <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
-                </button>
-              </div>
-              
-              <div className="flex items-center justify-between py-4 border-b border-neutral-200">
-                <div>
-                  <h4 className="font-semibold text-neutral-800">SMS Notifications</h4>
-                  <p className="text-sm text-neutral-600">Get text alerts for important updates</p>
-                </div>
-                <button className="w-12 h-6 bg-neutral-300 rounded-full relative">
-                  <div className="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5"></div>
-                </button>
-              </div>
-              
-              <div className="flex items-center justify-between py-4 border-b border-neutral-200">
-                <div>
-                  <h4 className="font-semibold text-neutral-800">Change Password</h4>
-                  <p className="text-sm text-neutral-600">Update your password to keep your account secure</p>
-                </div>
-                <button 
+                <button
                   onClick={() => setShowChangePasswordModal(true)}
                   className="btn-secondary flex items-center space-x-2"
                 >
@@ -397,15 +447,17 @@ const ProfilePage = () => {
                   <span>Change</span>
                 </button>
               </div>
-              
+
               <div className="flex items-center justify-between py-4">
                 <div>
-                  <h4 className="font-semibold text-neutral-800">Two-Factor Authentication</h4>
-                  <p className="text-sm text-neutral-600">Add an extra layer of security to your account</p>
+                  <h4 className="font-semibold text-neutral-800">
+                    Two-Factor Authentication
+                  </h4>
+                  <p className="text-sm text-neutral-600">
+                    Add an extra layer of security to your account
+                  </p>
                 </div>
-                <button className="btn-secondary">
-                  Enable
-                </button>
+                <button className="btn-secondary">Enable</button>
               </div>
             </div>
           </motion.div>

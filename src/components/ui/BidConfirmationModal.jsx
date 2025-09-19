@@ -74,7 +74,7 @@ const BidConfirmationModal = ({
       if (isAccept) {
         // For acceptance, redirect to accepted offers page after showing success
         const timer = setTimeout(() => {
-          navigate('/accepted');
+          navigate('/accepted-offers');
           onClose();
           // Clear Redux state after navigation
           setTimeout(() => {

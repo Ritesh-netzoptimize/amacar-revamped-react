@@ -240,7 +240,7 @@ const initialQuestions = [
     key: 'features',
     label: 'Notable features?',
     emoji: '⭐',
-    options: ['Navigation', 'Leather', 'Sunroof', 'Alloy Wheels', 'Premium Audio', 'Safety+', 'None of the above'],
+    options: ['Navigation', 'Leather', 'Sunroof', 'Alloy Wheels', 'Premium Audio', 'None of the above'],
     positive: [],
     needsDetails: [],
     isMultiSelect: true,

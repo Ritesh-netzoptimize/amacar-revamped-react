@@ -69,15 +69,55 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
     conditionData.forEach(q => {
       if (q.key === 'cosmetic') {
         questionDeductions.cosmetic_condition = {
-          'Excellent': 0,
-          'Good': 100,
-          'Fair': 300,
-          'Poor': 500
+          'Excellent': 0,        // Online offer
+          'Very Good': 290,      // $290 Less
+          'Good': 850,           // $850 Less
+          'Poor': 1150           // $1150 Less
         };
       } else if (q.key === 'smoked') {
         questionDeductions.smoked_windows = {
           'No': 0,
-          'Yes': 200
+          'Yes': 250             // $250 Less
+        };
+      } else if (q.key === 'title_status') {
+        questionDeductions.title_status = {
+          'Salvage': 0,          // No change
+          'Clean': 0,            // No change
+          'Rebuilt': 0           // No change
+        };
+      } else if (q.key === 'accident_history') {
+        questionDeductions.accident_history = {
+          'None': 0,             // No Change
+          'Minor': 450,          // $450 Less
+          'Major': 600           // $600 Less
+        };
+      } else if (q.key === 'notable_features') {
+        questionDeductions.notable_features = {
+          'Navigation': -150,    // Add $150
+          'Leather': -150,       // Add $150
+          'Sunroof': -150,       // Add $150
+          'Premium Wheels': -170, // Add $170
+          'Premium Audio': -180, // Add $180
+          'Premium Sound': -220, // Add $220
+          'Towing Package': -190, // Add $190
+          'None of the above': 0
+        };
+      } else if (q.key === 'modifications') {
+        questionDeductions.modifications = {
+          'No': 0,               // No change value
+          'Yes': 0               // No change in value
+        };
+      } else if (q.key === 'warning_lights') {
+        questionDeductions.warning_lights = {
+          'No': 0,               // No Change
+          'Yes': 950             // $950 Less
+        };
+      } else if (q.key === 'tire_condition') {
+        questionDeductions.tire_condition = {
+          'New': 0,              // No Change
+          'Good': 0,             // No Change
+          'Fair': 150,           // $150 Less
+          'Replace': 500         // $500 Less
         };
       }
     });
