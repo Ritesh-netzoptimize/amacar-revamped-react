@@ -133,59 +133,62 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       if (mapping) {
         if (q.question_key === 'features' && Array.isArray(q.answer)) {
           console.log("Processing multi-select features...");
-          // Handle multi-select features
-          let totalDeduction = 0;
+          // Handle multi-select features - create object with each selected feature
+          const featuresDeduction = {};
           q.answer.forEach((feature, featureIndex) => {
             console.log(`  Feature ${featureIndex + 1}: "${feature}"`);
             if (mapping[feature] !== undefined) {
               console.log(`Deduction for "${feature}": ${mapping[feature]}`);
-              totalDeduction += mapping[feature];
+              featuresDeduction[feature] = mapping[feature];
             } else {
-                console.log(`No mapping found for "${feature}"`);
+              console.log(`No mapping found for "${feature}"`);
             }
           });
-          questionDeductions.notable_features = totalDeduction;
-          console.log(`Total features deduction: ${totalDeduction}`);
+          questionDeductions.notable_features = featuresDeduction;
+          console.log(`Features deduction object:`, featuresDeduction);
         } else if (mapping[q.answer] !== undefined) {
           console.log("Processing single-select question...");
-          // Handle single-select questions
+          // Handle single-select questions - create object with answer and value
           const deductionValue = mapping[q.answer];
           console.log(`Deduction value for "${q.answer}": ${deductionValue}`);
           
+          // Create the nested object format: { answer: value }
+          const deductionObject = { [q.answer]: deductionValue };
+          
           switch (q.question_key) {
             case 'cosmetic':
-              questionDeductions.cosmetic_condition = deductionValue;
-              console.log("Set cosmetic_condition:", deductionValue);
+              questionDeductions.cosmetic_condition = deductionObject;
+              console.log("Set cosmetic_condition:", deductionObject);
               break;
             case 'smoked':
-              questionDeductions.smoked_windows = deductionValue;
-              console.log("Set smoked_windows:", deductionValue);
+              questionDeductions.smoked_windows = deductionObject;
+              console.log("Set smoked_windows:", deductionObject);
               break;
             case 'title':
-              questionDeductions.title_status = deductionValue;
-              console.log("Set title_status:", deductionValue);
+              questionDeductions.title_status = deductionObject;
+              console.log("Set title_status:", deductionObject);
               break;
             case 'accident':
-              questionDeductions.accident_history = deductionValue;
-              console.log("Set accident_history:", deductionValue);
+              questionDeductions.accident_history = deductionObject;
+              console.log("Set accident_history:", deductionObject);
               break;
             case 'modifications':
-              questionDeductions.modifications = deductionValue;
-              console.log("Set modifications:", deductionValue);
+              questionDeductions.modifications = deductionObject;
+              console.log("Set modifications:", deductionObject);
               break;
             case 'warning':
-              questionDeductions.warning_lights = deductionValue;
-              console.log("Set warning_lights:", deductionValue);
+              questionDeductions.warning_lights = deductionObject;
+              console.log("Set warning_lights:", deductionObject);
               break;
             case 'tread':
-              questionDeductions.tire_condition = deductionValue;
-              console.log("Set tire_condition:", deductionValue);
+              questionDeductions.tire_condition = deductionObject;
+              console.log("Set tire_condition:", deductionObject);
               break;
             default:
               console.log("No case found for key:", q.question_key);
           }
         } else {
-          console.log(`No mapping found for answer "${q.answer}" in question "${q.key}"`);
+          console.log(`No mapping found for answer "${q.answer}" in question "${q.question_key}"`);
         }
       } else {
         console.log(`No deduction mapping defined for question key: "${q.question_key}"`);
@@ -196,7 +199,7 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
     console.log("questionDeductions object:", questionDeductions);
     console.log("Deductions summary:");
     Object.entries(questionDeductions).forEach(([key, value]) => {
-      console.log(`  ${key}: ${value}`);
+      console.log(`  ${key}:`, value);
     });
 
     // Map vehicle data to the correct API format
