@@ -117,7 +117,7 @@ export default function ChangePasswordModal({
     } else if (!/^\d{6}$/.test(formData.otp)) {
       newErrors.otp = 'OTP must be a 6-digit number';
     }
-    setErrors('otp', newErrors.otp || '');
+    setErrors(prev => ({ ...prev, otp: newErrors.otp || '' }));
     return !newErrors.otp;
   };
 
@@ -187,7 +187,9 @@ export default function ChangePasswordModal({
       
     } catch (error) {
       setPhase('failed');
-      toast.error(error || 'An error occurred. Please try again.', { duration: 2000 });
+      // Extract error message from Axios response
+      const errorMessage = error?.response?.data?.message || error?.message || 'An error occurred. Please try again.';
+      toast.error(errorMessage, { duration: 3000 });
     }
   };
 
@@ -202,7 +204,10 @@ export default function ChangePasswordModal({
       setPhase('reset-password');
     } catch (error) {
       setPhase('verify-otp');
-      setErrors('otp', error || 'Wrong OTP. Please try again.');
+      // Extract error message from Axios response
+      const errorMessage = error?.response?.data?.message || error?.message || 'Wrong OTP. Please try again.';
+      setErrors(prev => ({ ...prev, otp: errorMessage }));
+      toast.error(errorMessage, { duration: 3000 });
     }
   };
 
