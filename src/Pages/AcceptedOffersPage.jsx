@@ -32,7 +32,7 @@ const AcceptedOffersPage = () => {
   const [selectedOffer, setSelectedOffer] = useState(null);
 
   // Load more configuration
-  const itemsPerPage = 1;
+  const itemsPerPage = 5;
 
   // Transform API data to match component structure
   const transformAcceptedOffersData = (offers) => {

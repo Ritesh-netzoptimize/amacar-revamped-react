@@ -47,7 +47,7 @@ const PendingOffersPage = () => {
   const dropdownRef = useRef(null);
 
   // Load more configuration
-  const itemsPerPage = 1;
+  const itemsPerPage = 5;
 
   // Transform API data to match component structure
   const transformOffersData = (offers) => {

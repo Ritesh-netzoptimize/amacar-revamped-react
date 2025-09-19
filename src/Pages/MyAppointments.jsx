@@ -33,7 +33,7 @@ const MyAppointments = () => {
   const [processingAction, setProcessingAction] = useState('');
 
   // Load more configuration
-  const itemsPerPage = 1;
+  const itemsPerPage = 5;
 
   // Redux state
   const appointments = useSelector(selectAppointments);
