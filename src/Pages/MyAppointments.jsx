@@ -25,6 +25,7 @@ const MyAppointments = () => {
   // Status filtering state
   const [isFiltering, setIsFiltering] = useState(false);
   const [filterProgress, setFilterProgress] = useState(0);
+  const [filteringTab, setFilteringTab] = useState(null); // Track which tab is being filtered
 
   // Modal state
   const [selectedAppointment, setSelectedAppointment] = useState(null);
@@ -176,6 +177,7 @@ const MyAppointments = () => {
     
     setIsFiltering(true);
     setFilterProgress(0);
+    setFilteringTab(value); // Set the tab being filtered
     
     // Simulate filtering process with random delay and progress
     const randomDelay = Math.random() * 800 + 400; // 400-1200ms
@@ -200,6 +202,7 @@ const MyAppointments = () => {
       setTimeout(() => {
         setIsFiltering(false);
         setFilterProgress(0);
+        setFilteringTab(null); // Clear the filtering tab
       }, 200);
     }, randomDelay);
   };
@@ -358,9 +361,9 @@ const MyAppointments = () => {
                   statusFilter === option.value
                     ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
                     : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200 hover:border-slate-300'
-                } ${isFiltering ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}`}
+                } ${isFiltering && filteringTab === option.value ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}`}
               >
-                {isFiltering && statusFilter === option.value && (
+                {isFiltering && filteringTab === option.value && (
                   <RefreshCw className="w-4 h-4 animate-spin" />
                 )}
                 <span>{option.label}</span>
@@ -371,7 +374,7 @@ const MyAppointments = () => {
                 }`}>
                   {option.count}
                 </span>
-                {isFiltering && statusFilter === option.value && (
+                {isFiltering && filteringTab === option.value && (
                   <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 rounded-b-xl overflow-hidden">
                     <div 
                       className="h-full bg-white/60 transition-all duration-100 ease-out"
