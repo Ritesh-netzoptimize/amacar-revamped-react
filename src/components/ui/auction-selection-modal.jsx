@@ -18,7 +18,7 @@ import ErrorModal from "@/components/ui/ErrorModal"
 export default function AuctionSelectionModal({ isOpen, onClose, userFormData = null }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { questions, vehicleDetails, stateZip, stateVin, location, productId } = useSelector((state) => state.carDetailsAndQuestions)
+  const { questions, vehicleDetails, stateZip, stateVin, location, relistVehicleId } = useSelector((state) => state.carDetailsAndQuestions)
   const userState = useSelector((state) => state.user.user)
   
   const [selectedOption, setSelectedOption] = useState(null) // 'local' or 'all' or null
@@ -57,70 +57,154 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
   ]
   // Build the API request payload for Instant Cash Offer
   function buildOfferPayload() {
+    console.log("=== BUILDING OFFER PAYLOAD ===");
+    console.log("Raw questions from Redux:", questions);
+    
     const conditionData = questions ? questions.map((q) => ({
       question_key: q.key,
       question_text: q.label,
       answer: q.answer,
       details: q.details
     })) : [];
+    
+    console.log("Processed condition data:", conditionData);
 
-    // Build question deductions
+    // Build question deductions based on user's actual answers
     const questionDeductions = {};
-    conditionData.forEach(q => {
-      if (q.key === 'cosmetic') {
-        questionDeductions.cosmetic_condition = {
-          'Excellent': 0,        // Online offer
-          'Good': 850,           // $850 Less
-          'Fair': 1150,          // $1150 Less
-          'Poor': 1150           // $1150 Less
-        };
-      } else if (q.key === 'smoked') {
-        questionDeductions.smoked_windows = {
-          'No': 0,
-          'Yes': 250             // $250 Less
-        };
-      } else if (q.key === 'title') {
-        questionDeductions.title_status = {
-          'Clean': 0,            // No change
-          'Salvage': 0,          // No change
-          'Rebuilt': 0           // No change
-        };
-      } else if (q.key === 'accident') {
-        questionDeductions.accident_history = {
-          'None': 0,             // No Change
-          'Minor': 450,          // $450 Less
-          'Major': 600           // $600 Less
-        };
-      } else if (q.key === 'features') {
-        questionDeductions.notable_features = {
-          'Navigation': -150,    // Add $150
-          'Leather': -150,       // Add $150
-          'Sunroof': -150,       // Add $150
-          'Alloy Wheels': -170,  // Add $170
-          'Premium Audio': -180, // Add $180
-          'None of the above': 0
-        };
-      } else if (q.key === 'modifications') {
-        questionDeductions.modifications = {
-          'No': 0,               // No change value
-          'Yes': 0               // No change in value
-        };
-      } else if (q.key === 'warning') {
-        questionDeductions.warning_lights = {
-          'No': 0,               // No Change
-          'Yes': 950             // $950 Less
-        };
-      } else if (q.key === 'tread') {
-        questionDeductions.tire_condition = {
-          'New': 0,              // No Change
-          'Good': 0,             // No Change
-          'Fair': 150,           // $150 Less
-          'Replace': 500         // $500 Less
-        };
+    
+    // Define deduction mappings
+    const deductionMappings = {
+      'cosmetic': {
+        'Excellent': 0,        // Online offer
+        'Good': 850,           // $850 Less
+        'Fair': 1150,          // $1150 Less
+        'Poor': 1150           // $1150 Less
+      },
+      'smoked': {
+        'No': 0,
+        'Yes': 250             // $250 Less
+      },
+      'title': {
+        'Clean': 0,            // No change
+        'Salvage': 0,          // No change
+        'Rebuilt': 0           // No change
+      },
+      'accident': {
+        'None': 0,             // No Change
+        'Minor': 450,          // $450 Less
+        'Major': 600           // $600 Less
+      },
+      'features': {
+        'Navigation': -150,    // Add $150
+        'Leather': -150,       // Add $150
+        'Sunroof': -150,       // Add $150
+        'Alloy Wheels': -170,  // Add $170
+        'Premium Audio': -180, // Add $180
+        'None of the above': 0
+      },
+      'modifications': {
+        'No': 0,               // No change value
+        'Yes': 0               // No change in value
+      },
+      'warning': {
+        'No': 0,               // No Change
+        'Yes': 950             // $950 Less
+      },
+      'tread': {
+        'New': 0,              // No Change
+        'Good': 0,             // No Change
+        'Fair': 150,           // $150 Less
+        'Replace': 500         // $500 Less
+      }
+    };
+
+    // Calculate deductions for each question based on user's answers
+    console.log("=== CALCULATING DEDUCTIONS ===");
+    conditionData.forEach((q, index) => {
+      console.log(`\n--- Processing Question ${index + 1} ---`);
+      console.log("Question key:", q.question_key);
+      console.log("Question text:", q.question_text);
+      console.log("User answer:", q.answer);
+      console.log("Answer type:", typeof q.answer, Array.isArray(q.answer) ? "(array)" : "");
+      
+      const mapping = deductionMappings[q.question_key];
+      console.log("Available mapping for this question:", mapping);
+      
+      if (mapping) {
+        if (q.question_key === 'features' && Array.isArray(q.answer)) {
+          console.log("Processing multi-select features...");
+          // Handle multi-select features
+          let totalDeduction = 0;
+          q.answer.forEach((feature, featureIndex) => {
+            console.log(`  Feature ${featureIndex + 1}: "${feature}"`);
+            if (mapping[feature] !== undefined) {
+              console.log(`Deduction for "${feature}": ${mapping[feature]}`);
+              totalDeduction += mapping[feature];
+            } else {
+                console.log(`No mapping found for "${feature}"`);
+            }
+          });
+          questionDeductions.notable_features = totalDeduction;
+          console.log(`Total features deduction: ${totalDeduction}`);
+        } else if (mapping[q.answer] !== undefined) {
+          console.log("Processing single-select question...");
+          // Handle single-select questions
+          const deductionValue = mapping[q.answer];
+          console.log(`Deduction value for "${q.answer}": ${deductionValue}`);
+          
+          switch (q.question_key) {
+            case 'cosmetic':
+              questionDeductions.cosmetic_condition = deductionValue;
+              console.log("Set cosmetic_condition:", deductionValue);
+              break;
+            case 'smoked':
+              questionDeductions.smoked_windows = deductionValue;
+              console.log("Set smoked_windows:", deductionValue);
+              break;
+            case 'title':
+              questionDeductions.title_status = deductionValue;
+              console.log("Set title_status:", deductionValue);
+              break;
+            case 'accident':
+              questionDeductions.accident_history = deductionValue;
+              console.log("Set accident_history:", deductionValue);
+              break;
+            case 'modifications':
+              questionDeductions.modifications = deductionValue;
+              console.log("Set modifications:", deductionValue);
+              break;
+            case 'warning':
+              questionDeductions.warning_lights = deductionValue;
+              console.log("Set warning_lights:", deductionValue);
+              break;
+            case 'tread':
+              questionDeductions.tire_condition = deductionValue;
+              console.log("Set tire_condition:", deductionValue);
+              break;
+            default:
+              console.log("No case found for key:", q.question_key);
+          }
+        } else {
+          console.log(`No mapping found for answer "${q.answer}" in question "${q.key}"`);
+        }
+      } else {
+        console.log(`No deduction mapping defined for question key: "${q.question_key}"`);
       }
     });
 
+    console.log("=== FINAL CALCULATED DEDUCTIONS ===");
+    console.log("questionDeductions object:", questionDeductions);
+    console.log("Deductions summary:");
+    Object.entries(questionDeductions).forEach(([key, value]) => {
+      console.log(`  ${key}: ${value}`);
+    });
+
     // Map vehicle data to the correct API format
+    console.log("\n=== BUILDING VEHICLE PAYLOAD ===");
+    console.log("Raw vehicleDetails:", vehicleDetails);
+    console.log("stateVin:", stateVin);
+    console.log("stateZip:", stateZip);
+    
     const vehiclePayload = {
       mileage_km: parseInt(vehicleDetails.mileage || vehicleDetails.mileage_km || vehicleDetails.odometer || 0),
       exterior_color: vehicleDetails.exterior_color || vehicleDetails.color || vehicleDetails.exteriorColor || "Unknown",
@@ -132,10 +216,15 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       vin: vehicleDetails.vin || vehicleDetails.vin_number || stateVin || "",
       zip_code: stateZip || ""
     };
+    
+    console.log("Processed vehicle payload:", vehiclePayload);
 
     // Determine share_info_with based on selected option
     const shareInfoWith = selectedOption ? selectedOption : "";
+    console.log("Selected auction option:", selectedOption);
+    console.log("Dealers to send details:", shareInfoWith);
 
+    console.log("\n=== BUILDING FINAL PAYLOAD ===");
     const payload = {
       vehicle: vehiclePayload,
       condition_assessment: conditionData,
@@ -152,34 +241,49 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       offer_terms: selectedOption ? "accepted" : "not_accepted"
     };
 
-    // Add productId if it exists (for relisting vehicles)
-    if (productId) {
-      payload.product_id = productId;
-      console.log("Adding productId to payload for relisting:", productId);
+    // Add relistVehicleId if it exists (for relisting vehicles)
+    if (relistVehicleId) {
+      payload.relist_vehicle_id = relistVehicleId;
+      console.log("Adding relistVehicleId to payload for relisting:", relistVehicleId);
+    } else {
+      console.log("No relistVehicleId found - this is a new vehicle listing");
     }
 
+    console.log("=== FINAL PAYLOAD ===");
+    console.log("Complete payload being sent to API:", JSON.stringify(payload, null, 2));
+    
     return payload;
   }
 
   const handleGo = async () => {
+    console.log("=== HANDLE GO CLICKED ===");
+    console.log("Selected option:", selectedOption);
+    console.log("Terms consent:", termsConsent);
+    console.log("relistVehicleId from Redux:", relistVehicleId);
+    
     if (!selectedOption) {
+      console.log("ERROR: No auction option selected");
       toast.error("Please select an auction option.")
       return
     }
 
     // Check for required consent
     if (!termsConsent) {
+      console.log("ERROR: Terms not accepted");
       toast.error("Please agree to the Terms of Use and Privacy Policy to proceed.")
       return
     }
 
     try {
       setIsSubmitting(true);
+      console.log("Building offer payload...");
       
       const offerPayload = buildOfferPayload();
-      console.log("Submitting Instant Cash Offer with payload:", offerPayload);
+      console.log("=== SUBMITTING TO API ===");
+      console.log("Final payload being sent:", offerPayload);
 
       const result = await dispatch(getInstantCashOffer(offerPayload)).unwrap();
+      console.log("=== API RESPONSE SUCCESS ===");
       console.log("Instant Cash Offer successful:", result);
 
       // Check if user info and JWT token are present for auto-login
@@ -207,21 +311,32 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       }, 1000);
 
     } catch (error) {
+      console.log("=== API ERROR ===");
       console.error("Auction setup failed:", error);
+      console.log("Error response:", error.response);
+      console.log("Error response data:", error.response?.data);
+      console.log("Error message:", error.message);
+      
       const errorMsg = error.message || error || "Failed to setup auction. Please try again.";
       
       // Extract suggestion from error response if available
       let suggestion = "";
       if (error.response?.data?.suggestion) {
         suggestion = error.response.data.suggestion;
+        console.log("Error suggestion:", suggestion);
       } else if (error.response?.data?.message && error.response.data.message !== errorMsg) {
         suggestion = error.response.data.message;
+        console.log("Error message from response:", suggestion);
       }
+      
+      console.log("Setting error message:", errorMsg);
+      console.log("Setting error suggestion:", suggestion);
       
       setErrorMessage(errorMsg);
       setErrorSuggestion(suggestion);
       setShowErrorModal(true);
     } finally {
+      console.log("Setting isSubmitting to false");
       setIsSubmitting(false);
     }
   }

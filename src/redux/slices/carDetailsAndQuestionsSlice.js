@@ -287,6 +287,7 @@ const initialState = {
   userExists: false,
   userInfo: null,
   productId: null,
+  relistVehicleId: null,
   vehicleDetails: {},
   stateZip: "",
   stateVin: "",
@@ -379,11 +380,12 @@ const carDetailsAndQuestionsSlice = createSlice({
     setStateVin: (state, action) => {
       state.stateVin = action.payload;
     },
+
     setAuctionPageData: (state, action) => {
       const { vin, zip, product_id } = action.payload;
       if (vin) state.stateVin = vin;
       if (zip) state.stateZip = zip;
-      if (product_id) state.productId = product_id;
+      if (product_id) state.relistVehicleId = product_id;
     },
     updateQuestion: (state, action) => {
       const { key, answer, details } = action.payload;
