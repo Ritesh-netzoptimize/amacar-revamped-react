@@ -27,6 +27,16 @@ const BidConfirmationModal = ({
   const handleConfirmAction = async () => {
     if (!auctionData) return;
 
+    // Check if this is a cash offer
+    if (bidData.id === 'cash-offer') {
+      // Handle cash offer acceptance
+      console.log('Accepting cash offer:', bidData.amount, 'for auction:', auctionData.id);
+      // TODO: Implement cash offer acceptance API call
+      // For now, we'll just show success
+      setShowSuccess(true);
+      return;
+    }
+
     const bidDataPayload = {
       bidId: bidData.id,
       productId: auctionData.id || auctionData.product_id,
@@ -74,13 +84,16 @@ const BidConfirmationModal = ({
 
   const getModalConfig = () => {
     if (isAccept) {
+      const isCashOffer = bidData.id === 'cash-offer';
       return {
         icon: CheckCircle,
         iconColor: 'text-success',
         iconBg: 'bg-success/10',
-        title: 'Accept This Bid?',
-        description: `Are you sure you want to accept this bid of ${formatCurrency(parseFloat(bidData.amount))}?`,
-        confirmText: 'Yes, Accept Bid',
+        title: isCashOffer ? 'Accept Cash Offer?' : 'Accept This Bid?',
+        description: isCashOffer 
+          ? `Are you sure you want to accept this instant cash offer of ${formatCurrency(parseFloat(bidData.amount))}?`
+          : `Are you sure you want to accept this bid of ${formatCurrency(parseFloat(bidData.amount))}?`,
+        confirmText: isCashOffer ? 'Yes, Accept Cash Offer' : 'Yes, Accept Bid',
         confirmClass: 'bg-success hover:bg-success/90 text-white',
         cancelText: 'Cancel',
         accentColor: 'border-success/20',
@@ -179,13 +192,17 @@ const BidConfirmationModal = ({
                     <h3 className="font-semibold text-neutral-800">
                       {bidData.bidder_display_name || 'Unknown Bidder'}
                     </h3>
-                
+                    {bidData.id === 'cash-offer' && (
+                      <p className="text-sm text-neutral-600">Instant Cash Offer</p>
+                    )}
                   </div>
                   <div className="text-right">
                     <div className={`text-2xl font-bold ${isAccept ? 'text-success' : 'text-red-500'}`}>
                       {formatCurrency(parseFloat(bidData.amount))}
                     </div>
-                   
+                    {bidData.id === 'cash-offer' && (
+                      <div className="text-xs text-success font-medium mt-1">Available Now</div>
+                    )}
                   </div>
                 </div>
                 

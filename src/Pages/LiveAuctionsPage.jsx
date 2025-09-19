@@ -355,6 +355,42 @@ const LiveAuctionsPage = () => {
     }
   };
 
+  // Handle accepting top bid directly from card
+  const handleAcceptTopBid = (auction) => {
+    if (!auction.highestBidData) {
+      console.error('No highest bid data available');
+      return;
+    }
+
+    // Set the confirmation data and open the modal
+    setConfirmationData({
+      bid: auction.highestBidData,
+      action: 'accept'
+    });
+    setSelectedAuctionBids(auction);
+    setIsConfirmationModalOpen(true);
+  };
+
+  // Handle accepting cash offer directly from card
+  const handleAcceptCashOffer = (auction) => {
+    // For cash offers, we'll create a mock bid data structure for the confirmation modal
+    const mockBidData = {
+      id: 'cash-offer',
+      amount: auction.cashOffer.toString(),
+      bidder_display_name: 'Instant Cash Offer',
+      bidder_id: 'cash-offer',
+      notes: 'This is an instant cash offer that can be accepted immediately.'
+    };
+
+    // Set the confirmation data and open the modal
+    setConfirmationData({
+      bid: mockBidData,
+      action: 'accept'
+    });
+    setSelectedAuctionBids(auction);
+    setIsConfirmationModalOpen(true);
+  };
+
   const handleRejectBid = async (bid) => {
     const bidData = {
       bidId: bid.id,
@@ -737,10 +773,16 @@ const LiveAuctionsPage = () => {
 
                   {/* Accept Button */}
                   <button
-                    onClick={() => handleViewAllBids(auction)}
+                    onClick={() => {
+                      if (auction.totalBids > 0) {
+                        handleAcceptTopBid(auction);
+                      } else if (auction.cashOffer > 0) {
+                        handleAcceptCashOffer(auction);
+                      }
+                    }}
                     className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200"
                   >
-                    Accept Top Offer
+                    {auction.totalBids > 0 ? 'Accept Top Bid' : 'Accept Cash Offer'}
                   </button>
                 </div>
               </div>
@@ -844,18 +886,38 @@ const LiveAuctionsPage = () => {
                       <span>View details</span>
                     </button>
                     {auction.totalBids > 0 ? (
-                      <button
-                        onClick={() => handleViewAllBids(auction)}
-                        className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span>View All Bids ({auction.totalBids})</span>
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleViewAllBids(auction)}
+                          className="cursor-pointer flex-1 py-2.5 px-4 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                        >
+                          <Eye className="w-4 h-4" />
+                          <span>View All Bids ({auction.totalBids})</span>
+                        </button>
+                        <button
+                          onClick={() => handleAcceptTopBid(auction)}
+                          className="cursor-pointer flex-1 py-2.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Accept Top Bid</span>
+                        </button>
+                      </>
                     ) : (
-                      <div className="flex-1 py-2.5 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
-                        <DollarSign className="w-4 h-4" />
-                        <span>No bids</span>
-                      </div>
+                      <>
+                        <div className="flex-1 py-2.5 px-4 text-sm font-medium text-neutral-500 bg-neutral-50 rounded-xl flex items-center justify-center space-x-2 border border-neutral-200">
+                          <DollarSign className="w-4 h-4" />
+                          <span>No bids</span>
+                        </div>
+                        {auction.cashOffer > 0 && (
+                          <button
+                            onClick={() => handleAcceptCashOffer(auction)}
+                            className="cursor-pointer flex-1 py-2.5 px-4 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                            <span>Accept Cash Offer</span>
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
