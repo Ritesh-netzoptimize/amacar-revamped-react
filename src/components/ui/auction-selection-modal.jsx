@@ -18,7 +18,7 @@ import ErrorModal from "@/components/ui/ErrorModal"
 export default function AuctionSelectionModal({ isOpen, onClose, userFormData = null }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const { questions, vehicleDetails, stateZip, stateVin, location } = useSelector((state) => state.carDetailsAndQuestions)
+  const { questions, vehicleDetails, stateZip, stateVin, location, productId } = useSelector((state) => state.carDetailsAndQuestions)
   const userState = useSelector((state) => state.user.user)
   
   const [selectedOption, setSelectedOption] = useState(null) // 'local' or 'all' or null
@@ -70,8 +70,8 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       if (q.key === 'cosmetic') {
         questionDeductions.cosmetic_condition = {
           'Excellent': 0,        // Online offer
-          'Very Good': 290,      // $290 Less
           'Good': 850,           // $850 Less
+          'Fair': 1150,          // $1150 Less
           'Poor': 1150           // $1150 Less
         };
       } else if (q.key === 'smoked') {
@@ -79,27 +79,25 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
           'No': 0,
           'Yes': 250             // $250 Less
         };
-      } else if (q.key === 'title_status') {
+      } else if (q.key === 'title') {
         questionDeductions.title_status = {
-          'Salvage': 0,          // No change
           'Clean': 0,            // No change
+          'Salvage': 0,          // No change
           'Rebuilt': 0           // No change
         };
-      } else if (q.key === 'accident_history') {
+      } else if (q.key === 'accident') {
         questionDeductions.accident_history = {
           'None': 0,             // No Change
           'Minor': 450,          // $450 Less
           'Major': 600           // $600 Less
         };
-      } else if (q.key === 'notable_features') {
+      } else if (q.key === 'features') {
         questionDeductions.notable_features = {
           'Navigation': -150,    // Add $150
           'Leather': -150,       // Add $150
           'Sunroof': -150,       // Add $150
-          'Premium Wheels': -170, // Add $170
+          'Alloy Wheels': -170,  // Add $170
           'Premium Audio': -180, // Add $180
-          'Premium Sound': -220, // Add $220
-          'Towing Package': -190, // Add $190
           'None of the above': 0
         };
       } else if (q.key === 'modifications') {
@@ -107,12 +105,12 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
           'No': 0,               // No change value
           'Yes': 0               // No change in value
         };
-      } else if (q.key === 'warning_lights') {
+      } else if (q.key === 'warning') {
         questionDeductions.warning_lights = {
           'No': 0,               // No Change
           'Yes': 950             // $950 Less
         };
-      } else if (q.key === 'tire_condition') {
+      } else if (q.key === 'tread') {
         questionDeductions.tire_condition = {
           'New': 0,              // No Change
           'Good': 0,             // No Change
@@ -138,7 +136,7 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
     // Determine share_info_with based on selected option
     const shareInfoWith = selectedOption ? selectedOption : "";
 
-    return {
+    const payload = {
       vehicle: vehiclePayload,
       condition_assessment: conditionData,
       question_deductions: questionDeductions,
@@ -153,6 +151,14 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
       dealers_to_send_details: shareInfoWith,
       offer_terms: selectedOption ? "accepted" : "not_accepted"
     };
+
+    // Add productId if it exists (for relisting vehicles)
+    if (productId) {
+      payload.product_id = productId;
+      console.log("Adding productId to payload for relisting:", productId);
+    }
+
+    return payload;
   }
 
   const handleGo = async () => {

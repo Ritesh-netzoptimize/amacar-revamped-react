@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchVehicleDetails, setVehicleDetails } from "../redux/slices/carDetailsAndQuestionsSlice";
+import { fetchVehicleDetails, setVehicleDetails, setAuctionPageData } from "../redux/slices/carDetailsAndQuestionsSlice";
 
 export default function AuctionPage() {
   const navigate = useNavigate();
@@ -25,6 +25,16 @@ export default function AuctionPage() {
   const zipCode = location.state?.zipCode || stateZip;
   const vehicleName = location.state?.vehicleName || vehicleDetails?.vehicleName;
   const vehicleType = location.state?.vehicleType || vehicleDetails?.vehicleType;
+
+  const productId = location.state?.productId || vehicleDetails?.productId;
+
+  // Store auction page data in Redux when component mounts (only for relisting vehicles)
+  useEffect(() => {
+    if (location.state) {
+      const { vin, zip, product_id } = location.state;
+      dispatch(setAuctionPageData({ vin, zip, product_id }));
+    }
+  }, [dispatch, location.state]);
 
   // Fetch vehicle details if not already loaded
   useEffect(() => {
@@ -220,7 +230,12 @@ useEffect(() => {
               vehicle_data: [{ ...vehicleDetails, ...values }],
             })
           );
-      navigate("/condition-assessment", { state: { vehicleDetails: values } });
+      navigate("/condition-assessment", { 
+        state: { 
+          vehicleDetails: values,
+          productId: productId // Pass productId to ConditionAssessment
+        } 
+      });
     }
   }
 

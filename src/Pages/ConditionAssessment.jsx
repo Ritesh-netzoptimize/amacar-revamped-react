@@ -4,16 +4,21 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Circle, ChevronLeft, ChevronRight, User, Mail, Phone, MapPin, Landmark, Building, Loader2 } from "lucide-react";
 import AuctionSelectionModal from "@/components/ui/auction-selection-modal";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import LoginModal from "@/components/ui/LoginModal";
 import { setLoginRedirect } from "@/redux/slices/userSlice"; // Adjust import path
 import { updateQuestion, resetQuestions, fetchCityStateByZip } from "@/redux/slices/carDetailsAndQuestionsSlice"; // Adjust import path
 
 export default function ConditionAssessment() {
   const dispatch = useDispatch();
-  const { questions, vehicleDetails, stateZip, stateVin, location } = useSelector((state) => state.carDetailsAndQuestions);
+  const location = useLocation();
+  const { questions, vehicleDetails, stateZip, stateVin, location: reduxLocation, productId } = useSelector((state) => state.carDetailsAndQuestions);
   const userState = useSelector((state) => state.user.user);
   const [localCity, setLocalCity] = useState("");
   const [localState, setLocalState] = useState("");
+
+  // Get productId from location state (for relisting) or Redux state
+  const currentProductId = location.state?.productId || productId;
 
   // Initialize questions if invalid
 
@@ -32,6 +37,13 @@ export default function ConditionAssessment() {
     setLocalCity(result.city)
     setLocalState(result.state)
   }, [stateZip]);
+
+  // Debug log for productId
+  useEffect(() => {
+    console.log("ConditionAssessment - currentProductId:", currentProductId);
+    console.log("ConditionAssessment - location.state:", location.state);
+    console.log("ConditionAssessment - Redux productId:", productId);
+  }, [currentProductId, location.state, productId]);
 
   // Image loading handlers
   const handleImageLoad = () => {
@@ -516,22 +528,22 @@ export default function ConditionAssessment() {
                     </label>
                     <div className="relative">
                       <Landmark className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        location.state ? "text-orange-500" : "text-slate-400"
+                        reduxLocation.state ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
-                        value={user.state || location.state || localState || ""}
+                        value={user.state || reduxLocation.state || localState || ""}
                         onChange={(e) => setUser({ ...user, state: e.target.value })}
                         placeholder="State"
-                        disabled={!!location.state || !!localState}
+                        disabled={!!reduxLocation.state || !!localState}
                         className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
-                          location.state || localState 
+                          reduxLocation.state || localState 
                             ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
                             : userErrors.state 
                               ? "border-red-300" 
                               : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
                         }`}
                       />
-                      {location.state && (
+                      {reduxLocation.state && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                           <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
                         </div>
@@ -545,22 +557,22 @@ export default function ConditionAssessment() {
                     </label>
                     <div className="relative">
                       <Building className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${
-                        location.city || localCity ? "text-orange-500" : "text-slate-400"
+                        reduxLocation.city || localCity ? "text-orange-500" : "text-slate-400"
                       }`} />
                       <input
-                        value={user.city || location.city || localCity || ""}
+                        value={user.city || reduxLocation.city || localCity || ""}
                         onChange={(e) => setUser({ ...user, city: e.target.value })}
                         placeholder="City"
-                        disabled={!!location.city || !!localCity}
+                        disabled={!!reduxLocation.city || !!localCity}
                         className={`h-11 w-full rounded-xl border bg-white pl-9 pr-3 text-sm outline-none transition-shadow ${
-                          location.city || localCity 
+                          reduxLocation.city || localCity 
                             ? "bg-orange-50 border-orange-200 text-orange-800 cursor-not-allowed" 
                             : userErrors.city 
                               ? "border-red-300" 
                               : "border-slate-200 focus:shadow-[0_0_0_4px_rgba(246,133,31,0.18)]"
                         }`}
                       />
-                     {(location.city || localCity) && (
+                     {(reduxLocation.city || localCity) && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2">
                         <div className="h-2 w-2 bg-orange-500 rounded-full"></div>
                       </div>
@@ -600,8 +612,8 @@ export default function ConditionAssessment() {
                           email: user.email || userState?.email || "",
                           phone: user.phone || userState?.meta?.phone || "",
                           zipcode: user.zipcode || stateZip || "",
-                          state: user.state || location.state || localState || "",
-                          city: user.city || location.city || localCity || "",
+                          state: user.state || reduxLocation.state || localState || "",
+                          city: user.city || reduxLocation.city || localCity || "",
                         };
 
                         const errs = {};
@@ -750,7 +762,7 @@ export default function ConditionAssessment() {
                         </div>
                         <div className="flex justify-between">
                           <span>Location:</span>
-                          <span className="font-medium">{location?.city || localCity || 'N/A'}, {location?.state || localState || 'N/A'}</span>
+                          <span className="font-medium">{reduxLocation?.city || localCity || 'N/A'}, {reduxLocation?.state || localState || 'N/A'}</span>
                         </div>
                       </div>
                     </div>

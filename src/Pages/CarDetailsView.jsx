@@ -377,7 +377,7 @@ const CarDetailsView = () => {
                {images && images.length > 0 ? (
                  <motion.div variants={itemVariants} className="lg:col-span-2">
                    <Carousel 
-                     className="w-full"
+                     className="shadow-lg  w-full"
                      opts={{
                        align: "start",
                        loop: true,
@@ -397,7 +397,7 @@ const CarDetailsView = () => {
                              <img 
                                src={image.url} 
                                alt={image.name || `Vehicle image ${index + 1}`}
-                               className="w-full h-full object-cover"
+                               className="w-full h-full object-contain"
                                onError={(e) => {
                                  e.target.style.display = 'none';
                                  e.target.nextSibling.style.display = 'flex';
