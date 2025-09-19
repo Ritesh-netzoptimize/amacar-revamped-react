@@ -533,7 +533,7 @@ const LiveAuctionsPage = () => {
               <p className="text-neutral-600 mb-4">{error}</p>
               <button
                 onClick={() => dispatch(fetchLiveAuctions())}
-                className="btn-primary"
+                className="cursor-pointer btn-primary"
               >
                 Try Again
               </button>
@@ -609,7 +609,7 @@ const LiveAuctionsPage = () => {
                 </div>
                 <button
                   onClick={clearSearch}
-                  className="text-primary-600 hover:text-primary-800 text-sm font-medium"
+                  className="cursor-pointer text-primary-600 hover:text-primary-800 text-sm font-medium"
                 >
                   Clear Search
                 </button>
@@ -648,8 +648,8 @@ const LiveAuctionsPage = () => {
                     !isSorting && setIsDropdownOpen(!isDropdownOpen)
                   }
                   disabled={isSorting}
-                  className={`cursor-pointer flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${
-                    isSorting ? "opacity-75 cursor-not-allowed" : ""
+                  className={`flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${
+                    isSorting ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -890,19 +890,19 @@ const LiveAuctionsPage = () => {
                          {/* Accept Button */}
                          {((auction.bidCount > 0 && auction.currentBid > auction.cashOffer) || 
                            (auction.cashOffer > 0 && auction.currentBid <= auction.cashOffer)) && (
-                           <button
-                             onClick={() => {
-                               // If highest bid is greater than cash offer, accept the bid
-                               if (auction.bidCount > 0 && auction.currentBid > auction.cashOffer) {
-                                 handleAcceptTopBid(auction);
-                               } 
-                               // If cash offer is greater than or equal to highest bid, accept cash offer
-                               else if (auction.cashOffer > 0) {
-                                 handleAcceptCashOffer(auction);
-                               }
-                             }}
-                             className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200"
-                           >
+                             <button
+                               onClick={() => {
+                                 // If highest bid is greater than cash offer, accept the bid
+                                 if (auction.bidCount > 0 && auction.currentBid > auction.cashOffer) {
+                                   handleAcceptTopBid(auction);
+                                 } 
+                                 // If cash offer is greater than or equal to highest bid, accept cash offer
+                                 else if (auction.cashOffer > 0) {
+                                   handleAcceptCashOffer(auction);
+                                 }
+                               }}
+                               className="cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200"
+                             >
                              Accept Top Offer
                            </button>
                          )}
@@ -1022,7 +1022,7 @@ const LiveAuctionsPage = () => {
                                    handleAcceptCashOffer(auction);
                                  }
                                }}
-                               className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                               className="cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
                              >
                                <CheckCircle className="w-5 h-5" />
                                <span>Accept Top Offer</span>
@@ -1109,7 +1109,7 @@ const LiveAuctionsPage = () => {
             <p className="text-neutral-600 mb-6">
               Start a new auction to get the best offers for your vehicle.
             </p>
-            <button className="btn-primary">Start New Auction</button>
+            <button className="cursor-pointer btn-primary">Start New Auction</button>
           </motion.div>
         )}
       </div>

@@ -10,13 +10,14 @@ import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 import LoadMore from '../components/ui/load-more';
 import useLoadMore from '../hooks/useLoadMore';
 import AppointmentModal from '../components/ui/AppointmentModal';
+import { useNavigate } from 'react-router-dom';
 
 const AcceptedOffersPage = () => {
   const dispatch = useDispatch();
   const acceptedOffersData = useSelector(selectAcceptedOffers);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
-
+  const navigate = useNavigate();
   // Search context
   const { getSearchResults, searchQuery, clearSearch } = useSearch();
 
@@ -114,6 +115,7 @@ const AcceptedOffersPage = () => {
     dispatch(fetchAcceptedOffers());
   }, [dispatch]);
 
+  
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -121,13 +123,13 @@ const AcceptedOffersPage = () => {
         setIsDropdownOpen(false);
       }
     };
-
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
+  
   // Sort options
   const sortOptions = [
     { value: 'date-desc', label: 'Newest First', icon: ArrowDown, description: 'Most recent offers' },
@@ -135,7 +137,7 @@ const AcceptedOffersPage = () => {
     { value: 'amount-desc', label: 'Highest Amount', icon: ArrowDown, description: 'Highest to lowest' },
     { value: 'amount-asc', label: 'Lowest Amount', icon: ArrowUp, description: 'Lowest to highest' },
   ];
-
+  
   // Get current selected option
   const selectedOption = sortOptions.find(option => option.value === sortBy) || sortOptions[0];
 
@@ -176,19 +178,19 @@ const AcceptedOffersPage = () => {
       }, 200);
     }, randomDelay);
   };
-
+  
   // Handle appointment modal
   const handleOpenAppointmentModal = (offer) => {
     setSelectedOffer(offer);
     // console.log("offer", )
     setIsAppointmentModalOpen(true);
   };
-
+  
   const handleCloseAppointmentModal = () => {
     setIsAppointmentModalOpen(false);
     setSelectedOffer(null);
   };
-
+  
   const handleAppointmentSubmit = async (appointmentData) => {
     // Here you would typically make an API call to schedule the appointment
     console.log('Scheduling appointment:', appointmentData);
@@ -200,10 +202,15 @@ const AcceptedOffersPage = () => {
     // dispatch(updateOfferStatus({ offerId: selectedOffer.id, status: 'appointment_scheduled' }));
   };
 
+  useEffect(() => {
+    console.log("acceptedOffers", acceptedOffers);
+  }, [acceptedOffers]);
+
+  
   // Sort offers based on selected options
   const sortedOffers = useMemo(() => {
     if (!acceptedOffers || acceptedOffers.length === 0) return [];
-
+    
     // Sort the offers
     return [...acceptedOffers].sort((a, b) => {
       switch (sortBy) {
@@ -211,14 +218,14 @@ const AcceptedOffersPage = () => {
           return b.acceptedDate - a.acceptedDate;
         case 'date-asc':
           return a.acceptedDate - b.acceptedDate;
-        case 'amount-desc':
+          case 'amount-desc':
           return b.offerAmount - a.offerAmount;
         case 'amount-asc':
           return a.offerAmount - b.offerAmount;
         default:
           return 0;
-      }
-    });
+        }
+      });
   }, [acceptedOffers, sortBy]);
 
   // Use load more hook
@@ -229,7 +236,7 @@ const AcceptedOffersPage = () => {
     isLoadingMore,
     handleLoadMore
   } = useLoadMore(sortedOffers, itemsPerPage);
-
+  
   // Debug logging
   console.log('AcceptedOffers Debug:', {
     acceptedOffersLength: acceptedOffers.length,
@@ -240,14 +247,14 @@ const AcceptedOffersPage = () => {
     itemsPerPage,
     searchResultsLength: searchResults.length
   });
-
+  
   const statusSteps = [
     { key: 'accepted', label: 'Offer Accepted', icon: CheckCircle },
     { key: 'paperwork', label: 'Paperwork', icon: FileText },
     { key: 'pickup_scheduled', label: 'Pickup Scheduled', icon: Clock },
     { key: 'completed', label: 'Completed', icon: CheckCircle },
   ];
-
+  
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -273,6 +280,8 @@ const AcceptedOffersPage = () => {
     return <AcceptedOffersSkeleton />;
   }
 
+  
+  
   // Error state
   if (error) {
     return (
@@ -558,10 +567,7 @@ const AcceptedOffersPage = () => {
               </div>
 
               {/* Next Steps */}
-              <div className="flex items-center justify-between">
-                <div>
-                  
-                </div>
+              <div className="flex items-center justify-end">
                 <div className="flex space-x-2">
                   <button className="cursor-pointer btn-ghost flex items-center space-x-2">
                     <Phone className="w-4 h-4" />
@@ -574,7 +580,7 @@ const AcceptedOffersPage = () => {
                     <Clock className="w-4 h-4" />
                     <span>Schedule Appointment</span>
                   </button>
-                  <button className="btn-primary">
+                  <button onClick={() => navigate('/car-details', {state: {productId: offer.id}})} className="cursor-pointer btn-primary">
                     View Details
                   </button>
                 </div>

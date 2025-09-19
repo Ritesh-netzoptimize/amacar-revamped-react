@@ -42,6 +42,7 @@ const CarDetailsView = () => {
 
   // Fetch vehicle details
   useEffect(() => {
+    console.log("productId", productId);
     const fetchVehicleDetails = async () => {
       if (!productId) {
         setError('No product ID available');

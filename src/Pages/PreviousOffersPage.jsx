@@ -21,6 +21,7 @@ import PreviousOffersSkeleton from '../components/Skeletons/PreviousOffersSkelet
 import OffersListSkeleton from '../components/skeletons/OffersListSkeleton';
 import LoadMore from '../components/ui/load-more';
 import useLoadMore from '../hooks/useLoadMore';
+import { useNavigate } from 'react-router-dom';
 
 const PreviousOffersPage = () => {
   const dispatch = useDispatch();
@@ -58,6 +59,7 @@ const PreviousOffersPage = () => {
   
   // Local loading state to track which specific vehicle is being re-auctioned
   const [reAuctioningVehicleId, setReAuctioningVehicleId] = useState(null);
+  const navigate = useNavigate();
 
   // Fetch offers on component mount
   useEffect(() => {
@@ -531,7 +533,7 @@ const PreviousOffersPage = () => {
                           <strong>Status:</strong> {formattedOffer.reason}
                         </p>
                         <div className="flex space-x-2">
-                          <button className="cursor-pointer btn-ghost flex items-center space-x-2">
+                          <button onClick={() => navigate('/car-details', {state: {productId: offer.product_id}})} className="cursor-pointer btn-ghost flex items-center space-x-2">
                             <Eye className="w-4 h-4" />
                             <span>View Details</span>
                           </button>
