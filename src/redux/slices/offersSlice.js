@@ -307,6 +307,44 @@ export const reAuctionVehicle = createAsyncThunk(
       // Handle network or other errors
       const errorResponse = error.response?.data;
       if (errorResponse) {
+        // Check if it's a 400 error with specific business logic
+        if (error.response?.status === 400) {
+          if (errorResponse.days_remaining !== undefined) {
+            // 7-day rule error
+            return rejectWithValue({
+              type: 'DAYS_REMAINING',
+              message: errorResponse.message,
+              days_remaining: errorResponse.days_remaining,
+              offer_date: errorResponse.offer_date,
+              redirect_to_homepage: errorResponse.redirect_to_homepage
+            });
+          } else if (errorResponse.message?.includes('not authorized')) {
+            // Authorization error
+            return rejectWithValue({
+              type: 'UNAUTHORIZED',
+              message: errorResponse.message
+            });
+          } else if (errorResponse.message?.includes('not found')) {
+            // Product not found error
+            return rejectWithValue({
+              type: 'NOT_FOUND',
+              message: errorResponse.message
+            });
+          } else if (errorResponse.message?.includes('instant cash offer')) {
+            // No instant cash offer error
+            return rejectWithValue({
+              type: 'NO_CASH_OFFER',
+              message: errorResponse.message
+            });
+          } else {
+            // Generic 400 error
+            return rejectWithValue({
+              type: 'GENERIC',
+              message: errorResponse.message || 'Failed to re-auction vehicle'
+            });
+          }
+        }
+        // Other network errors
         return rejectWithValue({
           type: 'NETWORK',
           message: errorResponse.message || error.message || 'Network error occurred'

@@ -342,9 +342,35 @@ const PreviousOffersPage = () => {
       setSelectedVehicleForRelist(null);
     } catch (error) {
       console.error('Error confirming relist:', error);
-      setNotificationMessage('Failed to process relist request. Please try again.');
-      setNotificationType('error');
-      setShowNotification(true);
+      
+      // Only handle errors for the "No" flow (re-auction API)
+      if (relistData.hasChanges === false) {
+        // Handle specific error types from the re-auction API
+        let message = 'Failed to process relist request. Please try again.';
+        
+        if (error.type === 'DAYS_REMAINING') {
+          message = `Cannot re-auction this vehicle yet. Please wait ${error.days_remaining} more days.`;
+        } else if (error.type === 'UNAUTHORIZED') {
+          message = 'You are not authorized to re-auction this vehicle.';
+        } else if (error.type === 'NOT_FOUND') {
+          message = 'Vehicle not found.';
+        } else if (error.type === 'NO_CASH_OFFER') {
+          message = 'No instant cash offer found for this vehicle.';
+        } else if (error.message) {
+          message = error.message;
+        }
+        
+        setNotificationMessage(message);
+        setNotificationType('error');
+        setShowNotification(true);
+        
+        // Clear the notification after 8 seconds
+        const timer = setTimeout(() => {
+          setShowNotification(false);
+        }, 8000);
+        
+        return () => clearTimeout(timer);
+      }
     } finally {
       setIsModalLoading(false);
     }
