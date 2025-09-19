@@ -84,14 +84,11 @@ export default function ReviewPage() {
           >
             <div className="flex items-center justify-center gap-3 mb-6">
               <Trophy className="h-12 w-12 text-yellow-500" />
-              <h1 className="text-5xl md:text-6xl font-bold text-slate-900">
+              <h2 className="text-5xl md:text-6xl font-bold text-slate-900">
                 Congratulations!
-              </h1>
+              </h2>
               <Sparkles className="h-12 w-12 text-yellow-500" />
             </div>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              We've analyzed your vehicle and prepared an instant offer for you
-            </p>
           </motion.div>
 
           {/* Main Offer Card */}
@@ -131,15 +128,6 @@ export default function ReviewPage() {
               </div>
             </div>
 
-            {/* Persuasive Text */}
-            <div className="text-center mb-8">
-              <p className="text-lg text-slate-700 mb-4">
-                Looking for a competitive offer? Auction Your Ride or share your information with local dealers.
-              </p>
-              <p className="text-sm text-slate-500">
-                Get multiple offers from verified dealers in your area and choose the best one for you.
-              </p>
-            </div>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

@@ -258,45 +258,45 @@ export default function AuctionSelectionModal({ isOpen, onClose, userFormData = 
                 </motion.div>
               )
             })}
+
+            {/* Common Terms Checkbox and Continue Button - Now inside scrollable area */}
+            <div className="border-t border-slate-200 pt-6 mt-6">
+              <div className="flex items-start gap-3 mb-4">
+                <input
+                  type="checkbox"
+                  checked={termsConsent}
+                  onChange={(e) => setTermsConsent(e.target.checked)}
+                  disabled={isSubmitting}
+                  className="h-4 w-4 mt-1 disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <label className="text-sm text-slate-700 cursor-pointer">
+                  I have read and agree to the Terms of Use and Privacy Policy.
+                </label>
+              </div>
+              
+              <div className="flex justify-end">
+                <button
+                  onClick={handleGo}
+                  disabled={isSubmitting || !selectedOption || !termsConsent}
+                  className={`inline-flex h-12 items-center justify-center rounded-xl px-8 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02] ${
+                    !isSubmitting && selectedOption && termsConsent
+                      ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600' 
+                      : 'bg-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Setting up...
+                    </div>
+                  ) : (
+                    'See your offer →'
+                  )}
+                </button>
+              </div>
+            </div>
           </motion.div>
 
-        </div>
-
-        {/* Common Terms Checkbox and Continue Button */}
-        <div className="border-t border-slate-200 p-6 bg-slate-50/50">
-          <div className="flex items-start gap-3 mb-4">
-            <input
-              type="checkbox"
-              checked={termsConsent}
-              onChange={(e) => setTermsConsent(e.target.checked)}
-              disabled={isSubmitting}
-              className="h-4 w-4 mt-1 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            <label className="text-sm text-slate-700 cursor-pointer">
-              I have read and agree to the Terms of Use and Privacy Policy.
-            </label>
-          </div>
-          
-          <div className="flex justify-end">
-            <button
-              onClick={handleGo}
-              disabled={isSubmitting || !selectedOption || !termsConsent}
-              className={`inline-flex h-12 items-center justify-center rounded-xl px-8 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02] ${
-                !isSubmitting && selectedOption && termsConsent
-                  ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600' 
-                  : 'bg-slate-400 cursor-not-allowed'
-              }`}
-            >
-              {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Setting up...
-                </div>
-              ) : (
-                'Continue →'
-              )}
-            </button>
-          </div>
         </div>
       </DialogContent>
     </Dialog>

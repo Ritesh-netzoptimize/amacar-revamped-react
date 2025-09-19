@@ -161,88 +161,48 @@ const PendingOffersPage = () => {
   }, []);
 
   const handleAcceptOffer = (offer) => {
-    // Determine what to accept: highest bid or cash offer
+    // Only accept actual bids, not cash offers
     const hasActiveBids = offer.bidCount > 0;
-    const hasValidCashOffer = offer.cashOffer > 0;
-    const cashOfferHigher = offer.cashOffer > offer.highestBid;
     
-    let bidToAccept;
-    let action = 'accept';
-    
-    // Check if there's anything valid to accept
-    if (!hasActiveBids && !hasValidCashOffer) {
-      console.warn('No valid offer to accept for:', offer.id);
+    // Check if there are active bids to accept
+    if (!hasActiveBids) {
+      console.warn('No active bids to accept for:', offer.id);
       return;
     }
     
-    if (hasActiveBids && (!hasValidCashOffer || !cashOfferHigher)) {
-      // Accept highest bid (when there are active bids and either no cash offer or cash offer is not higher)
-      bidToAccept = offer.highestBidData || {
-        id: 'highest-bid',
-        amount: offer.highestBid.toString(),
-        bidder_display_name: offer.dealer,
-        bidder_id: offer.highestBidData?.bidder_id || 'unknown',
-        notes: 'Highest active bid'
-      };
-    } else if (hasValidCashOffer) {
-      // Accept cash offer (either no active bids or cash offer is higher)
-      bidToAccept = {
-        id: 'cash-offer',
-        amount: offer.cashOffer.toString(),
-        bidder_display_name: 'Instant Cash Offer',
-        bidder_id: 'cash-offer',
-        notes: 'Instant cash offer - no waiting required'
-      };
-    } else {
-      // Fallback - should not reach here due to the check above
-      console.warn('No valid offer to accept for:', offer.id);
-      return;
-    }
+    // Accept highest bid only
+    const bidToAccept = offer.highestBidData || {
+      id: 'highest-bid',
+      amount: offer.highestBid.toString(),
+      bidder_display_name: offer.dealer,
+      bidder_id: offer.highestBidData?.bidder_id || 'unknown',
+      notes: 'Highest active bid'
+    };
     
-    setConfirmationData({ bid: bidToAccept, action, offer: offer });
+    setConfirmationData({ bid: bidToAccept, action: 'accept', offer: offer });
     setIsConfirmationModalOpen(true);
   };
 
   const handleRejectOffer = (offer) => {
-    // Determine what to reject: highest bid or cash offer
+    // Only reject actual bids, not cash offers
     const hasActiveBids = offer.bidCount > 0;
-    const hasValidCashOffer = offer.cashOffer > 0;
-    const cashOfferHigher = offer.cashOffer > offer.highestBid;
     
-    let bidToReject;
-    let action = 'reject';
-    
-    // Check if there's anything valid to reject
-    if (!hasActiveBids && !hasValidCashOffer) {
-      console.warn('No valid offer to reject for:', offer.id);
+    // Check if there are active bids to reject
+    if (!hasActiveBids) {
+      console.warn('No active bids to reject for:', offer.id);
       return;
     }
     
-    if (hasActiveBids && (!hasValidCashOffer || !cashOfferHigher)) {
-      // Reject highest bid (when there are active bids and either no cash offer or cash offer is not higher)
-      bidToReject = offer.highestBidData || {
-        id: 'highest-bid',
-        amount: offer.highestBid.toString(),
-        bidder_display_name: offer.dealer,
-        bidder_id: offer.highestBidData?.bidder_id || 'unknown',
-        notes: 'Highest active bid'
-      };
-    } else if (hasValidCashOffer) {
-      // Reject cash offer (either no active bids or cash offer is higher)
-      bidToReject = {
-        id: 'cash-offer',
-        amount: offer.cashOffer.toString(),
-        bidder_display_name: 'Instant Cash Offer',
-        bidder_id: 'cash-offer',
-        notes: 'Instant cash offer - no waiting required'
-      };
-    } else {
-      // Fallback - should not reach here due to the check above
-      console.warn('No valid offer to reject for:', offer.id);
-      return;
-    }
+    // Reject highest bid only
+    const bidToReject = offer.highestBidData || {
+      id: 'highest-bid',
+      amount: offer.highestBid.toString(),
+      bidder_display_name: offer.dealer,
+      bidder_id: offer.highestBidData?.bidder_id || 'unknown',
+      notes: 'Highest active bid'
+    };
     
-    setConfirmationData({ bid: bidToReject, action, offer: offer });
+    setConfirmationData({ bid: bidToReject, action: 'reject', offer: offer });
     setIsConfirmationModalOpen(true);
   };
 
@@ -752,24 +712,64 @@ const PendingOffersPage = () => {
                   </button>
                 </div>
 
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleRejectOffer(offer)}
-                    disabled={offer.bidCount === 0 && offer.cashOffer === 0}
-                    className="cursor-pointer btn-ghost text-error hover:bg-error/10 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <X className="w-4 h-4" />
-                    <span>Reject</span>
-                  </button>
-                  <button
-                    onClick={() => handleAcceptOffer(offer)}
-                    disabled={offer.bidCount === 0 && offer.cashOffer === 0}
-                    className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Accept Offer</span>
-                  </button>
-                </div>
+                {/* Show different UI based on offer status */}
+                {offer.bidCount > 0 ? (
+                  // Show accept/reject buttons when there are active bids
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleRejectOffer(offer)}
+                      className="cursor-pointer btn-ghost text-error hover:bg-error/10 flex items-center space-x-2"
+                    >
+                      <X className="w-4 h-4" />
+                      <span>Reject</span>
+                    </button>
+                    <button
+                      onClick={() => handleAcceptOffer(offer)}
+                      className="btn-primary flex items-center space-x-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Accept Bid</span>
+                    </button>
+                  </div>
+                ) : offer.cashOffer > 0 ? (
+                  // Show cash offer info when only cash offer is available
+                  <div className="flex flex-col items-end space-y-2">
+                
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => navigate('/car-details', {state: {productId: offer.id}})}
+                        className="cursor-pointer btn-ghost text-primary hover:bg-primary/10 flex items-center space-x-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>View Details</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // Show alternative UI when all bids are expired/rejected
+                  <div className="flex flex-col items-end space-y-2">
+                    <div className="flex items-center space-x-2 text-neutral-500">
+                      <Clock className="w-4 h-4" />
+                      <span className="text-sm">All offers expired</span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => navigate('/car-details', {state: {productId: offer.id}})}
+                        className="cursor-pointer btn-ghost text-primary hover:bg-primary/10 flex items-center space-x-2"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        <span>Relist Vehicle</span>
+                      </button>
+                      <button
+                        onClick={() => navigate('/auction')}
+                        className="btn-primary flex items-center space-x-2"
+                      >
+                        <Car className="w-4 h-4" />
+                        <span>Start New Auction</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
                 ))}

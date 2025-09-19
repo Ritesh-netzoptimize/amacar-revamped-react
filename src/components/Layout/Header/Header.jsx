@@ -157,7 +157,7 @@ export default function Header() {
               <a className="nav-link-mobile" href="#">
                 Our Vision
               </a>
-              {user && productId && (
+              {/* {user && productId && (
                 <button
                   className="bg-gradient-to-br from-orange-500 to-orange-400 hover:from-orange-600 hover:to-orange-500 text-white border-0 rounded-lg px-4 py-3 text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 mt-2 w-full"
                   onClick={handleContinueClick}
@@ -165,7 +165,7 @@ export default function Header() {
                   <Play className="w-4 h-4" />
                   Continue where you left off
                 </button>
-              )}
+              )} */}
               {user ? (
                 <button
                   className="btn-login-mobile"

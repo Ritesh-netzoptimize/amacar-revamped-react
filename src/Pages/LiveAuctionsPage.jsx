@@ -427,24 +427,11 @@ const LiveAuctionsPage = () => {
     setIsConfirmationModalOpen(true);
   };
 
-  // Handle accepting cash offer directly from card
+  // Cash offers cannot be accepted through this interface
+  // This function is kept for potential future use but does nothing
   const handleAcceptCashOffer = (auction) => {
-    // For cash offers, we'll create a mock bid data structure for the confirmation modal
-    const mockBidData = {
-      id: "cash-offer",
-      amount: auction.cashOffer.toString(),
-      bidder_display_name: "Instant Cash Offer",
-      bidder_id: "cash-offer",
-      notes: "This is an instant cash offer that can be accepted immediately.",
-    };
-
-    // Set the confirmation data and open the modal
-    setConfirmationData({
-      bid: mockBidData,
-      action: "accept",
-    });
-    setSelectedAuctionBids(auction);
-    setIsConfirmationModalOpen(true);
+    console.log('Cash offers cannot be accepted through this interface');
+    // Cash offers are handled separately and cannot be accepted through the bid confirmation modal
   };
 
   const handleRejectBid = async (bid) => {
@@ -887,23 +874,13 @@ const LiveAuctionsPage = () => {
                           Accept now and secure the top offer before it expires!
                         </div>
 
-                         {/* Accept Button */}
-                         {((auction.bidCount > 0 && auction.currentBid > auction.cashOffer) || 
-                           (auction.cashOffer > 0 && auction.currentBid <= auction.cashOffer)) && (
+                         {/* Accept Button - Only for bids, not cash offers */}
+                         {auction.bidCount > 0 && (
                              <button
-                               onClick={() => {
-                                 // If highest bid is greater than cash offer, accept the bid
-                                 if (auction.bidCount > 0 && auction.currentBid > auction.cashOffer) {
-                                   handleAcceptTopBid(auction);
-                                 } 
-                                 // If cash offer is greater than or equal to highest bid, accept cash offer
-                                 else if (auction.cashOffer > 0) {
-                                   handleAcceptCashOffer(auction);
-                                 }
-                               }}
+                               onClick={() => handleAcceptTopBid(auction)}
                                className="cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200"
                              >
-                             Accept Top Offer
+                             Accept Top Bid
                            </button>
                          )}
                       </div>
@@ -1007,28 +984,6 @@ const LiveAuctionsPage = () => {
                            </div>
                          </div>
 
-                         {/* Single Accept Button */}
-                         {((auction.bidCount > 0 && auction.currentBid > auction.cashOffer) || 
-                           (auction.cashOffer > 0 && auction.currentBid <= auction.cashOffer)) && (
-                           <div className="mb-6">
-                             <button
-                               onClick={() => {
-                                 // If highest bid is greater than cash offer, accept the bid
-                                 if (auction.bidCount > 0 && auction.currentBid > auction.cashOffer) {
-                                   handleAcceptTopBid(auction);
-                                 } 
-                                 // If cash offer is greater than or equal to highest bid, accept cash offer
-                                 else if (auction.cashOffer > 0) {
-                                   handleAcceptCashOffer(auction);
-                                 }
-                               }}
-                               className="cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                             >
-                               <CheckCircle className="w-5 h-5" />
-                               <span>Accept Top Offer</span>
-                             </button>
-                           </div>
-                         )}
 
                         {/* Time Remaining */}
                         <div className="flex items-center justify-between mb-6">
@@ -1048,7 +1003,7 @@ const LiveAuctionsPage = () => {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex space-x-3">
+                        <div className="flex  space-x-3">
                           <button
                             onClick={() =>
                               handleViewCarDetails(auction.product_id)
@@ -1071,8 +1026,21 @@ const LiveAuctionsPage = () => {
                               <span>No bids</span>
                             </div>
                           )}
+                          
                         </div>
                       </div>
+                         {/* Single Accept Button - Only for bids, not cash offers */}
+                         {auction.bidCount > 0 && (
+                           <div className="mb-6 mx-4">
+                             <button
+                               onClick={() => handleAcceptTopBid(auction)}
+                               className="cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                             >
+                               <CheckCircle className="w-5 h-5" />
+                               <span>Accept Top Bid</span>
+                             </button>
+                           </div>
+                         )}
                     </div>
                   </motion.div>
                 ))}

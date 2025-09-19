@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, XCircle, AlertTriangle, DollarSign } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../../lib/utils';
 import { acceptBid, rejectBid, clearBidOperationStates } from '../../redux/slices/offersSlice';
 
@@ -13,12 +14,14 @@ const BidConfirmationModal = ({
   auctionData
 }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const bidOperationLoading = useSelector(state => state.offers.bidOperationLoading);
   const bidOperationError = useSelector(state => state.offers.bidOperationError);
   const bidOperationSuccess = useSelector(state => state.offers.bidOperationSuccess);
 
   // Local state to manage success display
   const [showSuccess, setShowSuccess] = useState(false);
+  const [localError, setLocalError] = useState(null);
 
   const isAccept = action === 'accept';
   const isReject = action === 'reject';
@@ -27,34 +30,39 @@ const BidConfirmationModal = ({
   const handleConfirmAction = async () => {
     if (!auctionData) return;
 
-    // Check if this is a cash offer
+    // Clear any previous errors
+    setLocalError(null);
+
+    // Check if this is a cash offer - cash offers cannot be accepted/rejected
     if (bidData.id === 'cash-offer') {
-      // Handle cash offer acceptance/rejection
-      console.log(`${action}ing cash offer:`, bidData.amount, 'for auction:', auctionData.id);
-      // TODO: Implement cash offer API call
-      // For now, we'll simulate success after a short delay
-      setTimeout(() => {
-        setShowSuccess(true);
-      }, 1000);
+      console.log('Cash offers cannot be accepted or rejected through this modal');
+      setLocalError('Cash offers cannot be accepted or rejected. Please use the main auction interface.');
       return;
     }
 
-    // Handle regular bid acceptance
+    // Handle regular bid acceptance/rejection
+    console.log(`${action}ing bid:`, bidData.amount, 'for auction:', auctionData.id);
     const bidDataPayload = {
       bidId: bidData.id,
       productId: auctionData.id || auctionData.product_id,
       bidderId: bidData.bidder_id
     };
-
+    
+    console.log('Bid data payload:', bidDataPayload);
     try {
       if (isAccept) {
+        console.log('Accepting bid:', bidDataPayload);
         await dispatch(acceptBid(bidDataPayload)).unwrap();
+        console.log('Accepted bid:', bidDataPayload);
       } else if (isReject) {
         await dispatch(rejectBid(bidDataPayload)).unwrap();
+        console.log('Rejected bid:', bidDataPayload);
+      } else {
+        console.log('Invalid action:', action);
       }
     } catch (error) {
+      setLocalError(error.message || `Failed to ${action} bid. Please try again.`);
       console.error(`Error ${action}ing bid:`, error);
-      // Error is handled by Redux state
     }
   };
 
@@ -62,57 +70,79 @@ const BidConfirmationModal = ({
   useEffect(() => {
     if (bidOperationSuccess) {
       setShowSuccess(true);
-      // Close modal after showing success for 2 seconds
-      const timer = setTimeout(() => {
-        onClose();
-        // Clear Redux state after modal closes
-        setTimeout(() => {
-          dispatch(clearBidOperationStates());
-          setShowSuccess(false);
-        }, 300); // Small delay to ensure modal is closed
-      }, 2000);
       
-      return () => clearTimeout(timer);
+      if (isAccept) {
+        // For acceptance, redirect to accepted offers page after showing success
+        const timer = setTimeout(() => {
+          navigate('/accepted');
+          onClose();
+          // Clear Redux state after navigation
+          setTimeout(() => {
+            dispatch(clearBidOperationStates());
+            setShowSuccess(false);
+          }, 300);
+        }, 2000);
+        
+        return () => clearTimeout(timer);
+      } else {
+        // For rejection, just show success and close modal
+        const timer = setTimeout(() => {
+          onClose();
+          // Clear Redux state after modal closes
+          setTimeout(() => {
+            dispatch(clearBidOperationStates());
+            setShowSuccess(false);
+          }, 300);
+        }, 2000);
+        
+        return () => clearTimeout(timer);
+      }
     }
-  }, [bidOperationSuccess, onClose, dispatch]);
+  }, [bidOperationSuccess, onClose, dispatch, isAccept, navigate]);
 
   // Reset success state when modal opens
   useEffect(() => {
     if (isOpen) {
       setShowSuccess(false);
+      setLocalError(null);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    console.log('Bid data:', bidData);
+    console.log('Auction data:', auctionData);
+  }, [bidData, auctionData]);
+  
 
   if (!isOpen || !bidData) return null;
 
   const getModalConfig = () => {
+    // Cash offers cannot be accepted or rejected through this modal
+    if (bidData.id === 'cash-offer') {
+      return null;
+    }
+
     if (isAccept) {
-      const isCashOffer = bidData.id === 'cash-offer';
       return {
         icon: CheckCircle,
         iconColor: 'text-success',
         iconBg: 'bg-success/10',
-        title: isCashOffer ? 'Accept Cash Offer?' : 'Accept This Bid?',
-        description: isCashOffer 
-          ? `Are you sure you want to accept this instant cash offer of ${formatCurrency(parseFloat(bidData.amount))}?`
-          : `Are you sure you want to accept this bid of ${formatCurrency(parseFloat(bidData.amount))}?`,
-        confirmText: isCashOffer ? 'Yes, Accept Cash Offer' : 'Yes, Accept Bid',
+        title: 'Accept This Bid?',
+        description: `Are you sure you want to accept this bid of ${formatCurrency(parseFloat(bidData.amount))}?`,
+        confirmText: 'Yes, Accept Bid',
         confirmClass: 'bg-success hover:bg-success/90 text-white',
         cancelText: 'Cancel',
         accentColor: 'border-success/20',
         bgGradient: 'from-success/5 to-success/10'
       };
     } else if (isReject) {
-      const isCashOffer = bidData.id === 'cash-offer';
       return {
         icon: XCircle,
         iconColor: 'text-red-500',
         iconBg: 'bg-red-50',
-        title: isCashOffer ? 'Reject Cash Offer?' : 'Reject This Bid?',
-        description: isCashOffer 
-          ? `Are you sure you want to reject this cash offer of ${formatCurrency(parseFloat(bidData.amount))}? This action cannot be undone.`
-          : `Are you sure you want to reject this bid of ${formatCurrency(parseFloat(bidData.amount))}? This action cannot be undone.`,
-        confirmText: isCashOffer ? 'Yes, Reject Cash Offer' : 'Yes, Reject Bid',
+        title: 'Reject This Bid?',
+        description: `Are you sure you want to reject this bid of ${formatCurrency(parseFloat(bidData.amount))}? This action cannot be undone.`,
+        confirmText: 'Yes, Reject Bid',
         confirmClass: 'bg-red-500 hover:bg-red-600 text-white',
         cancelText: 'Cancel',
         accentColor: 'border-red-200',
@@ -126,6 +156,8 @@ const BidConfirmationModal = ({
   if (!config) return null;
 
   const IconComponent = config.icon;
+
+
 
   return (
     <AnimatePresence>
@@ -161,7 +193,7 @@ const BidConfirmationModal = ({
             </div>
 
             {/* Error Display */}
-            {bidOperationError && (
+            {(bidOperationError || localError) && (
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -169,7 +201,9 @@ const BidConfirmationModal = ({
               >
                 <div className="flex items-center space-x-2">
                   <AlertTriangle className="w-5 h-5 text-red-500" />
-                  <p className="text-red-700 text-sm font-medium">{bidOperationError}</p>
+                  <p className="text-red-700 text-sm font-medium">
+                    {localError || bidOperationError}
+                  </p>
                 </div>
               </motion.div>
             )}
@@ -184,7 +218,8 @@ const BidConfirmationModal = ({
                 <div className="flex items-center space-x-2">
                   <CheckCircle className="w-5 h-5 text-success" />
                   <p className="text-success text-sm font-medium">
-                    Bid {action}ed successfully!
+                    {isAccept ? 'Offer accepted successfully!' : 'Offer rejected successfully!'}
+                    {isAccept && <span className="block text-xs mt-1">Redirecting to accepted offers...</span>}
                   </p>
                 </div>
               </motion.div>
@@ -198,17 +233,11 @@ const BidConfirmationModal = ({
                     <h3 className="font-semibold text-neutral-800">
                       {bidData.bidder_display_name || 'Unknown Bidder'}
                     </h3>
-                    {bidData.id === 'cash-offer' && (
-                      <p className="text-sm text-neutral-600">Instant Cash Offer</p>
-                    )}
                   </div>
                   <div className="text-right">
                     <div className={`text-2xl font-bold ${isAccept ? 'text-success' : 'text-red-500'}`}>
                       {formatCurrency(parseFloat(bidData.amount))}
                     </div>
-                    {bidData.id === 'cash-offer' && (
-                      <div className="text-xs text-success font-medium mt-1">Available Now</div>
-                    )}
                   </div>
                 </div>
                 
