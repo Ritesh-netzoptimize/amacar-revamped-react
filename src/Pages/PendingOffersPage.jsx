@@ -97,7 +97,11 @@ const PendingOffersPage = () => {
         dealer: highestBid?.bidder_display_name || 'No Active Bids',
         dealerRating: 4.5, // Not provided in API, using default
         dealerBidCount: activeBids.filter(bid => bid.bidder_id === highestBid?.bidder_id).length,
-        images: offer.image_url ? [offer.image_url] : ['/api/placeholder/400/300'],
+        images: offer.images && offer.images.length > 0
+          ? offer.images.map(img => img.url)
+          : offer.image_url
+          ? [offer.image_url]
+          : ['/api/placeholder/400/300'],
         description: offer.title || 'Vehicle description not available',
         auctionEndTime: auctionEndTime,
         cashOffer: parseFloat(offer.cash_offer || '0'),
@@ -586,8 +590,29 @@ const PendingOffersPage = () => {
               >
                 <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center">
-                    <Car className="w-8 h-8 text-neutral-400" />
+                  <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center overflow-hidden">
+                    {(() => {
+                      // Extract front view image from images array, fallback to first image, then to placeholder
+                      const getFrontViewImage = () => {
+                        if (offer.images && offer.images.length > 0) {
+                          const frontViewImage = offer.images.find(img => img.name === 'front_view');
+                          return frontViewImage ? frontViewImage.url : offer.images[0];
+                        }
+                        return null;
+                      };
+                      
+                      const imageUrl = getFrontViewImage();
+                      
+                      return imageUrl ? (
+                        <img 
+                          src={imageUrl} 
+                          alt={offer.vehicle}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Car className="w-8 h-8 text-neutral-400" />
+                      );
+                    })()}
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-neutral-800">{offer.vehicle}</h3>
