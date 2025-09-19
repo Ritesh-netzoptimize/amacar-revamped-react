@@ -163,15 +163,28 @@ const Dashboard = () => {
                         whileHover={{ scale: 1.02 }}
                       >
                         <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center overflow-hidden">
-                          {auction.image_url ? (
-                            <img 
-                              src={auction.image_url} 
-                              alt={auction.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Car className="w-8 h-8 text-neutral-400" />
-                          )}
+                          {(() => {
+                            // Extract front view image from images array, fallback to image_url, then to null
+                            const getFrontViewImage = () => {
+                              if (auction.images && auction.images.length > 0) {
+                                const frontViewImage = auction.images.find(img => img.name === 'front_view');
+                                return frontViewImage ? frontViewImage.url : auction.images[0].url;
+                              }
+                              return auction.image_url || null;
+                            };
+                            
+                            const imageUrl = getFrontViewImage();
+                            
+                            return imageUrl ? (
+                              <img 
+                                src={imageUrl} 
+                                alt={auction.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Car className="w-8 h-8 text-neutral-400" />
+                            );
+                          })()}
                         </div>
                         <div className="flex-1">
                           <h3 className="font-semibold text-neutral-800">{auction.title}</h3>
