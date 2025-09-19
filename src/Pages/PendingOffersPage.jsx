@@ -163,13 +163,20 @@ const PendingOffersPage = () => {
   const handleAcceptOffer = (offer) => {
     // Determine what to accept: highest bid or cash offer
     const hasActiveBids = offer.bidCount > 0;
+    const hasValidCashOffer = offer.cashOffer > 0;
     const cashOfferHigher = offer.cashOffer > offer.highestBid;
     
     let bidToAccept;
     let action = 'accept';
     
-    if (hasActiveBids && !cashOfferHigher) {
-      // Accept highest bid
+    // Check if there's anything valid to accept
+    if (!hasActiveBids && !hasValidCashOffer) {
+      console.warn('No valid offer to accept for:', offer.id);
+      return;
+    }
+    
+    if (hasActiveBids && (!hasValidCashOffer || !cashOfferHigher)) {
+      // Accept highest bid (when there are active bids and either no cash offer or cash offer is not higher)
       bidToAccept = offer.highestBidData || {
         id: 'highest-bid',
         amount: offer.highestBid.toString(),
@@ -177,8 +184,8 @@ const PendingOffersPage = () => {
         bidder_id: offer.highestBidData?.bidder_id || 'unknown',
         notes: 'Highest active bid'
       };
-    } else if (offer.cashOffer > 0) {
-      // Accept cash offer (either no bids or cash offer is higher)
+    } else if (hasValidCashOffer) {
+      // Accept cash offer (either no active bids or cash offer is higher)
       bidToAccept = {
         id: 'cash-offer',
         amount: offer.cashOffer.toString(),
@@ -187,7 +194,7 @@ const PendingOffersPage = () => {
         notes: 'Instant cash offer - no waiting required'
       };
     } else {
-      // No valid offer to accept
+      // Fallback - should not reach here due to the check above
       console.warn('No valid offer to accept for:', offer.id);
       return;
     }
@@ -199,13 +206,20 @@ const PendingOffersPage = () => {
   const handleRejectOffer = (offer) => {
     // Determine what to reject: highest bid or cash offer
     const hasActiveBids = offer.bidCount > 0;
+    const hasValidCashOffer = offer.cashOffer > 0;
     const cashOfferHigher = offer.cashOffer > offer.highestBid;
     
     let bidToReject;
     let action = 'reject';
     
-    if (hasActiveBids && !cashOfferHigher) {
-      // Reject highest bid
+    // Check if there's anything valid to reject
+    if (!hasActiveBids && !hasValidCashOffer) {
+      console.warn('No valid offer to reject for:', offer.id);
+      return;
+    }
+    
+    if (hasActiveBids && (!hasValidCashOffer || !cashOfferHigher)) {
+      // Reject highest bid (when there are active bids and either no cash offer or cash offer is not higher)
       bidToReject = offer.highestBidData || {
         id: 'highest-bid',
         amount: offer.highestBid.toString(),
@@ -213,8 +227,8 @@ const PendingOffersPage = () => {
         bidder_id: offer.highestBidData?.bidder_id || 'unknown',
         notes: 'Highest active bid'
       };
-    } else if (offer.cashOffer > 0) {
-      // Reject cash offer (either no bids or cash offer is higher)
+    } else if (hasValidCashOffer) {
+      // Reject cash offer (either no active bids or cash offer is higher)
       bidToReject = {
         id: 'cash-offer',
         amount: offer.cashOffer.toString(),
@@ -223,7 +237,7 @@ const PendingOffersPage = () => {
         notes: 'Instant cash offer - no waiting required'
       };
     } else {
-      // No valid offer to reject
+      // Fallback - should not reach here due to the check above
       console.warn('No valid offer to reject for:', offer.id);
       return;
     }
@@ -609,8 +623,8 @@ const PendingOffersPage = () => {
               className={`card p-6 border-l-4 ${
                 offer.status === 'urgent' ? 'border-error' : 'border-warning'
               }`}
-            >
-              <div className="flex items-start justify-between mb-4">
+              >
+                <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 bg-neutral-200 rounded-lg flex items-center justify-center">
                     <Car className="w-8 h-8 text-neutral-400" />
@@ -749,7 +763,7 @@ const PendingOffersPage = () => {
                   </button>
                   <button
                     onClick={() => handleAcceptOffer(offer)}
-                    disabled={offer.bidCount === 0}
+                    disabled={offer.bidCount === 0 && offer.cashOffer === 0}
                     className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <CheckCircle className="w-4 h-4" />
