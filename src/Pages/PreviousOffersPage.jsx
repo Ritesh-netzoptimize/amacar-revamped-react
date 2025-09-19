@@ -548,25 +548,20 @@ const PreviousOffersPage = () => {
                       
                       {/* Bids Button - Bottom Right */}
                       <div className="ml-4">
-                        {
-                          offer.bid && offer.bid.length == 0 ? <p className="text-sm text-neutral-600">No bids</p> :<button 
-                          onClick={() => handleShowBids(offer)}
-                          className="cursor-pointer group relative  hover:from-orange-600 hover:to-orange-700 text-[#f6851f] border-2 border-[#f6851f] px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
-                        >
-                          <DollarSign className="w-4 h-4 group-hover:animate-pulse" />
-                          <span>
-                            {offer.bid && offer.bid.length > 0 
-                              ? `View Bids` 
-                              : 'View Bids'
-                            }
-                          </span>
-                          {offer.bid && offer.bid.length > 0 && (
+                        {offer.bid && offer.bid.length > 0 ? (
+                          <button 
+                            onClick={() => handleShowBids(offer)}
+                            className="cursor-pointer group relative  hover:from-orange-600 hover:to-orange-700 text-[#f6851f] border-2 border-[#f6851f] px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+                          >
+                            <DollarSign className="w-4 h-4 group-hover:animate-pulse" />
+                            <span>View Bids</span>
                             <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-pulse">
                               {offer.bid.length}
                             </div>
-                          )}
-                        </button>
-                        }
+                          </button>
+                        ) : (
+                          <p className="text-sm text-neutral-600">No bids</p>
+                        )}
                       </div>
                     </div>
                   </div>
