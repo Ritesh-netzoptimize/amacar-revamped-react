@@ -46,6 +46,7 @@ import useLoadMore from "../hooks/useLoadMore";
 import BidConfirmationModal from "../components/ui/BidConfirmationModal";
 import BidsModal from "../components/ui/BidsModal";
 import StatsCards from "../components/ui/StatsCards";
+import { Carousel, CarouselContent, CarouselItem, CarouselDots } from "../components/ui/carousel";
 
 const LiveAuctionsPage = () => {
   const dispatch = useDispatch();
@@ -115,7 +116,9 @@ const LiveAuctionsPage = () => {
         totalBids: auction.bid?.length || 0,
         highestBidder: highestBid?.bidder_display_name || "No Active Bids",
         status: hasAcceptedBid ? "accepted" : "live",
-        images: auction.image_url
+        images: auction.images && auction.images.length > 0
+          ? auction.images.map(img => img.url)
+          : auction.image_url
           ? [auction.image_url]
           : ["/api/placeholder/400/300"],
         description: auction.title || "Vehicle description not available",
@@ -772,19 +775,27 @@ const LiveAuctionsPage = () => {
                   <motion.div
                     key={auction.id}
                     variants={itemVariants}
-                    className="card overflow-hidden hover:shadow-medium relative"
+                    className="card hover:shadow-medium relative"
                   >
                     {/* Mobile-optimized card design */}
                     <div className="block lg:hidden">
-                      {/* Car Image */}
+                      {/* Car Image Carousel */}
                       <div className="relative h-48 bg-neutral-200 overflow-hidden">
-                        {auction.images[0] &&
-                        auction.images[0] !== "/api/placeholder/400/300" ? (
-                          <img
-                            src={auction.images[0]}
-                            alt={auction.vehicle}
-                            className="w-full h-full object-cover"
-                          />
+                        {auction.images && auction.images.length > 0 && auction.images[0] !== "/api/placeholder/400/300" ? (
+                          <Carousel className="w-full ">
+                            <CarouselContent className="">
+                              {auction.images.map((image, index) => (
+                                <CarouselItem key={index} className="h-full">
+                                  <img
+                                    src={image}
+                                    alt={`${auction.vehicle} - Image ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </CarouselItem>
+                              ))}
+                            </CarouselContent>
+                            {auction.images.length > 1 && <CarouselDots />}
+                          </Carousel>
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Car className="w-16 h-16 text-neutral-400" />
@@ -887,22 +898,30 @@ const LiveAuctionsPage = () => {
                     </div>
 
                     {/* Desktop view - keep original design */}
-                    <div className="hidden lg:block">
-                      {/* Image */}
-                      <div className="relative h-48 bg-neutral-200 overflow-hidden">
-                        {auction.images[0] &&
-                        auction.images[0] !== "/api/placeholder/400/300" ? (
-                          <img
-                            src={auction.images[0]}
-                            alt={auction.vehicle}
-                            className="w-full h-full object-cover"
-                          />
+                    <div className="hidden lg:block ">
+                      {/* Image Carousel */}
+                      <div className="relative h-86 bg-neutral-200 overflow-hidden">
+                        {auction.images && auction.images.length > 0 && auction.images[0] !== "/api/placeholder/400/300" ? (
+                          <Carousel className="w-full h-full">
+                            <CarouselContent className="h-full">
+                              {auction.images.map((image, index) => (
+                                <CarouselItem key={index} className="h-full">
+                                  <img
+                                    src={image}
+                                    alt={`${auction.vehicle} - Image ${index + 1}`}
+                                    className="w-full h-full object-center"
+                                  />
+                                </CarouselItem>
+                              ))}
+                            </CarouselContent>
+                            {auction.images.length > 1 && <CarouselDots />}
+                          </Carousel>
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Car className="w-16 h-16 text-neutral-400" />
                           </div>
                         )}
-                        <div className="absolute top-4 left-4">
+                        <div className="absolute top-4 left-4 z-10">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-semibold ${
                               auction.status === "accepted"
@@ -918,7 +937,7 @@ const LiveAuctionsPage = () => {
                         {/* Increase Amount Badge */}
                         {auction.currentBid > auction.cashOffer &&
                           auction.cashOffer > 0 && (
-                            <div className="absolute top-4 right-4">
+                            <div className="absolute top-4 right-4 z-10">
                               <div className="bg-success text-white px-2 py-1 rounded-full text-md font-semibold flex items-center space-x-1">
                                 <ArrowUp className="w-3 h-3" />
                                 <span>

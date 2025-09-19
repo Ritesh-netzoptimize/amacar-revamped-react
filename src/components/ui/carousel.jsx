@@ -108,7 +108,7 @@ function CarouselContent({
   return (
     <div
       ref={carouselRef}
-      className="overflow-hidden"
+      className="overflow-hidden h-full"
       data-slot="carousel-content">
       <div
         className={cn(
@@ -191,4 +191,58 @@ function CarouselNext({
   );
 }
 
-export { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext };
+function CarouselDots({
+  className,
+  ...props
+}) {
+  const { api, carouselRef } = useCarousel()
+  const [selectedIndex, setSelectedIndex] = React.useState(0)
+  const [scrollSnaps, setScrollSnaps] = React.useState([])
+
+  const onInit = React.useCallback((api) => {
+    setScrollSnaps(api.scrollSnapList())
+  }, [])
+
+  const onSelect = React.useCallback((api) => {
+    setSelectedIndex(api.selectedScrollSnap())
+  }, [])
+
+  React.useEffect(() => {
+    if (!api) return
+
+    onInit(api)
+    onSelect(api)
+    api.on("reInit", onInit)
+    api.on("select", onSelect)
+
+    return () => {
+      api.off("select", onSelect)
+    }
+  }, [api, onInit, onSelect])
+
+  const scrollTo = React.useCallback((index) => {
+    api?.scrollTo(index)
+  }, [api])
+
+  if (scrollSnaps.length <= 1) return null
+
+  return (
+    <div className={cn("flex justify-center space-x-2 mt-4", className)} {...props}>
+      {scrollSnaps.map((_, index) => (
+        <button
+          key={index}
+          className={cn(
+            "w-2 h-2 rounded-full transition-all duration-200",
+            selectedIndex === index
+              ? "bg-primary-500 scale-125"
+              : "bg-neutral-300 hover:bg-neutral-400"
+          )}
+          onClick={() => scrollTo(index)}
+          aria-label={`Go to slide ${index + 1}`}
+        />
+      ))}
+    </div>
+  )
+}
+
+export { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, CarouselDots };
