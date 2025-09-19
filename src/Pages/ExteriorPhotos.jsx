@@ -151,7 +151,7 @@ export default function VehiclePhotos() {
       label: 'Rear View', 
       icon: Car, 
       description: 'Full rear view of the vehicle', 
-      required: false,
+      required: true,
       tip: 'Ensure the entire rear is visible and avoid dark shadows.'
     },
     { 
@@ -159,7 +159,7 @@ export default function VehiclePhotos() {
       label: 'Driver Side', 
       icon: ArrowRight, 
       description: 'Complete driver side profile', 
-      required: false,
+      required: true,
       tip: 'Stand far enough so the whole side fits clearly in the frame.'
     },
     { 
@@ -167,7 +167,7 @@ export default function VehiclePhotos() {
       label: 'Dashboard', 
       icon: Gauge, 
       description: 'Front dashboard and controls', 
-      required: false,
+      required: true,
       tip: 'Switch on ignition so dashboard details are clearly lit.'
     },
     { 

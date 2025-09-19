@@ -6,22 +6,22 @@ export default function WhyChooseAmacar() {
     const benefits = [
         {
             id: 1,
-            title: "Free for Private Sellers",
-            description: "Dealer network pays to compete for your listing – no fees for you.",
+            title: "Maximize Value",
+            description: "Empowering sellers to get the best offer possible.",
             icon: "💰",
             color: "var(--brand-orange)"
         },
         {
             id: 2,
-            title: "Secure Payment",
-            description: "Verified payment after sale completion for your peace of mind.",
+            title: "Seamless Experience",
+            description: "Simplifying the car-selling process from start to finish",
             icon: "🔒",
             color: "var(--brand-purple)"
         },
         {
             id: 3,
-            title: "Complimentary Inspection",
-            description: "Professional vehicle inspection included with every listing.",
+            title: "Live Auction",
+            description: "Creating an advanced online auction platform that enables customers to list their vehicles for auction and attract competitive bids from participating dealerships to ensure the best market offers.",
             icon: "🔍",
             color: "var(--accent)"
         }

@@ -186,7 +186,7 @@ export default function Modal({
                     type="submit"
                     className="cursor-pointer w-full h-11 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold shadow-lg shadow-orange-500/20 transition hover:from-orange-600 hover:to-amber-600"
                   >
-                    Start Auction
+                    Check offer
                   </button>
                 </div>
 
@@ -267,7 +267,7 @@ export default function Modal({
                   onClick={handleSuccessCTA}
                   className="cursor-pointer w-full h-11 rounded-xl bg-slate-900 text-white text-sm font-semibold shadow-lg shadow-slate-900/20 hover:bg-slate-800"
                 >
-                  Start Auction Now
+                  See offer Now
                 </button>
               </motion.div>
             )}

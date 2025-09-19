@@ -227,6 +227,7 @@ export default function ChangePasswordModal({
   const handleForgotPassword = () => {
     setIsForgotPasswordMode(true);
     setPhase('forgot');
+    // Preserve email, only clear password fields and OTP
     setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '', otp: '' }));
     setErrors({});
   };
@@ -235,7 +236,7 @@ export default function ChangePasswordModal({
     setIsForgotPasswordMode(false);
     setPhase('form');
     setResetToken(null);
-    setFormData(prev => ({ ...prev, email: '', otp: '' }));
+    setFormData(prev => ({ ...prev, otp: '' }));
     setErrors({});
   };
 
@@ -295,19 +296,19 @@ export default function ChangePasswordModal({
                          }`}>
                            <Mail className="h-4 w-4" />
                          </div>
-                         <input
-                           id="email"
-                           type="email"
-                           value={formData.email}
-                           onChange={(e) => handleInputChange('email', e.target.value)}
-                           placeholder="user@example.com"
-                           disabled={!!formData.email}
-                           className={`h-11 w-full rounded-xl border pl-9 pr-3 text-sm outline-none ring-0 transition-shadow ${
-                             formData.email
-                               ? 'border-orange-200 bg-orange-50 text-orange-800 cursor-not-allowed'
-                               : 'border-slate-200 bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]'
-                           }`}
-                         />
+                        <input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          placeholder="user@example.com"
+                          disabled={!!formData.email}
+                          className={`h-11 w-full rounded-xl border pl-9 pr-3 text-sm outline-none ring-0 transition-shadow ${
+                            formData.email
+                              ? 'border-orange-200 bg-orange-50 text-orange-800 cursor-not-allowed'
+                              : 'border-slate-200 bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]'
+                          }`}
+                        />
                        </div>
                        {errors.email && (
                          <motion.p

@@ -19,7 +19,7 @@ export default function HowItWorks() {
         {
             number: 3,
             title: "Pick your top offer & get paid",
-            description: "Choose the best offer and complete the sale seamlessly.",
+            description: "Choose the best offer and visit the participating dealership.",
             icon: "🤝"
         }
     ]

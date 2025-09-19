@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
 import './carousel.css'
-import img from '../../../assets/home_Page_first_hero(1).jpg'
+import img1 from '../../../assets/get_an_instant_offer_for_your_car.jpg'
+import img2 from '../../../assets/seize_the_opportunity.jpg'
+import img3 from '../../../assets/driving_the_future_of_your_car.jpg'
 
 const slides = [
     {
@@ -11,7 +13,7 @@ const slides = [
             'You Simply Accept The Highest Bid!'
         ],
         cta: 'Get Instant Offer',
-        image: img
+        image: img1
     },
     {
         heading: 'Seize the Opportunity',
@@ -20,7 +22,7 @@ const slides = [
             'This Competitive Bidding Ensures You Receive The Best Offer Possible For Your Car.'
         ],
         cta: 'Get Started Today',
-        image: img
+        image: img2
     },
     {
         heading: 'Driving the Future of Car Sales',
@@ -29,7 +31,7 @@ const slides = [
             'Our vision is to create a world where selling a car is as simple as clicking a button, and every transaction is a win-win for both sellers and dealers.'
         ],
         cta: 'Learn More',
-        image: img
+        image: img3
     }
 ]
 
