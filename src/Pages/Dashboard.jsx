@@ -17,12 +17,12 @@ import {
   selectOffersError 
 } from '../redux/slices/offersSlice';
 import DashboardSkeleton from '../components/skeletons/DashboardSkeleton';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Modal from '../components/ui/modal';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  
+  const navigate = useNavigate();
   // Redux state
   const liveAuctions = useSelector(selectLiveAuctions);
   const acceptedOffers = useSelector(selectAcceptedOffers);
@@ -183,7 +183,7 @@ const Dashboard = () => {
                             <span className="text-warning">{auction.time_remaining || 'Live'}</span>
                           </div>
                         </div>
-                        <button className="btn-ghost p-2 cursor-pointer">
+                        <button onClick={() => navigate('/car-details', {state: {productId: auction.product_id}})} className="btn-ghost p-2 cursor-pointer">
                           <Eye className="w-4 h-4 " />
                         </button>
                       </motion.div>
