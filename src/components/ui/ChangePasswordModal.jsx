@@ -44,8 +44,12 @@ export default function ChangePasswordModal({
   // Initialize form data when modal opens
   useEffect(() => {
     if (isOpen) {
+      // Get user email from localStorage
+      const storedUser = localStorage.getItem('authUser');
+      const userEmail = storedUser ? JSON.parse(storedUser).email : '';
+      
       setFormData({
-        email: '',
+        email: userEmail || '',
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
@@ -198,7 +202,7 @@ export default function ChangePasswordModal({
       setPhase('reset-password');
     } catch (error) {
       setPhase('verify-otp');
-      setError('otp', error || 'Wrong OTP. Please try again.');
+      setErrors('otp', error || 'Wrong OTP. Please try again.');
     }
   };
 
@@ -274,36 +278,43 @@ export default function ChangePasswordModal({
                   transition={{ duration: 0.25, ease: "easeOut" }}
                   className="grid gap-5"
                 >
-                  {/* Email Field for Forgot Password */}
-                  {isForgotPasswordMode && phase === 'forgot' && (
-                    <div className="grid gap-2">
-                      <label htmlFor="email" className="text-sm font-medium text-slate-800">
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                          <Mail className="h-4 w-4" />
-                        </div>
-                        <input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          placeholder="user@example.com"
-                          className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none ring-0 transition-shadow focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]"
-                        />
-                      </div>
-                      {errors.email && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-xs text-red-600"
-                        >
-                          {errors.email}
-                        </motion.p>
-                      )}
-                    </div>
-                  )}
+                   {/* Email Field for Forgot Password */}
+                   {isForgotPasswordMode && phase === 'forgot' && (
+                     <div className="grid gap-2">
+                       <label htmlFor="email" className="text-sm font-medium text-slate-800">
+                         Email Address
+                       </label>
+                       <div className="relative">
+                         <div className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 ${
+                           formData.email ? 'text-orange-500' : 'text-slate-400'
+                         }`}>
+                           <Mail className="h-4 w-4" />
+                         </div>
+                         <input
+                           id="email"
+                           type="email"
+                           value={formData.email}
+                           onChange={(e) => handleInputChange('email', e.target.value)}
+                           placeholder="user@example.com"
+                           disabled={!!formData.email}
+                           className={`h-11 w-full rounded-xl border pl-9 pr-3 text-sm outline-none ring-0 transition-shadow ${
+                             formData.email
+                               ? 'border-orange-200 bg-orange-50 text-orange-800 cursor-not-allowed'
+                               : 'border-slate-200 bg-white focus:shadow-[0_0_0_4px_rgba(15,23,42,0.08)]'
+                           }`}
+                         />
+                       </div>
+                       {errors.email && (
+                         <motion.p
+                           initial={{ opacity: 0, y: -4 }}
+                           animate={{ opacity: 1, y: 0 }}
+                           className="text-xs text-red-600"
+                         >
+                           {errors.email}
+                         </motion.p>
+                       )}
+                     </div>
+                   )}
 
                   {/* Current Password Field (only for change password) */}
                   {!isForgotPasswordMode && (
