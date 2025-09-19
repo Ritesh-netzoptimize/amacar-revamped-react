@@ -251,7 +251,7 @@ export const rejectBid = createAsyncThunk(
   }
 );
 
-// Async thunk to re-auction a vehicle
+// Async thunk to re-auction a vehicle (when user selects "No" - no changes)
 export const reAuctionVehicle = createAsyncThunk(
   'offers/reAuctionVehicle',
   async (productId, { rejectWithValue }) => {
@@ -319,6 +319,7 @@ export const reAuctionVehicle = createAsyncThunk(
     }
   }
 );
+
 
 const initialState = {
   loading: false,
