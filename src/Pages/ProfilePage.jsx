@@ -55,8 +55,7 @@ const ProfilePage = () => {
         email: user.email || "",
         phone: user.phone || user.meta?.phone || "",
         zipcode:
-          user.zipcode ||
-          user.meta?.zipcode ||
+          user.meta?.zip ||
           user.meta?.zip_code ||
           user.zip_code ||
           "",
