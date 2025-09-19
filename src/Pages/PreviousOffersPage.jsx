@@ -281,7 +281,22 @@ const PreviousOffersPage = () => {
   const handleRelistVehicleClick = async (offer) => {
     try {
       const formattedOffer = formatOfferData(offer);
-      setSelectedVehicleForRelist(formattedOffer);
+      
+      // Prepare vehicle data for the modal
+      const vehicleData = {
+        product_id: offer.product_id,
+        vin: offer.vin,
+        zip: offer.zip_code || offer.zip,
+        make: offer.make,
+        model: offer.model,
+        year: offer.year,
+        vehicleType: offer.vehicle_type || `${offer.year} ${offer.make} ${offer.model}`
+      };
+      
+      setSelectedVehicleForRelist({
+        ...formattedOffer,
+        vehicleData: vehicleData
+      });
       setIsRelistModalOpen(true);
     } catch (error) {
       console.error('Error preparing relist:', error);
@@ -292,29 +307,42 @@ const PreviousOffersPage = () => {
   };
 
   // Handle confirm relist
-  const handleConfirmRelist = async () => {
+  const handleConfirmRelist = async (relistData) => {
     if (!selectedVehicleForRelist) return;
+
+    console.log('=== HANDLE CONFIRM RELIST DEBUG ===');
+    console.log('relistData:', relistData);
+    console.log('selectedVehicleForRelist:', selectedVehicleForRelist);
 
     try {
       setIsModalLoading(true);
-      const vehicleDetails = await fetchVehicleDetails(selectedVehicleForRelist.id);
-      
-      // Navigate to condition assessment page with VIN and ZIP
-      navigate('/auction-page', {
-        state: {
-          vin: vehicleDetails.vin,
-          zipCode: vehicleDetails.zipCode,
-          vehicleName: vehicleDetails.vehicleName,
-          vehicleType: vehicleDetails.vehicleType,
-        }
-      });
+
+      if (relistData.hasChanges === true) {
+        // User selected "Yes" - redirect to auction page
+        console.log('User selected YES - redirecting to auction page');
+        const vehicleDetails = await fetchVehicleDetails(selectedVehicleForRelist.id);
+        
+        // Navigate to condition assessment page with VIN and ZIP
+        navigate('/auction-page', {
+          state: {
+            vin: vehicleDetails.vin,
+            zipCode: vehicleDetails.zipCode,
+            vehicleName: vehicleDetails.vehicleName,
+            vehicleType: vehicleDetails.vehicleType,
+          }
+        });
+      } else if (relistData.hasChanges === false) {
+        // User selected "No" - call re-auction API
+        console.log('User selected NO - calling re-auction API');
+        await dispatch(reAuctionVehicle(selectedVehicleForRelist.id)).unwrap();
+      }
       
       // Close modal
       setIsRelistModalOpen(false);
       setSelectedVehicleForRelist(null);
     } catch (error) {
       console.error('Error confirming relist:', error);
-      setNotificationMessage('Failed to fetch vehicle details. Please try again.');
+      setNotificationMessage('Failed to process relist request. Please try again.');
       setNotificationType('error');
       setShowNotification(true);
     } finally {
@@ -831,6 +859,7 @@ const PreviousOffersPage = () => {
          }}
          onConfirm={handleConfirmRelist}
          vehicleName={selectedVehicleForRelist?.vehicle || ''}
+         vehicleData={selectedVehicleForRelist?.vehicleData || null}
          isLoading={isModalLoading}
        />
 
