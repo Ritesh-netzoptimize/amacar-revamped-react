@@ -29,56 +29,53 @@ export default function TwoColumnSection() {
     }
 
     return (
-        <section className="relative py-12 px-4 bg-gradient-to-br from-white via-slate-50 to-blue-50/30">
-            {/* Background blur effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/3 via-transparent to-purple-500/3"></div>
+        <section className="relative py-16 px-4 bg-gradient-to-br from-slate-50 via-white to-orange-50/30 overflow-hidden">
+            {/* Modern background elements */}
+            <div className="absolute inset-0">
+                <div className="absolute top-0 left-1/4 w-72 h-72 bg-orange-200/20 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-200/10 rounded-full blur-3xl"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-orange-100/30 to-blue-100/30 rounded-full blur-3xl"></div>
+            </div>
 
-            <div className="relative z-10 max-w-6xl mx-auto">
+            <div className="relative z-10 max-w-5xl mx-auto">
                 <motion.div
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12"
+                    className="flex justify-center"
                     variants={containerVariants}
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, margin: "-50px" }}
                 >
-                    {/* Column 1 */}
+                    {/* Modern Card */}
                     <motion.div
-                        className="space-y-5 p-6 lg:p-8 bg-white/60 backdrop-blur-sm rounded-2xl border border-white/20 shadow-sm hover:shadow-md transition-all duration-300"
+                        className="w-full max-w-3xl space-y-8 p-10 lg:p-12 bg-white/80 backdrop-blur-xl rounded-3xl border border-white/20 shadow-md hover:shadow-3xl transition-all duration-500 group"
                         variants={itemVariants}
                     >
-                        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 leading-tight">
-                            Experience a Smarter, More Rewarding Way to Sell Your Car
-                        </h2>
-                        <p className="text-base lg:text-lg text-slate-600 leading-relaxed">
-                            Unlock The Best Offers And Streamline Your Selling Process With Just A Few Clicks.
-                        </p>
-                        <motion.button
-                            className=" cursor-pointer bg-[var(--brand-orange)] hover:from-orange-700 hover:to-orange-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            Check Your Selling Options
-                        </motion.button>
-                    </motion.div>
 
-                    {/* Column 2 */}
-                    <motion.div
-                        className="space-y-5 p-6 lg:p-8 bg-[#394da1] backdrop-blur-sm rounded-2xl border border-white/20 shadow-sm hover:shadow-md transition-all duration-300"
-                        variants={itemVariants}
-                    >
-                        <h2 className="text-2xl lg:text-3xl font-bold text-white leading-tight">
-                            List My Car Today
-                        </h2>
-                        <p className="text-base lg:text-lg text-white leading-relaxed">
-                            Ready to get the best offers for your vehicle? Start your auction now and see the difference.
-                        </p>
-                        <motion.button
-                            className="cursor-pointer bg-white text-[#394da1] px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            Start Auction Now
-                        </motion.button>
+                        <div className="text-center space-y-6">
+                            <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent leading-tight">
+                                Experience a Smarter, More Rewarding Way to Sell Your Car
+                            </h2>
+                            <p className="text-xl lg:text-2xl text-slate-600 leading-relaxed max-w-3xl mx-auto font-light">
+                                Unlock The Best Offers And Streamline Your Selling Process With Just A Few Clicks.
+                            </p>
+                        </div>
+                        
+                        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-6">
+                            <motion.button
+                                className="group relative w-full sm:w-auto cursor-pointer bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white px-10 py-5 rounded-2xl font-semibold text-lg transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl overflow-hidden"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <span className="relative z-10 flex items-center justify-center gap-2">
+                                    Check Your Selling Options
+                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </motion.button>
+                        </div>
+
                     </motion.div>
                 </motion.div>
             </div>

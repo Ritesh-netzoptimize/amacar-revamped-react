@@ -26,8 +26,8 @@ export default function HomePage() {
             <WhyChooseAmacar />
             <WinWinAmacar />
             <TwoColumnSection />
-            <TestimonialCarousel />
             <CarFooterSection />
+            <TestimonialCarousel />
         </>
     )
 }
