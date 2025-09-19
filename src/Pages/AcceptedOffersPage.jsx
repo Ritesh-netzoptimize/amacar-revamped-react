@@ -80,6 +80,15 @@ const AcceptedOffersPage = () => {
         estimatedCompletion = new Date(acceptedDate.getTime() + 7 * 24 * 60 * 60 * 1000);
       }
 
+      // Extract front view image from images array, fallback to image_url, then to empty string
+      const getFrontViewImage = () => {
+        if (offer.images && offer.images.length > 0) {
+          const frontViewImage = offer.images.find(img => img.name === 'front_view');
+          return frontViewImage ? frontViewImage.url : offer.images[0].url;
+        }
+        return offer.image_url || '';
+      };
+
       return {
         id: offer.product_id?.toString() || 'unknown',
         vehicle: `${offer.year || 'N/A'} ${offer.make || 'Unknown'} ${offer.model || 'Vehicle'}`,
@@ -98,7 +107,7 @@ const AcceptedOffersPage = () => {
         acceptedDate: acceptedDate,
         nextStep: nextStep,
         estimatedCompletion: estimatedCompletion,
-        imageUrl: offer.image_url || '',
+        imageUrl: getFrontViewImage(),
         title: offer.title || '',
         appointmentUrl: offer.appointment_url || '',
         acceptedBidData: acceptedBid,
