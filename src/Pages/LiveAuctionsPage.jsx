@@ -101,9 +101,8 @@ const LiveAuctionsPage = () => {
       return {
         id: auction.product_id?.toString() || "unknown",
         product_id: auction.product_id, // Keep original product_id for navigation
-        vehicle: `${auction.year || "N/A"} ${auction.make || "Unknown"} ${
-          auction.model || "Vehicle"
-        }`,
+        vehicle: `${auction.year || "N/A"} ${auction.make || "Unknown"} ${auction.model || "Vehicle"
+          }`,
         year: parseInt(auction.year) || 0,
         make: auction.make || "Unknown",
         model: auction.model || "Unknown",
@@ -119,8 +118,8 @@ const LiveAuctionsPage = () => {
         images: auction.images && auction.images.length > 0
           ? auction.images.map(img => img.url)
           : auction.image_url
-          ? [auction.image_url]
-          : ["/api/placeholder/400/300"],
+            ? [auction.image_url]
+            : ["/api/placeholder/400/300"],
         description: auction.title || "Vehicle description not available",
         cashOffer: parseFloat(auction.cash_offer || "0"),
         cashOfferExpires: auction.cash_offer_expires_in || "",
@@ -638,9 +637,8 @@ const LiveAuctionsPage = () => {
                     !isSorting && setIsDropdownOpen(!isDropdownOpen)
                   }
                   disabled={isSorting}
-                  className={`flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${
-                    isSorting ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
-                  }`}
+                  className={`flex items-center gap-3 bg-white border border-neutral-200 rounded-xl px-4 py-3 hover:border-neutral-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent group ${isSorting ? "opacity-75 cursor-not-allowed" : "cursor-pointer"
+                    }`}
                 >
                   <div className="flex items-center gap-2">
                     {isSorting ? (
@@ -656,9 +654,8 @@ const LiveAuctionsPage = () => {
                   </div>
                   {!isSorting && (
                     <ChevronDown
-                      className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
-                        isDropdownOpen ? "rotate-180" : ""
-                      }`}
+                      className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""
+                        }`}
                     />
                   )}
                 </button>
@@ -681,36 +678,31 @@ const LiveAuctionsPage = () => {
                           <button
                             key={option.value}
                             onClick={() => handleSortSelect(option.value)}
-                            className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 transition-colors duration-150 ${
-                              isSelected
-                                ? "bg-orange-50 text-orange-700"
-                                : "text-neutral-700"
-                            } ${
-                              index !== sortOptions.length - 1
+                            className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 transition-colors duration-150 ${isSelected
+                              ? "bg-orange-50 text-orange-700"
+                              : "text-neutral-700"
+                              } ${index !== sortOptions.length - 1
                                 ? "border-b border-neutral-100"
                                 : ""
-                            }`}
+                              }`}
                           >
                             <div
-                              className={`p-1.5 rounded-lg ${
-                                isSelected ? "bg-orange-100" : "bg-neutral-100"
-                              }`}
+                              className={`p-1.5 rounded-lg ${isSelected ? "bg-orange-100" : "bg-neutral-100"
+                                }`}
                             >
                               <IconComponent
-                                className={`w-3.5 h-3.5 ${
-                                  isSelected
-                                    ? "text-orange-600"
-                                    : "text-neutral-500"
-                                }`}
+                                className={`w-3.5 h-3.5 ${isSelected
+                                  ? "text-orange-600"
+                                  : "text-neutral-500"
+                                  }`}
                               />
                             </div>
                             <div className="flex-1">
                               <div
-                                className={`text-sm font-medium ${
-                                  isSelected
-                                    ? "text-orange-700"
-                                    : "text-neutral-700"
-                                }`}
+                                className={`text-sm font-medium ${isSelected
+                                  ? "text-orange-700"
+                                  : "text-neutral-700"
+                                  }`}
                               >
                                 {option.label}
                               </div>
@@ -782,8 +774,8 @@ const LiveAuctionsPage = () => {
                       {/* Car Image Carousel */}
                       <div className="relative h-48 bg-neutral-200 overflow-hidden">
                         {auction.images && auction.images.length > 0 && auction.images[0] !== "/api/placeholder/400/300" ? (
-                          <Carousel className="w-full ">
-                            <CarouselContent className="">
+                          <Carousel className="w-full h-full">
+                            <CarouselContent className="h-full">
                               {auction.images.map((image, index) => (
                                 <CarouselItem key={index} className="h-full">
                                   <img
@@ -794,7 +786,7 @@ const LiveAuctionsPage = () => {
                                 </CarouselItem>
                               ))}
                             </CarouselContent>
-                            {auction.images.length > 1 && <CarouselDots />}
+                            {auction.images.length > 1 && <CarouselDots className="absolute bottom-4 left-1/2 transform -translate-x-1/2" />}
                           </Carousel>
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
@@ -852,7 +844,7 @@ const LiveAuctionsPage = () => {
                                 Math.floor(
                                   ((auction.timeRemaining - currentTime) %
                                     (1000 * 60 * 60)) /
-                                    (1000 * 60)
+                                  (1000 * 60)
                                 )
                               )
                                 .toString()
@@ -870,7 +862,7 @@ const LiveAuctionsPage = () => {
                                 Math.floor(
                                   ((auction.timeRemaining - currentTime) %
                                     (1000 * 60)) /
-                                    1000
+                                  1000
                                 )
                               )
                                 .toString()
@@ -885,15 +877,15 @@ const LiveAuctionsPage = () => {
                           Accept now and secure the top offer before it expires!
                         </div>
 
-                         {/* Accept Button - Only for bids, not cash offers */}
-                         {auction.bidCount > 0 && (
-                             <button
-                               onClick={() => handleAcceptTopBid(auction)}
-                               className="cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200"
-                             >
-                             Accept Top Bid
-                           </button>
-                         )}
+                        {/* Accept Button - Only for bids, not cash offers */}
+                        {auction.bidCount > 0 && (
+                          <button
+                            onClick={() => handleAcceptTopBid(auction)}
+                            className="cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200"
+                          >
+                            Accept Top Bid
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -914,7 +906,7 @@ const LiveAuctionsPage = () => {
                                 </CarouselItem>
                               ))}
                             </CarouselContent>
-                            {auction.images.length > 1 && <CarouselDots />}
+                            {auction.images.length > 1 && <CarouselDots className="absolute bottom-4 left-1/2 transform -translate-x-1/2" />}
                           </Carousel>
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
@@ -923,11 +915,10 @@ const LiveAuctionsPage = () => {
                         )}
                         <div className="absolute top-4 left-4 z-10">
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              auction.status === "accepted"
-                                ? "bg-success text-white"
-                                : "bg-success text-white"
-                            }`}
+                            className={`px-2 py-1 rounded-full text-xs font-semibold ${auction.status === "accepted"
+                              ? "bg-success text-white"
+                              : "bg-success text-white"
+                              }`}
                           >
                             {auction.status === "accepted"
                               ? "ACCEPTED"
@@ -966,42 +957,41 @@ const LiveAuctionsPage = () => {
                           </p>
                         </div>
 
-                         {/* Bids and Offers Badges */}
-                         <div className="flex flex-wrap gap-2 mb-6">
-                           {/* Highest Bid Badge */}
-                           {auction.bidCount > 0 && (
-                             <div className="inline-flex items-center gap-2 bg-success/10 text-success px-3 py-2 rounded-full border border-success/20">
-                               <DollarSign className="w-4 h-4" />
-                               <span className="text-sm font-semibold">
-                                 {formatCurrency(auction.currentBid)}
-                               </span>
-                               <span className="text-xs bg-success/20 px-2 py-0.5 rounded-full">
-                                 {auction.bidCount} active
-                               </span>
-                             </div>
-                           )}
+                        {/* Bids and Offers Badges */}
+                        <div className="flex flex-wrap gap-2 mb-6">
+                          {/* Highest Bid Badge */}
+                          {auction.bidCount > 0 && (
+                            <div className="inline-flex items-center gap-2 bg-success/10 text-success px-3 py-2 rounded-full border border-success/20">
+                              <DollarSign className="w-4 h-4" />
+                              <span className="text-sm font-semibold">
+                                {formatCurrency(auction.currentBid)}
+                              </span>
+                              <span className="text-xs bg-success/20 px-2 py-0.5 rounded-full">
+                                {auction.bidCount} active
+                              </span>
+                            </div>
+                          )}
 
-                           {/* Cash Offer Badge */}
-                           <div
-                             className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border ${
-                               auction.cashOffer > 0
-                                 ? "bg-primary/10 text-primary-600 border-primary/20"
-                                 : "bg-neutral-100 text-neutral-500 border-neutral-200"
-                             }`}
-                           >
-                             <DollarSign className="w-4 h-4" />
-                             <span className="text-sm font-semibold">
-                               {auction.cashOffer > 0
-                                 ? formatCurrency(auction.cashOffer)
-                                 : "No cash offer"}
-                             </span>
-                             {auction.cashOffer > 0 && (
-                               <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full">
-                                 Instant
-                               </span>
-                             )}
-                           </div>
-                         </div>
+                          {/* Cash Offer Badge */}
+                          <div
+                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-full border ${auction.cashOffer > 0
+                              ? "bg-primary/10 text-primary-600 border-primary/20"
+                              : "bg-neutral-100 text-neutral-500 border-neutral-200"
+                              }`}
+                          >
+                            <DollarSign className="w-4 h-4" />
+                            <span className="text-sm font-semibold">
+                              {auction.cashOffer > 0
+                                ? formatCurrency(auction.cashOffer)
+                                : "No cash offer"}
+                            </span>
+                            {auction.cashOffer > 0 && (
+                              <span className="text-xs bg-primary/20 px-2 py-0.5 rounded-full">
+                                Instant
+                              </span>
+                            )}
+                          </div>
+                        </div>
 
 
                         {/* Time Remaining */}
@@ -1045,21 +1035,21 @@ const LiveAuctionsPage = () => {
                               <span>No bids</span>
                             </div>
                           )}
-                          
+
                         </div>
                       </div>
-                         {/* Single Accept Button - Only for bids, not cash offers */}
-                         {auction.bidCount > 0 && (
-                           <div className="mb-6 mx-4">
-                             <button
-                               onClick={() => handleAcceptTopBid(auction)}
-                               className="cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                             >
-                               <CheckCircle className="w-5 h-5" />
-                               <span>Accept Top Bid</span>
-                             </button>
-                           </div>
-                         )}
+                      {/* Single Accept Button - Only for bids, not cash offers */}
+                      {auction.bidCount > 0 && (
+                        <div className="mb-6 mx-4">
+                          <button
+                            onClick={() => handleAcceptTopBid(auction)}
+                            className="cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                          >
+                            <CheckCircle className="w-5 h-5" />
+                            <span>Accept Top Bid</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 ))}
