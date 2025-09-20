@@ -212,19 +212,6 @@ const DashboardLayout = ({ children }) => {
               </div>
             </div>
 
-            {/* Search Results Indicator */}
-            {searchQuery && (
-              <div className="flex items-center space-x-2 px-3 py-1 bg-primary-50 rounded-lg border border-primary-200">
-                <span className="text-sm text-primary-700 font-medium">
-                  {getSearchStats().totalResults} results
-                </span>
-                <div className="w-1 h-1 bg-primary-400 rounded-full"></div>
-                <span className="text-xs text-primary-600">
-                  {isSearching ? 'Searching...' : 'Found'}
-                </span>
-              </div>
-            )}
-
             {/* Right Side: Icons */}
             <div className="flex items-center space-x-3">
               <div className="relative" ref={notificationsRef}>
