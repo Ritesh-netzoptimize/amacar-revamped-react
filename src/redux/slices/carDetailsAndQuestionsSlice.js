@@ -285,7 +285,7 @@ const initialQuestions = [
 
 // Initial state
 const initialState = {
-  userExists: false, // false, true, null
+  userExists: null, // false, true, null
   userInfo: null,
   productId: null,
   relistVehicleId: null,
@@ -511,7 +511,8 @@ const carDetailsAndQuestionsSlice = createSlice({
       };
     },
     clearUserExists: (state) => {
-      state.userExists = false;
+      console.log("clearUserExists called");
+      state.userExists = null;
     },
   },
   extraReducers: (builder) => {
@@ -596,7 +597,7 @@ const carDetailsAndQuestionsSlice = createSlice({
       .addCase(getInstantCashOffer.rejected, (state, action) => {
         state.offerStatus = 'failed';
         state.offerError = action.payload;
-        state.userExists = false;
+        state.userExists = null;
         state.userInfo = null;
       })
       // Image upload reducers
