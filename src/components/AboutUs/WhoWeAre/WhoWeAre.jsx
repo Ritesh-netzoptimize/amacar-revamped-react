@@ -65,7 +65,7 @@ export default function WhoWeAre() {
     ]
 
     return (
-        <section className="py-16 md:py-24 lg:py-32 bg-white">
+        <section className="py-16 md:py-24 lg:py-24 bg-white">
             <div className="container-custom">
                 {/* Section Header */}
                 <SectionHeader
