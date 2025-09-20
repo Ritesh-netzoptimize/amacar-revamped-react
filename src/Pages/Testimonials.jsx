@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Quote, Calendar, User, Building2, Filter, Plus } from 'lucide-react';
+import Seo from '@/components/SEO/Seo'
+import { seoData } from '@/config/seoConfig'
 
 const Testimonials = () => {
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -193,188 +195,191 @@ const Testimonials = () => {
 
 
     return (
-        <div className="min-h-screen bg-gradient-hero mt-12">
-            <div className="max-w-8xl mx-auto px-8 py-16">
-                {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-12"
-                >
-                    <h1 className="text-4xl font-bold text-neutral-800 font-display mb-4">
-                        What Our Users Say
-                    </h1>
-                    <p className="text-xl text-neutral-600 max-w-3xl mx-auto">
-                        Discover why thousands of customers and dealerships trust Amacar for their vehicle transactions
-                    </p>
-                </motion.div>
-
-                {/* Filter Tabs */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="flex flex-wrap justify-center gap-4 mb-12"
-                >
-                    {categories.map((category) => (
-                        <button
-                            key={category.value}
-                            onClick={() => setSelectedCategory(category.value)}
-                            className={`cursor-pointer px-6 py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${selectedCategory === category.value
-                                ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
-                                : 'bg-white text-neutral-600 hover:bg-primary-50 hover:text-primary-600 border border-neutral-200'
-                                }`}
-                        >
-                            <div className="flex items-center gap-2">
-                                <Filter className="w-4 h-4" />
-                                <span>{category.label}</span>
-                                <span className={`px-2 py-1 rounded-full text-xs ${selectedCategory === category.value
-                                    ? 'bg-white/20 text-white'
-                                    : 'bg-primary-100 text-primary-600'
-                                    }`}>
-                                    {category.count}
-                                </span>
-                            </div>
-                        </button>
-                    ))}
-                </motion.div>
-
-                {/* Testimonials Grid */}
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"
-                >
-                    <AnimatePresence mode="popLayout">
-                        {displayedTestimonials.length > 0 ? displayedTestimonials.map((testimonial, index) => (
-                            <motion.div
-                                key={testimonial.id}
-                                variants={index < 6 ? itemVariants : newItemVariants}
-                                layout
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ duration: 0.3 }}
-                                className="group"
-                                onMouseEnter={() => setHoveredCard(testimonial.id)}
-                                onMouseLeave={() => setHoveredCard(null)}
-                            >
-                                <div className={`card p-6 h-full transition-all duration-300 ${hoveredCard === testimonial.id
-                                    ? 'transform -translate-y-2 shadow-xl shadow-primary-500/10'
-                                    : 'hover:shadow-lg'
-                                    }`}>
-                                    {/* Quote Icon */}
-                                    <div className="flex justify-between items-start mb-4">
-                                        <Quote className="w-8 h-8 text-primary-200" />
-                                        <div className="flex items-center gap-1">
-                                            {renderStars(testimonial.rating)}
-                                        </div>
-                                    </div>
-
-                                    {/* Testimonial Text */}
-                                    <p className="text-neutral-700 leading-relaxed mb-6 line-clamp-4">
-                                        "{testimonial.text}"
-                                    </p>
-
-                                    {/* User Info */}
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative">
-                                            <img
-                                                src={testimonial.image}
-                                                alt={testimonial.name}
-                                                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
-                                            />
-                                            <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center ${testimonial.role === 'Customer' ? 'bg-primary-500' : 'bg-accent-500'
-                                                }`}>
-                                                {getRoleIcon(testimonial.role)}
-                                            </div>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-semibold text-neutral-800">{testimonial.name}</h4>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(testimonial.role)}`}>
-                                                    {getRoleIcon(testimonial.role)}
-                                                    {testimonial.role}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-1 text-xs text-neutral-500">
-                                                <Calendar className="w-3 h-3" />
-                                                <span>{testimonial.date}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )) : (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="col-span-full text-center py-12"
-                            >
-                                <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Quote className="w-8 h-8 text-neutral-400" />
-                                </div>
-                                <h3 className="text-xl font-semibold text-neutral-600 mb-2">No testimonials found</h3>
-                                <p className="text-neutral-500">Try selecting a different category to see more testimonials.</p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
-
-                {/* Load More Button */}
-                {hasMoreTestimonials && (
+        <>
+            <Seo title={seoData.testimonials.title} description={seoData.testimonials.description} />
+            <div className="min-h-screen bg-gradient-hero mt-12">
+                <div className="max-w-8xl mx-auto px-8 py-16">
+                    {/* Header */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.4 }}
-                        className="flex justify-center mb-12"
+                        transition={{ duration: 0.6 }}
+                        className="text-center mb-12"
                     >
-                        <button
-                            onClick={loadMoreTestimonials}
-                            className="cursor-pointer group px-8 py-4 bg-primary-500 text-white rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:bg-primary-600 shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 flex items-center gap-3"
-                        >
-                            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-                            <span>Load More Testimonials</span>
-                            <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
-                                {filteredTestimonials.length - displayedCount} more
-                            </span>
-                        </button>
+                        <h1 className="text-4xl font-bold text-neutral-800 font-display mb-4">
+                            What Our Users Say
+                        </h1>
+                        <p className="text-xl text-neutral-600 max-w-3xl mx-auto">
+                            Discover why thousands of customers and dealerships trust Amacar for their vehicle transactions
+                        </p>
                     </motion.div>
-                )}
 
-                {/* Stats Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.6 }}
-                    className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8"
-                >
-                    <div className="text-center p-6 bg-white rounded-2xl shadow-soft">
-                        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Star className="w-8 h-8 text-primary-600" />
+                    {/* Filter Tabs */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="flex flex-wrap justify-center gap-4 mb-12"
+                    >
+                        {categories.map((category) => (
+                            <button
+                                key={category.value}
+                                onClick={() => setSelectedCategory(category.value)}
+                                className={`cursor-pointer px-6 py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${selectedCategory === category.value
+                                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/25'
+                                    : 'bg-white text-neutral-600 hover:bg-primary-50 hover:text-primary-600 border border-neutral-200'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Filter className="w-4 h-4" />
+                                    <span>{category.label}</span>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${selectedCategory === category.value
+                                        ? 'bg-white/20 text-white'
+                                        : 'bg-primary-100 text-primary-600'
+                                        }`}>
+                                        {category.count}
+                                    </span>
+                                </div>
+                            </button>
+                        ))}
+                    </motion.div>
+
+                    {/* Testimonials Grid */}
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12"
+                    >
+                        <AnimatePresence mode="popLayout">
+                            {displayedTestimonials.length > 0 ? displayedTestimonials.map((testimonial, index) => (
+                                <motion.div
+                                    key={testimonial.id}
+                                    variants={index < 6 ? itemVariants : newItemVariants}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="group"
+                                    onMouseEnter={() => setHoveredCard(testimonial.id)}
+                                    onMouseLeave={() => setHoveredCard(null)}
+                                >
+                                    <div className={`card p-6 h-full transition-all duration-300 ${hoveredCard === testimonial.id
+                                        ? 'transform -translate-y-2 shadow-xl shadow-primary-500/10'
+                                        : 'hover:shadow-lg'
+                                        }`}>
+                                        {/* Quote Icon */}
+                                        <div className="flex justify-between items-start mb-4">
+                                            <Quote className="w-8 h-8 text-primary-200" />
+                                            <div className="flex items-center gap-1">
+                                                {renderStars(testimonial.rating)}
+                                            </div>
+                                        </div>
+
+                                        {/* Testimonial Text */}
+                                        <p className="text-neutral-700 leading-relaxed mb-6 line-clamp-4">
+                                            "{testimonial.text}"
+                                        </p>
+
+                                        {/* User Info */}
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative">
+                                                <img
+                                                    src={testimonial.image}
+                                                    alt={testimonial.name}
+                                                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                                                />
+                                                <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center ${testimonial.role === 'Customer' ? 'bg-primary-500' : 'bg-accent-500'
+                                                    }`}>
+                                                    {getRoleIcon(testimonial.role)}
+                                                </div>
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="font-semibold text-neutral-800">{testimonial.name}</h4>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(testimonial.role)}`}>
+                                                        {getRoleIcon(testimonial.role)}
+                                                        {testimonial.role}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-xs text-neutral-500">
+                                                    <Calendar className="w-3 h-3" />
+                                                    <span>{testimonial.date}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )) : (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="col-span-full text-center py-12"
+                                >
+                                    <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Quote className="w-8 h-8 text-neutral-400" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-neutral-600 mb-2">No testimonials found</h3>
+                                    <p className="text-neutral-500">Try selecting a different category to see more testimonials.</p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+
+                    {/* Load More Button */}
+                    {hasMoreTestimonials && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: 0.4 }}
+                            className="flex justify-center mb-12"
+                        >
+                            <button
+                                onClick={loadMoreTestimonials}
+                                className="cursor-pointer group px-8 py-4 bg-primary-500 text-white rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 hover:bg-primary-600 shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30 flex items-center gap-3"
+                            >
+                                <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+                                <span>Load More Testimonials</span>
+                                <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                                    {filteredTestimonials.length - displayedCount} more
+                                </span>
+                            </button>
+                        </motion.div>
+                    )}
+
+                    {/* Stats Section */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.6 }}
+                        className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8"
+                    >
+                        <div className="text-center p-6 bg-white rounded-2xl shadow-soft">
+                            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Star className="w-8 h-8 text-primary-600" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-neutral-800 mb-2">4.9/5</h3>
+                            <p className="text-neutral-600">Average Rating</p>
                         </div>
-                        <h3 className="text-2xl font-bold text-neutral-800 mb-2">4.9/5</h3>
-                        <p className="text-neutral-600">Average Rating</p>
-                    </div>
-                    <div className="text-center p-6 bg-white rounded-2xl shadow-soft">
-                        <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <User className="w-8 h-8 text-accent-600" />
+                        <div className="text-center p-6 bg-white rounded-2xl shadow-soft">
+                            <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <User className="w-8 h-8 text-accent-600" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-neutral-800 mb-2">10,000+</h3>
+                            <p className="text-neutral-600">Happy Customers</p>
                         </div>
-                        <h3 className="text-2xl font-bold text-neutral-800 mb-2">10,000+</h3>
-                        <p className="text-neutral-600">Happy Customers</p>
-                    </div>
-                    <div className="text-center p-6 bg-white rounded-2xl shadow-soft">
-                        <div className="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Building2 className="w-8 h-8 text-success-600" />
+                        <div className="text-center p-6 bg-white rounded-2xl shadow-soft">
+                            <div className="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Building2 className="w-8 h-8 text-success-600" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-neutral-800 mb-2">500+</h3>
+                            <p className="text-neutral-600">Partner Dealerships</p>
                         </div>
-                        <h3 className="text-2xl font-bold text-neutral-800 mb-2">500+</h3>
-                        <p className="text-neutral-600">Partner Dealerships</p>
-                    </div>
-                </motion.div>
+                    </motion.div>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

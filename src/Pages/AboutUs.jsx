@@ -8,10 +8,12 @@ import HowItWorksSimple from '@/components/AboutUs/HowItWorksSimple/HowItWorksSi
 import WhyTrustAmacar from '@/components/AboutUs/WhyTrustAmacar/WhyTrustAmacar.jsx'
 import TestimonialCarousel from '@/components/Home/TestimonialCarousel/TestimonialCarousel'
 import ReadyToGetStarted from '@/components/AboutUs/ReadyToGetStarted/ReadyToGetStarted.jsx'
-
+import Seo from '@/components/SEO/Seo'
+import { seoData } from '@/config/seoConfig'
 export default function AboutUs() {
     return (
         <>
+            <Seo title={seoData.about.title} description={seoData.about.description} />
             <AboutUsHero />
             <WhoWeAre />
             <HowAmacarWorks />

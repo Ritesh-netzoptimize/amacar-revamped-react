@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, FileText, Shield, Scale, Users, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Seo from '@/components/SEO/Seo';
+import { seoData } from '@/config/seoConfig';
 
 const TermsOfService = () => {
     const containerVariants = {
@@ -112,84 +114,87 @@ You and the dealers agree that any Disputes will be resolved on an individual ba
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 pt-20">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
-                {/* Header */}
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="mb-12"
-                >
-                    <div className="flex items-center mb-6">
-                        <Link
-                            to="/"
-                            className="mr-4 p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
-                        >
-                            <ArrowLeft className="w-5 h-5 text-slate-600" />
-                        </Link>
-                        <div className="flex items-center">
-                            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mr-4">
-                                <FileText className="w-6 h-6 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-3xl font-bold text-slate-900">Terms of Service</h1>
-                                <p className="text-slate-600 mt-1">Last updated: {new Date().toLocaleDateString()}</p>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Content */}
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="space-y-8"
-                >
-                    {sections.map((section, index) => {
-                        const IconComponent = section.icon;
-                        return (
-                            <motion.div
-                                key={section.id}
-                                variants={itemVariants}
-                                className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8"
-                            >
-                                <div className="flex items-start space-x-4 mb-6">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <IconComponent className="w-5 h-5 text-orange-600" />
-                                    </div>
-                                    <h2 className="text-2xl font-bold text-slate-900">{section.title}</h2>
-                                </div>
-                                <div className="prose prose-slate max-w-none">
-                                    <p className="text-slate-700 leading-relaxed whitespace-pre-line">
-                                        {section.content}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        );
-                    })}
-
-                    {/* Additional Information */}
+        <>
+            <Seo title={seoData.terms.title} description={seoData.terms.description} />
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 pt-20">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+                    {/* Header */}
                     <motion.div
-                        variants={itemVariants}
-                        className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-8 border border-orange-200"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="mb-12"
                     >
-                        <div className="flex items-start space-x-4">
-                            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <AlertTriangle className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold text-slate-900 mb-4">Important Notice</h3>
-                                <p className="text-slate-700 leading-relaxed">
-                                    These Terms of Service constitute the entire agreement between you and Amacar LLC regarding your use of the website and supersede any prior agreements. We may revise and update these Terms from time to time in our sole discretion. All changes are effective immediately when we post them, and apply to all access to and use of the Website thereafter.
-                                </p>
+                        <div className="flex items-center mb-6">
+                            <Link
+                                to="/"
+                                className="mr-4 p-2 hover:bg-slate-100 rounded-lg transition-colors duration-200"
+                            >
+                                <ArrowLeft className="w-5 h-5 text-slate-600" />
+                            </Link>
+                            <div className="flex items-center">
+                                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mr-4">
+                                    <FileText className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-slate-900">Terms of Service</h1>
+                                    <p className="text-slate-600 mt-1">Last updated: {new Date().toLocaleDateString()}</p>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
-                </motion.div>
+
+                    {/* Content */}
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="space-y-8"
+                    >
+                        {sections.map((section, index) => {
+                            const IconComponent = section.icon;
+                            return (
+                                <motion.div
+                                    key={section.id}
+                                    variants={itemVariants}
+                                    className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8"
+                                >
+                                    <div className="flex items-start space-x-4 mb-6">
+                                        <div className="w-10 h-10 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <IconComponent className="w-5 h-5 text-orange-600" />
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-slate-900">{section.title}</h2>
+                                    </div>
+                                    <div className="prose prose-slate max-w-none">
+                                        <p className="text-slate-700 leading-relaxed whitespace-pre-line">
+                                            {section.content}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+
+                        {/* Additional Information */}
+                        <motion.div
+                            variants={itemVariants}
+                            className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-8 border border-orange-200"
+                        >
+                            <div className="flex items-start space-x-4">
+                                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <AlertTriangle className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-4">Important Notice</h3>
+                                    <p className="text-slate-700 leading-relaxed">
+                                        These Terms of Service constitute the entire agreement between you and Amacar LLC regarding your use of the website and supersede any prior agreements. We may revise and update these Terms from time to time in our sole discretion. All changes are effective immediately when we post them, and apply to all access to and use of the Website thereafter.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
