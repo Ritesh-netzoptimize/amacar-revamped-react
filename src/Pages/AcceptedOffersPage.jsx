@@ -27,7 +27,6 @@ const AcceptedOffersPage = () => {
   const [isSorting, setIsSorting] = useState(false);
   const [sortProgress, setSortProgress] = useState(0);
   const dropdownRef = useRef(null);
-  console.log("sortBy", sortBy);
   // Appointment modal state
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
@@ -602,8 +601,8 @@ const AcceptedOffersPage = () => {
                       onClick={handleLoadMore}
                       disabled={isLoadingMore}
                       className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${isLoadingMore
-                          ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
-                          : 'bg-primary-500 text-white hover:bg-primary-600 hover:shadow-lg cursor-pointer'
+                        ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                        : 'bg-primary-500 text-white hover:bg-primary-600 hover:shadow-lg cursor-pointer'
                         }`}
                       whileHover={!isLoadingMore ? { scale: 1.02 } : {}}
                       whileTap={!isLoadingMore ? { scale: 0.98 } : {}}
