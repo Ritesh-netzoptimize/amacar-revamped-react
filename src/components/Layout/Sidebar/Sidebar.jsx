@@ -80,7 +80,7 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
       <motion.aside
         variants={containerVariants}
         animate={isCollapsed ? 'closed' : 'open'}
-        className="fixed left-0 top-0 bottom-0 bg-white border-r border-neutral-200 z-[51] shadow-sm"
+        className="fixed left-0 top-0 bottom-0 bg-white border-r border-neutral-200 z-[41] shadow-sm"
       >
         <div className="flex flex-col h-full relative">
           {/* Toggle Button - Fixed position */}

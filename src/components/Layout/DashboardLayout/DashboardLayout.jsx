@@ -182,7 +182,7 @@ const DashboardLayout = ({ children }) => {
           } pt-16 lg:pt-0`}
       >
         {/* Desktop Header */}
-        <div className={`fixed top-0 right-0 z-50 hidden h-20 lg:block bg-white border-b border-neutral-200 shadow-md transition-all duration-300 ${isSidebarCollapsed ? 'left-16' : 'left-64'}`}>
+        <div className={`fixed top-0 right-0 z-40 hidden h-20 lg:block bg-white border-b border-neutral-200 shadow-md transition-all duration-300 ${isSidebarCollapsed ? 'left-16' : 'left-64'}`}>
           <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-white to-neutral-50">
             {/* Left Side: Search Bar */}
             <div className="flex items-center flex-1 max-w-lg">
@@ -284,11 +284,6 @@ const DashboardLayout = ({ children }) => {
                             <p className="text-sm text-neutral-500">No recent activity</p>
                           </div>
                         )}
-                      </div>
-                      <div className="px-4 py-2 bg-neutral-50">
-                        <button className="w-full text-sm text-primary-600 hover:text-primary-700 font-medium text-left">
-                          View All Notifications
-                        </button>
                       </div>
                     </motion.div>
                   )}
