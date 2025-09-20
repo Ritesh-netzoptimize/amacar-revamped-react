@@ -5,6 +5,8 @@ import HowAmacarWorks from '@/components/AboutUs/HowAmacarWorks/HowAmacarWorks.j
 import OurValues from '@/components/AboutUs/OurValues/OurValues.jsx'
 import TrustedPartners from '@/components/AboutUs/TrustedPartners/TrustedPartners.jsx'
 import HowItWorksSimple from '@/components/AboutUs/HowItWorksSimple/HowItWorksSimple.jsx'
+import WhyTrustAmacar from '@/components/AboutUs/WhyTrustAmacar/WhyTrustAmacar.jsx'
+import TestimonialCarousel from '@/components/Home/TestimonialCarousel/TestimonialCarousel'
 
 export default function AboutUs() {
     return (
@@ -15,6 +17,8 @@ export default function AboutUs() {
             <OurValues />
             <TrustedPartners />
             <HowItWorksSimple />
+            <WhyTrustAmacar />
+            <TestimonialCarousel />
         </>
     )
 }
