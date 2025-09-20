@@ -1,7 +1,9 @@
 import React from "react"
 import { motion } from "framer-motion"
-
+import { useState } from "react"
+import Modal from '@/components/ui/modal'
 export default function ReadyToGetStarted() {
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const fadeUp = {
         hidden: { opacity: 0, y: 30 },
         visible: (delay = 0) => ({
@@ -10,6 +12,7 @@ export default function ReadyToGetStarted() {
             transition: { duration: 0.8, ease: "easeOut", delay },
         }),
     }
+
 
     return (
         <section className="pb-16 md:pb-24 lg:pb-24 bg-gradient-to-r from-primary-500 to-primary-600 relative overflow-hidden">
@@ -40,12 +43,18 @@ export default function ReadyToGetStarted() {
 
                     {/* CTA Button */}
                     <div className="flex justify-center">
-                        <button className="btn-primary bg-white text-primary-600 hover:bg-neutral-50 px-10 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                        <button onClick={() => setIsModalOpen(true)} className="btn-primary bg-white text-primary-600 hover:bg-neutral-50 px-10 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
                             Get instant offer
                         </button>
                     </div>
                 </motion.div>
             </div>
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Get Instant Offer"
+                description="Enter your vehicle details to start the offer process"
+            />
         </section>
     )
 }

@@ -1,8 +1,10 @@
-import React from "react"
+import React, { useState } from "react"
 import { motion } from "framer-motion"
 import SectionHeader from "@/components/Home/SectionHeader/SectionHeader.jsx"
+import Modal from '@/components/ui/modal'
 
 export default function HowAmacarWorks() {
+    const [isModalOpen, setisModalOpen] = useState(false);
     const fadeUp = {
         hidden: { opacity: 0, y: 30 },
         visible: (delay = 0) => ({
@@ -216,19 +218,25 @@ export default function HowAmacarWorks() {
                 >
                     <div className="bg-white rounded-3xl p-8 md:p-12 shadow-soft border border-neutral-100">
                         <h3 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4">
-                            Ready to Get Started?
+                            See how much your car values
                         </h3>
                         <p className="text-lg text-neutral-600 mb-8 max-w-2xl mx-auto">
                             Experience the Amacar difference with our simple, transparent process. Get your instant offer today!
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button className="btn-primary px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                            <button onClick={() => setisModalOpen(true)} className="btn-primary px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
                                 Get Your Instant Offer
                             </button>
                         </div>
                     </div>
                 </motion.div>
             </div>
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setisModalOpen(false)}
+                title="Get Instant Offer"
+                description="Enter your vehicle details to start the offer process"
+            />
         </section>
     )
 }
