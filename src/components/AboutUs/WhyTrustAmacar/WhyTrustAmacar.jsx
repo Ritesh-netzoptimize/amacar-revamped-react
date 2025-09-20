@@ -85,7 +85,7 @@ export default function WhyTrustAmacar() {
                                 className="group"
                             >
                                 {/* Stat Card */}
-                                <div className={`${stat.bgColor} ${stat.borderColor} border-2 rounded-2xl p-8 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-2 group-hover:border-primary-300`}>
+                                <div className={`${stat.bgColor} ${stat.borderColor} border-2 rounded-2xl p-8 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-2 group-hover:border-primary-300 h-72`}>
                                     {/* Icon */}
                                     <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
                                         {stat.icon}

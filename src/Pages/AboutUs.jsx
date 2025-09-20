@@ -7,6 +7,7 @@ import TrustedPartners from '@/components/AboutUs/TrustedPartners/TrustedPartner
 import HowItWorksSimple from '@/components/AboutUs/HowItWorksSimple/HowItWorksSimple.jsx'
 import WhyTrustAmacar from '@/components/AboutUs/WhyTrustAmacar/WhyTrustAmacar.jsx'
 import TestimonialCarousel from '@/components/Home/TestimonialCarousel/TestimonialCarousel'
+import ReadyToGetStarted from '@/components/AboutUs/ReadyToGetStarted/ReadyToGetStarted.jsx'
 
 export default function AboutUs() {
     return (
@@ -19,6 +20,7 @@ export default function AboutUs() {
             <HowItWorksSimple />
             <WhyTrustAmacar />
             <TestimonialCarousel />
+            <ReadyToGetStarted />
         </>
     )
 }
