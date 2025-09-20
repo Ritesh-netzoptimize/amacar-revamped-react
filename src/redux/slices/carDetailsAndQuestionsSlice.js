@@ -34,12 +34,12 @@ export const fetchCityStateByZip = createAsyncThunk(
   'carDetailsAndQuestions/fetchCityStateByZip',
   async (zip, { rejectWithValue }) => {
     try {
-    //   console.log('Fetching city/state for ZIP:', zip);
+      //   console.log('Fetching city/state for ZIP:', zip);
       const response = await api.get(
         `/location/city-state-by-zip?zipcode=${zip}`
       );
-    //   console.log('City/State API response:', response.data);
-      
+      //   console.log('City/State API response:', response.data);
+
       if (response.data.success) {
         return {
           city: response.data.location.city,
@@ -64,8 +64,9 @@ export const getInstantCashOffer = createAsyncThunk(
       console.log('Submitting instant cash offer request:', JSON.stringify(offerData, null, 2));
       const response = await api.post('/offer/instant-cash', offerData);
       console.log('Instant Cash Offer API response:', response.data);
-      
+
       if (response.data.status === 'success') {
+        console.log("response.data.user_info: ", response.data.user_info);
         return {
           offerAmount: response.data.offer_amount,
           carSummary: response.data.car_summary,
@@ -94,12 +95,12 @@ export const uploadVehicleImage = createAsyncThunk(
   async ({ file, productId, imageName }, { rejectWithValue }) => {
     try {
       console.log('Uploading vehicle image:', { productId, imageName, fileName: file.name });
-      
+
       // Validate file type
-    //   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    //   if (!allowedTypes.includes(file.type)) {
-    //     return rejectWithValue('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
-    //   }
+      //   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      //   if (!allowedTypes.includes(file.type)) {
+      //     return rejectWithValue('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
+      //   }
 
       // Create FormData
       const formData = new FormData();
@@ -141,7 +142,7 @@ export const deleteVehicleImage = createAsyncThunk(
   async ({ attachmentId }, { rejectWithValue }) => {
     try {
       console.log('Deleting vehicle image:', { attachmentId });
-      
+
       const response = await api.post('/vehicle/delete-image', {
         attachment_id: attachmentId
       });
@@ -335,7 +336,7 @@ const initialState = {
     auctionStartedAt: null,
     auctionEndsAt: null,
     timestamp: null
-  },  
+  },
 };
 
 // Create slice
@@ -371,7 +372,7 @@ const carDetailsAndQuestionsSlice = createSlice({
             : state.vehicleDetails.bodyEngineType || '',
       };
 
-      
+
     },
     clearVehicleDetails: (state) => {
       state.vehicleDetails = {};
@@ -395,18 +396,18 @@ const carDetailsAndQuestionsSlice = createSlice({
         if (answer !== undefined) {
           question.answer = answer;
         }
-        
+
         // Update details if provided
         if (details !== undefined) {
           question.details = details;
         }
-        
+
         // Only clear details when answer changes and new answer doesn't need details
         if (answer !== undefined && details === undefined) {
           const shouldClearDetails = question.isMultiSelect
             ? Array.isArray(answer) && answer.length === 0
             : !question.needsDetails?.includes(answer);
-            
+
           if (shouldClearDetails) {
             question.details = '';
           }
@@ -509,6 +510,9 @@ const carDetailsAndQuestionsSlice = createSlice({
         timestamp: null
       };
     },
+    clearUserExists: (state) => {
+      state.userExists = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -519,10 +523,10 @@ const carDetailsAndQuestionsSlice = createSlice({
       .addCase(fetchVehicleDetails.fulfilled, (state, action) => {
         state.loading = false;
         const { vehicleData, cityState, vehicleImage } = action.payload;
-        
+
         console.log('fetchVehicleDetails.fulfilled - vehicleImage:', vehicleImage);
         console.log('fetchVehicleDetails.fulfilled - existing vehicleImg:', state.vehicleDetails.vehicleImg);
-        
+
         // Merge fetched vehicle details with existing, ensuring additional fields are preserved
         state.vehicleDetails = {
           ...state.vehicleDetails,
@@ -545,7 +549,7 @@ const carDetailsAndQuestionsSlice = createSlice({
               ? `${vehicleData.engineconfiguration}${vehicleData.cylinders} / ${vehicleData.fueltype}`
               : state.vehicleDetails.bodyEngineType || '',
         };
-        
+
         // Store location data from city_state
         state.location = {
           city: cityState.data.city,
@@ -666,7 +670,8 @@ export const {
   clearUploadedImages,
   clearImageDeleteError,
   clearAuctionStartError,
-  clearAuctionData
+  clearAuctionData,
+  clearUserExists
 } = carDetailsAndQuestionsSlice.actions;
 
 // Export reducer
