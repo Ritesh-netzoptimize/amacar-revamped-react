@@ -47,11 +47,13 @@ import BidConfirmationModal from "../components/ui/BidConfirmationModal";
 import BidsModal from "../components/ui/BidsModal";
 import StatsCards from "../components/ui/StatsCards";
 import { Carousel, CarouselContent, CarouselItem, CarouselDots } from "../components/ui/carousel";
+import Modal from "@/components/ui/modal";
 
 const LiveAuctionsPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const liveAuctionsData = useSelector(selectLiveAuctions);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const dashboardSummary = useSelector(selectDashboardSummary);
   const loading = useSelector(selectOffersLoading);
   const error = useSelector(selectOffersError);
@@ -1119,7 +1121,9 @@ const LiveAuctionsPage = () => {
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  onClick={() => navigate('/auction')}
+                  onClick={() => {
+                    setIsModalOpen(true)
+                  }}
                   className="cursor-pointer w-60 px-4 h-16 group relative bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:shadow-xl hover:shadow-primary-500/25 focus:outline-none focus:ring-4 focus:ring-primary-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   <div className="flex items-center justify-between">
@@ -1164,6 +1168,14 @@ const LiveAuctionsPage = () => {
         auctionData={selectedAuctionBids}
         isLoading={loading}
         error={error}
+      />
+
+      {/* Start new auction Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Start new auction"
+        description="Enter your vehicle details to start the auction process"
       />
 
       {/* Bid Confirmation Modal */}
