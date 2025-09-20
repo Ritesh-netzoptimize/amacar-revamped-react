@@ -26,6 +26,7 @@ import AboutUs from './Pages/AboutUs.jsx';
 import TermsOfService from './Pages/TermsOfService.jsx';
 import PrivacyPolicy from './Pages/PrivacyPolicy.jsx';
 import CookiesPolicy from './Pages/CookiesPolicy.jsx';
+import Testimonials from './Pages/Testimonials.jsx';
 
 function App() {
   const location = useLocation();
@@ -86,6 +87,7 @@ function App() {
               <Route path="/review" element={<ReviewPage />} />
               <Route path="/unauthorized" element={<UnauthorizedPage />} />
               <Route path="/about-us" element={<AboutUs />} />
+              <Route path="/testimonials" element={<Testimonials />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/cookies-policy" element={<CookiesPolicy />} />

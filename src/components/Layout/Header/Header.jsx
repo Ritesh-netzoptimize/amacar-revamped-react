@@ -81,7 +81,7 @@ export default function Header() {
 
             {/* center: nav (absolutely centered on desktop) */}
             <nav className="nav-desktop">
-              <a className="nav-link" href="/home">
+              <a className="nav-link" href="/">
                 Home
               </a>
               <a className="nav-link" href="/testimonials">
@@ -145,9 +145,9 @@ export default function Header() {
             style={{ paddingTop: 12, paddingBottom: 18 }}
           >
             <nav style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <a className="nav-link-mobile" href="#">
+              <Link className="nav-link-mobile" to="/">
                 Home
-              </a>
+              </Link>
               <a className="nav-link-mobile" href="#">
                 Testimonials
               </a>
