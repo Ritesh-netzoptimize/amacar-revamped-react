@@ -1076,17 +1076,74 @@ const LiveAuctionsPage = () => {
 
         {/* Empty State */}
         {!loading && !error && (!hasAuctions || auctions.length === 0) && (
-          <motion.div variants={itemVariants} className="text-center py-16">
-            <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Car className="w-12 h-12 text-neutral-400" />
+          <motion.div
+            variants={itemVariants}
+            className="flex -mt-16 items-center justify-center min-h-[60vh]"
+          >
+            <div className="text-center max-w-md mx-auto">
+              {/* Modern Icon Container */}
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="relative mb-4"
+              >
+                <div className="w-20 h-20 bg-gradient-to-br from-primary-50 to-primary-100 rounded-3xl flex items-center justify-center mx-auto shadow-soft border border-primary-200">
+                  <Car className="w-8 h-8 text-primary-500" />
+                </div>
+                {/* Decorative elements */}
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-warning/20 rounded-full animate-pulse-slow"></div>
+                <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-accent/20 rounded-full animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+              </motion.div>
+
+              {/* Content */}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                className="space-y-4"
+              >
+                <h3 className="text-2xl font-bold text-neutral-800 font-display">
+                  No Active Auctions
+                </h3>
+              </motion.div>
+
+              {/* Action Buttons */}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+                className="flex flex-col sm:flex-row gap-4 mt-4"
+              >
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  onClick={() => navigate('/auction')}
+                  className="cursor-pointer w-60 px-4 h-16 group relative bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:shadow-xl hover:shadow-primary-500/25 focus:outline-none focus:ring-4 focus:ring-primary-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  <div className="flex items-center justify-between">
+                    <Car className="transition-transform duration-300 group-hover:scale-110" />
+                    <span className="text-md">Start New Auction</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  onClick={() => navigate('/dashboard')}
+                  className="cursor-pointer w-60 px-4 h-16 group relative overflow-hidden bg-white hover:bg-neutral-50 text-neutral-700 font-semibold py-4 rounded-2xl border-2 border-neutral-200 hover:border-neutral-300 transition-all duration-300 transform hover:shadow-lg hover:shadow-neutral-500/10 focus:outline-none focus:ring-4 focus:ring-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  <div className="flex items-center justify-center space-x-3">
+                    <Eye className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                    <span className="text-lg">View Dashboard</span>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-neutral-100/0 via-neutral-100/50 to-neutral-100/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                </motion.button>
+              </motion.div>
             </div>
-            <h3 className="text-xl font-semibold text-neutral-800 mb-2">
-              No Active Auctions
-            </h3>
-            <p className="text-neutral-600 mb-6">
-              Start a new auction to get the best offers for your vehicle.
-            </p>
-            <button className="cursor-pointer btn-primary">Start New Auction</button>
           </motion.div>
         )}
       </div>
