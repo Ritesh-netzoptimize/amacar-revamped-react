@@ -3,7 +3,7 @@ import "./header.css";
 import LoginModal from "@/components/ui/LoginModal";
 import { logout, setLoginRedirect } from "@/redux/slices/userSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LogoutModal from "@/components/ui/LogoutModal";
 import { persistor } from "@/redux/store";
 import { ArrowRight, Play } from "lucide-react";
@@ -81,18 +81,18 @@ export default function Header() {
 
             {/* center: nav (absolutely centered on desktop) */}
             <nav className="nav-desktop">
-              <a className="nav-link" href="/">
+              <a className="nav-link" href="/home">
                 Home
               </a>
-              <a className="nav-link" href="#">
+              <a className="nav-link" href="/testimonials">
                 Testimonials
               </a>
-              <a className="nav-link" href="#">
+              <a className="nav-link" href="/join-our-dealer-network">
                 Join Our Dealer Network
               </a>
-              <a className="nav-link" href="#">
+              <Link className="nav-link" to="/about-us">
                 Our Vision
-              </a>
+              </Link>
             </nav>
 
             {/* right: actions */}
