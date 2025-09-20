@@ -519,12 +519,12 @@ export default function VehiclePhotos() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1, duration: 0.4 }}
                   className={`relative rounded-2xl overflow-hidden shadow-md backdrop-blur-sm bg-white/80 transition-all duration-300 ${photo.required
-                      ? hasPhoto
-                        ? 'border-2 border-green-300/50 bg-green-50/50'
-                        : 'border-2 border-[#f6851f]/30'
-                      : hasPhoto
-                        ? 'border-2 border-green-300/50 bg-green-50/50'
-                        : 'border-2 border-slate-200/50 opacity-90'
+                    ? hasPhoto
+                      ? 'border-2 border-green-300/50 bg-green-50/50'
+                      : 'border-2 border-[#f6851f]/30'
+                    : hasPhoto
+                      ? 'border-2 border-green-300/50 bg-green-50/50'
+                      : 'border-2 border-slate-200/50 opacity-90'
                     } hover:border-[#f6851f]/50 hover:shadow-lg hover:bg-orange-50/30`}
                 >
                   {isUploadingThisPhoto ? (
@@ -609,9 +609,11 @@ export default function VehiclePhotos() {
                         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
                         if (!allowedTypes.includes(file.type)) {
                           toast.error('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
+                          e.target.value = ''; // Clear input value
                           return;
                         }
                         handleSinglePhotoUpload(file, photo.id);
+                        e.target.value = ''; // Clear input value to allow re-uploading same file
                       }
                     }}
                     className="hidden"
@@ -656,12 +658,12 @@ export default function VehiclePhotos() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1, duration: 0.4 }}
                     className={`relative rounded-2xl overflow-hidden shadow-md backdrop-blur-sm bg-white/80 transition-all duration-300 cursor-pointer ${photo.required
-                        ? hasPhoto
-                          ? 'border-2 border-green-300/50 bg-green-50/50'
-                          : 'border-2 border-[#f6851f]/30'
-                        : hasPhoto
-                          ? 'border-2 border-green-300/50 bg-green-50/50'
-                          : 'border-2 border-slate-200/50 hover:border-[#f6851f]/50 hover:bg-orange-50/30'
+                      ? hasPhoto
+                        ? 'border-2 border-green-300/50 bg-green-50/50'
+                        : 'border-2 border-[#f6851f]/30'
+                      : hasPhoto
+                        ? 'border-2 border-green-300/50 bg-green-50/50'
+                        : 'border-2 border-slate-200/50 hover:border-[#f6851f]/50 hover:bg-orange-50/30'
                       } hover:shadow-lg`}
                     onClick={() => {
                       if (!hasPhoto && !uploadingMap[photo.id]) {
@@ -746,9 +748,11 @@ export default function VehiclePhotos() {
                           const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
                           if (!allowedTypes.includes(file.type)) {
                             alert('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP are allowed.');
+                            e.target.value = ''; // Clear input value
                             return;
                           }
                           handleSinglePhotoUpload(file, photo.id);
+                          e.target.value = ''; // Clear input value to allow re-uploading same file
                         }
                       }}
                       className="hidden"
@@ -884,8 +888,8 @@ export default function VehiclePhotos() {
                   onClick={handleAcceptTerms}
                   disabled={!termsAccepted || auctionStartStatus === 'starting'}
                   className={`cursor-pointer px-6 py-2 text-sm font-semibold text-white rounded-lg transition-all ${termsAccepted && auctionStartStatus !== 'starting'
-                      ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600 shadow-lg'
-                      : 'bg-slate-400 cursor-not-allowed'
+                    ? 'bg-gradient-to-r from-[#f6851f] to-[#e63946] hover:from-orange-600 hover:to-red-600 shadow-lg'
+                    : 'bg-slate-400 cursor-not-allowed'
                     }`}
                 >
                   {auctionStartStatus === 'starting' ? (
