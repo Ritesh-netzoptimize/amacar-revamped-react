@@ -23,6 +23,7 @@ import PrivateRoute from './components/Auth/PrivateRoute'; // Updated PrivateRou
 import { SearchProvider } from './context/SearchContext';
 import BackToTop from './components/ui/back-to-top';
 import AboutUs from './Pages/AboutUs.jsx';
+import TermsOfService from './Pages/TermsOfService.jsx';
 
 function App() {
   const location = useLocation();
@@ -83,6 +84,7 @@ function App() {
               <Route path="/review" element={<ReviewPage />} />
               <Route path="/unauthorized" element={<UnauthorizedPage />} />
               <Route path="/about-us" element={<AboutUs />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
               {/* Protected Routes */}
               <Route
                 path="/dashboard"
