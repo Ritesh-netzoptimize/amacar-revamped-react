@@ -635,8 +635,12 @@ const carDetailsAndQuestionsSlice = createSlice({
         state.auctionStartError = null;
       })
       .addCase(startAuction.fulfilled, (state) => {
-        return initialState;
-        // return initialState; // re check by neeraj sir
+        // Preserve userExists state when auction starts successfully
+        const preservedUserExists = state.userExists;
+        return {
+          ...initialState,
+          userExists: preservedUserExists
+        };
       })
       .addCase(startAuction.rejected, (state, action) => {
         state.auctionStartStatus = 'failed';
