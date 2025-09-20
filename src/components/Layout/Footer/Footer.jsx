@@ -80,9 +80,9 @@ export default function Footer() {
                         <h4 className="text-xl font-semibold mb-8 text-neutral-900">Support & Legal</h4>
                         <ul className="space-y-4">
                             <li>
-                                <a href="#" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
+                                <Link to="/cookies-policy" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
                                     Cookie Policy
-                                </a>
+                                </Link>
                             </li>
                             <li>
                                 <Link to="/privacy-policy" className="text-neutral-600 hover:text-primary-500 transition-colors duration-300 text-lg  inline-block">
