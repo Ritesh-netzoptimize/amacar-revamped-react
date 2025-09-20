@@ -10,16 +10,38 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 
-const PasswordResetRequestModal = ({ isOpen, onClose }) => {
+const PasswordResetRequestModal = ({ isOpen, onClose, onModalClose }) => {
     const navigate = useNavigate();
 
     const handleGoToProfile = () => {
         navigate('/profile');
         onClose();
+        // Call the callback function when modal closes
+        if (onModalClose) {
+            onModalClose();
+        }
+    };
+
+    const handleContinueToDashboard = () => {
+        onClose();
+        // Call the callback function when modal closes
+        if (onModalClose) {
+            onModalClose();
+        }
+    };
+
+    const handleDialogClose = (open) => {
+        if (!open) {
+            onClose();
+            // Call the callback function when modal closes
+            if (onModalClose) {
+                onModalClose();
+            }
+        }
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={handleDialogClose}>
             <DialogContent className="sm:max-w-md rounded-2xl shadow-xl p-0 overflow-hidden bg-white">
                 <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-6">
                     <DialogHeader>
@@ -85,7 +107,7 @@ const PasswordResetRequestModal = ({ isOpen, onClose }) => {
                         </button>
 
                         <button
-                            onClick={onClose}
+                            onClick={handleContinueToDashboard}
                             className="cursor-pointer w-full text-slate-600 hover:text-slate-800 font-medium py-2 px-6 rounded-xl transition-colors duration-200"
                         >
                             Continue to Dashboard

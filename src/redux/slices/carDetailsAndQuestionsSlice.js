@@ -285,7 +285,7 @@ const initialQuestions = [
 
 // Initial state
 const initialState = {
-  userExists: null, // false, true, null
+  userExists: false, // false, true, null
   userInfo: null,
   productId: null,
   relistVehicleId: null,
@@ -511,7 +511,7 @@ const carDetailsAndQuestionsSlice = createSlice({
       };
     },
     clearUserExists: (state) => {
-      state.userExists = null;
+      state.userExists = false;
     },
   },
   extraReducers: (builder) => {
