@@ -24,6 +24,7 @@ import { SearchProvider } from './context/SearchContext';
 import BackToTop from './components/ui/back-to-top';
 import AboutUs from './Pages/AboutUs.jsx';
 import TermsOfService from './Pages/TermsOfService.jsx';
+import PrivacyPolicy from './Pages/PrivacyPolicy.jsx';
 
 function App() {
   const location = useLocation();
@@ -85,6 +86,7 @@ function App() {
               <Route path="/unauthorized" element={<UnauthorizedPage />} />
               <Route path="/about-us" element={<AboutUs />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               {/* Protected Routes */}
               <Route
                 path="/dashboard"
